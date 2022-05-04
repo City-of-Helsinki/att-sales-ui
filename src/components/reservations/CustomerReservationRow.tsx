@@ -79,8 +79,8 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
     preDownloading: preContractDownloading,
   });
 
-  const renderLotteryPosition = (): string => {
-    if (reservation.lottery_position === null) {
+  const renderQueuePosition = (): string => {
+    if (reservation.queue_position === null) {
       return t(`${T_PATH}.lotteryUncompleted`);
     }
     return `${reservation.queue_position}. ` + t(`${T_PATH}.position`);
@@ -100,11 +100,9 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
             // TODO: Add cancellation reason and cancel dates
             <div>{t(`${T_PATH}.canceled`)}</div>
           ) : (
-            <>
-              <div>{renderLotteryPosition()}</div>
-              <div>{t(`${T_PATH}.priority`)}: TODO</div>
-            </>
+            <div>{renderQueuePosition()}</div>
           )}
+          <div>{t(`${T_PATH}.priority`)}: TODO</div>
         </div>
         <div className={styles.apartmentRowRight}>
           {!isCanceled && (

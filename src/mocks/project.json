@@ -15,7 +15,7 @@
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
           "customer_id": 2,
           "has_children": false,
-          "lottery_position": 2,
+          "list_position": 2,
           "queue_position": 1,
           "right_of_residence": "12345",
           "applicants": [
@@ -41,7 +41,7 @@
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
           "customer_id": 3,
           "has_children": true,
-          "lottery_position": 1,
+          "list_position": 1,
           "queue_position": 2,
           "right_of_residence": "12345",
           "applicants": [
@@ -90,7 +90,7 @@
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
           "customer_id": 1,
           "has_children": true,
-          "lottery_position": 2,
+          "list_position": 2,
           "queue_position": 4,
           "right_of_residence": "2424",
           "applicants": [
@@ -136,7 +136,7 @@
             }
           ],
           "has_children": false,
-          "lottery_position": 1,
+          "list_position": 1,
           "queue_position": 3,
           "right_of_residence": "12",
           "current_state": {
@@ -168,7 +168,7 @@
             }
           ],
           "has_children": false,
-          "lottery_position": 4,
+          "list_position": 4,
           "queue_position": 2,
           "right_of_residence": null,
           "current_state": {
@@ -197,7 +197,7 @@
             }
           ],
           "has_children": true,
-          "lottery_position": 3,
+          "list_position": 3,
           "queue_position": 1,
           "right_of_residence": "32456",
           "current_state": {
@@ -221,7 +221,7 @@
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
           "customer_id": 1,
           "has_children": false,
-          "lottery_position": 1,
+          "list_position": 1,
           "queue_position": 1,
           "right_of_residence": "12345",
           "applicants": [
@@ -271,7 +271,7 @@
   "image_urls": [
     "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2021-08/room_6.jpeg"
   ],
-  "lottery_completed": false,
+  "lottery_completed": true,
   "main_image_url": "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2021-08/room_6.jpeg",
   "manager": null,
   "material_choice_dl": null,

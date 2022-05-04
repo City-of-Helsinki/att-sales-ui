@@ -32,7 +32,7 @@
   ],
   "id": 1,
   "apartment_uuid": "a29f766c-5652-4649-ad8f-c022cb3eea35",
-  "lottery_position": 1,
+  "list_position": 1,
   "queue_position": 1,
   "state": "submitted"
 }

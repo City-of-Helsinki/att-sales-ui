@@ -63,7 +63,7 @@
           "reference_number": "REF-432423"
         }
       ],
-      "lottery_position": null,
+      "list_position": 2,
       "queue_position": 2,
       "state": "reserved"
     },
@@ -82,7 +82,7 @@
       "apartment_right_of_occupancy_payment": null,
       "apartment_sales_price": 9000000,
       "apartment_installments": null,
-      "lottery_position": null,
+      "list_position": 1,
       "queue_position": 1,
       "state": "submitted"
     },
@@ -109,7 +109,7 @@
           "reference_number": "referefe"
         }
       ],
-      "lottery_position": 2,
+      "list_position": 2,
       "queue_position": 2,
       "state": "submitted"
     }

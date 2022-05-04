@@ -66,9 +66,7 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted, project }: I
                 {isLotteryResult && (
                   <span className={styles.queueNumberSpacer}>
                     {index === 0 &&
-                      (isCanceled(reservation)
-                        ? `00${reservation.lottery_position}`
-                        : `${reservation.queue_position}.`)}
+                      (isCanceled(reservation) ? `00${reservation.list_position}` : `${reservation.queue_position}.`)}
                   </span>
                 )}
                 {applicant.last_name}, {applicant.first_name}{' '}
@@ -112,11 +110,6 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted, project }: I
   };
 
   const renderLotteryResults = () => {
-    const sortedReservations = [...reservations];
-
-    // Sort results by initial lottery position
-    sortedReservations.sort((a, b) => a.lottery_position - b.lottery_position);
-
     const addReservation = () => (
       <div className={styles.addNewReservationButton}>
         <Button
@@ -194,7 +187,7 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted, project }: I
 
     const renderFirstInQueue = () => {
       // Find the applicant that is currently first in the reservation queue
-      const firstInQueue = sortedReservations.find((r) => r.queue_position === 1);
+      const firstInQueue = reservations.find((r) => r.queue_position === 1);
 
       // If there's no one in the queue or the reservation is canceled, show "add new reservation" button
       if (!firstInQueue || isCanceled(firstInQueue)) return addReservation();
@@ -227,9 +220,9 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted, project }: I
           className={resultRowOpen ? cx(styles.toggleContent, styles.open) : styles.toggleContent}
           id={`apartment-row-${apartment_uuid}`}
         >
-          {!!sortedReservations.length ? (
+          {!!reservations.length ? (
             <>
-              {sortedReservations.map((reservation) => (
+              {reservations.map((reservation) => (
                 <div
                   className={cx(
                     styles.singleReservation,
