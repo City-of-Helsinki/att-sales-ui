@@ -31,7 +31,6 @@
     "image_urls": [
       "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2021-08/room_6.jpeg"
     ],
-    "lottery_completed": true,
     "main_image_url": "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2021-08/room_6.jpeg",
     "manager": null,
     "material_choice_dl": null,
@@ -95,7 +94,6 @@
     "image_urls": [
       "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2020-10/helsinki-2963778_1280_3.jpg"
     ],
-    "lottery_completed": false,
     "main_image_url": "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2020-10/helsinki-2963778_1280_2.jpg",
     "manager": "Paavo Puolikuu",
     "material_choice_dl": 1604145600,
@@ -161,7 +159,6 @@
     "image_urls": [
       "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2020-10/helsinki-2963778_1280.jpg"
     ],
-    "lottery_completed": false,
     "main_image_url": "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2020-09/helsinki-2963778_1280.jpg",
     "manager": "Maija Meik\u00e4l\u00e4inen",
     "material_choice_dl": 1609416000,

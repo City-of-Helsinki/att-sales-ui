@@ -3,10 +3,6 @@
   margin-bottom: var(--spacing-xs);
   align-items: baseline;
   line-height: 1;
-
-  h2 {
-    margin: 0 var(--spacing-s);
-  }
 }
 
 .labelWrapper {
@@ -14,5 +10,19 @@
 
   span {
     margin: -2px 0 0 0;
+  }
+}
+
+.projectHousingCompany {
+  margin: 0 var(--spacing-s);
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+    }
   }
 }

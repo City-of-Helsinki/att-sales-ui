@@ -32,7 +32,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
     estimated_completion,
     district,
     housing_company,
-    lottery_completed,
+    lottery_completed_at,
     main_image_url,
     ownership_type,
     street_address,
@@ -86,7 +86,19 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
             &nbsp;
             {application_end_time ? formatDateTime(application_end_time) : '-'}
           </div>
-          {showActions && !lottery_completed && (
+          {!renderAsLink && (
+            <>
+              {project.lottery_completed_at && (
+                <div className={styles.infoText}>
+                  {t(`${T_PATH}.lotteryCompletedAt`)} {formatDateTime(project.lottery_completed_at)}
+                </div>
+              )}
+              <div className={styles.infoText}>
+                {t(`${T_PATH}.applications`)}: {project.application_count}
+              </div>
+            </>
+          )}
+          {showActions && !lottery_completed_at && (
             <div className={styles.lotteryBtnWrap}>
               <Button
                 variant="primary"
@@ -128,7 +140,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
           </div>
         </div>
       </div>
-      {showActions && !lottery_completed && (
+      {showActions && !lottery_completed_at && (
         <Dialog
           id="lottery-confirm-dialog"
           aria-labelledby="lottery-confirm-dialog-title"

@@ -1,0 +1,61 @@
+.customer {
+  color: var(--color-black-60);
+  margin-bottom: var(--spacing-s);
+}
+
+.applicants {
+  font-weight: 500;
+}
+
+.reservationAddDialog {
+  @media (max-width: 1247px) {
+    // --breakpoint-xl minus 1
+    width: 100% !important;
+  }
+
+  @media (min-width: 1248px) {
+    // --breakpoint-xl
+    width: 1200px !important;
+  }
+
+  [class*="dialogTitle"] {
+    font-size: var(--fontsize-heading-l);
+  }
+
+  .details {
+    display: flex;
+    align-items: flex-start;
+    margin-top: var(--spacing-m);
+    margin-bottom: var(--spacing-l);
+  }
+
+  .projectHousingCompany {
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-right: var(--spacing-xs);
+  }
+
+  .title {
+    margin-bottom: var(--spacing-xs);
+
+    h3 {
+      margin: 0;
+      font-size: var(--fontsize-heading-m);
+      line-height: 1;
+      display: inline;
+    }
+
+    span {
+      margin-left: var(--spacing-s);
+    }
+  }
+
+  .apartment {
+    font-size: var(--fontsize-body-l);
+
+    span {
+      margin: 0 var(--spacing-2-xs);
+      color: var(--color-black-30);
+    }
+  }
+}

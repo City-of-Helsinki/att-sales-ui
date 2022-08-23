@@ -5,6 +5,9 @@ import type { PreloadedState } from '@reduxjs/toolkit';
 import authReducer from './features/authSlice';
 import apiTokenReducer from './features/apiTokenSlice';
 import offerModalReducer from './features/offerModalSlice';
+import reservationAddModalReducer from './features/reservationAddModalSlice';
+import reservationCancelModalReducer from './features/reservationCancelModalSlice';
+import reservationEditModalReducer from './features/reservationEditModalSlice';
 import { api } from './services/api';
 import { rtkQueryErrorLogger } from './middleware/error';
 
@@ -12,6 +15,9 @@ const rootReducer = combineReducers({
   tokens: apiTokenReducer,
   auth: authReducer,
   offerModal: offerModalReducer,
+  reservationAddModal: reservationAddModalReducer,
+  reservationCancelModal: reservationCancelModalReducer,
+  reservationEditModal: reservationEditModalReducer,
   [api.reducerPath]: api.reducer,
 });
 

@@ -8,6 +8,7 @@ export enum ROUTES {
   LOGOUT = 'logout',
   NOT_FOUND = '404',
   PROJECTS = 'projects',
+  REPORTS = 'reports',
 }
 
 export enum StateOfSale {
@@ -29,7 +30,7 @@ export enum InstallmentTypes {
   Refund = 'REFUND',
   DownPayment = 'DOWN_PAYMENT',
   LatePaymentInterest = 'LATE_PAYMENT_INTEREST',
-  RightOResidenceFee = 'RIGHT_OF_RESIDENCE_FEE',
+  RightOfOccupancyPayment = 'RIGHT_OF_OCCUPANCY_PAYMENT',
   ForInvoicing = 'FOR_INVOICING',
   Deposit = 'DEPOSIT',
   ReservationFee = 'RESERVATION_FEE',
@@ -38,13 +39,44 @@ export enum InstallmentTypes {
 export enum InstallmentPercentageSpecifiers {
   SalesPrice = 'SALES_PRICE',
   DebtFreeSalesPrice = 'DEBT_FREE_SALES_PRICE',
-  DebtFreeSalesPriceFlexible = 'DEBT_FREE_SALES_PRICE_FLEXIBLE',
+  SalesPriceFlexible = 'SALES_PRICE_FLEXIBLE',
 }
 
 export enum ApartmentReservationStates {
-  SUBMITTED = 'submitted',
-  RESERVED = 'reserved',
-  OFFERED = 'offered',
+  ACCEPTED_BY_MUNICIPALITY = 'accepted_by_municipality',
   CANCELED = 'canceled',
+  OFFERED = 'offered',
+  OFFER_ACCEPTED = 'offer_accepted',
+  OFFER_EXPIRED = 'offer_expired',
+  RESERVATION_AGREEMENT = 'reservation_agreement',
+  RESERVED = 'reserved',
   REVIEW = 'review',
+  SOLD = 'sold',
+  SUBMITTED = 'submitted',
+}
+
+export enum ReservationCancelReasons {
+  CANCELED = 'canceled',
+  RESERVATION_AGREEMENT_CANCELED = 'reservation_agreement_canceled',
+  TERMINATED = 'terminated',
+  TRANSFERRED = 'transferred',
+  OTHER_APARTMENT_OFFERED = 'other_apartment_offered',
+}
+
+export enum ApartmentState {
+  FREE = 'free',
+  RESERVED = 'reserved',
+  RESERVATION_AGREEMENT = 'reservation_agreement',
+  OFFERED = 'offered',
+  OFFER_ACCEPTED = 'offer_accepted',
+  OFFER_EXPIRED = 'offer_expired',
+  ACCEPTED_BY_MUNICIPALITY = 'accepted_by_municipality',
+  SOLD = 'sold',
+  REVIEW = 'review',
+}
+
+export enum OfferState {
+  ACCEPTED = 'accepted',
+  PENDING = 'pending',
+  REJECTED = 'rejected',
 }

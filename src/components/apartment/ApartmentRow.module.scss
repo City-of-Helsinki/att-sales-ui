@@ -152,6 +152,10 @@
 
   &.disabledRow {
     color: var(--color-black-40);
+
+    .offer span {
+      color: inherit;
+    }
   }
 
   & + .singleReservation {
@@ -186,7 +190,7 @@
 }
 
 .queueNumberSpacer {
-  width: 2.75rem;
+  min-width: 2.75rem;
   display: inline-block;
 }
 
@@ -204,10 +208,49 @@
 
   .bellIcon {
     margin-left: var(--spacing-s);
-    color: var(--color-error);
+    position: relative;
+
+    &:hover {
+      .tooltip {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
 
     &.rowOpen {
       align-self: center;
+    }
+
+    svg {
+      color: var(--color-error);
+    }
+
+    .tooltip {
+      position: absolute;
+      top: 50%;
+      right: 100%;
+      transform: translate(-10px, -50%);
+      text-align: center;
+      white-space: nowrap;
+      font-size: var(--fontsize-body-s);
+      font-weight: 500;
+      color: #fff;
+      background-color: var(--color-black-80);
+      padding: var(--spacing-3-xs) var(--spacing-xs);
+      opacity: 0;
+      visibility: hidden;
+
+      &:before {
+        content: "";
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translate(-1px, -50%);
+        border: solid;
+        border-width: 8px 0 8px 8px;
+        border-color: transparent;
+        border-left-color: var(--color-black-80);
+      }
     }
   }
 }
@@ -220,7 +263,13 @@
 
   &:hover,
   &:focus {
-    text-decoration: underline;
+    .user {
+      text-decoration: underline;
+    }
+
+    .offer {
+      text-decoration: none;
+    }
   }
 
   > div {
@@ -260,7 +309,7 @@
   }
 
   [class*="button_hds-icon"] {
-    height: var(--spacing-s);
+    height: var(--spacing-s) !important;
   }
 }
 
@@ -271,6 +320,4 @@
 .offer {
   font-size: var(--fontsize-body-s);
   margin-top: var(--spacing-2-xs);
-  display: inline-block;
-  font-weight: 500;
 }

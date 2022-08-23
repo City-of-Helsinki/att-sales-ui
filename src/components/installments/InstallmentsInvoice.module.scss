@@ -1,0 +1,58 @@
+.projectRow {
+  margin: var(--spacing-s) 0 var(--spacing-l);
+}
+
+.apartmentRow {
+  margin-bottom: var(--spacing-s);
+  display: flex;
+  flex-wrap: wrap;
+
+  [class*=apartmentStructure] {
+    margin: 0 var(--spacing-xl) var(--spacing-xs) 0;
+  }
+
+  [class*=price] {
+    margin: 0 0 var(--spacing-xs) 0;
+
+    > span + span {
+      margin-left: var(--spacing-xl);
+    }
+  }
+}
+
+.printButton {
+  margin: var(--spacing-l) 0;
+}
+
+.invoiceTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  tr {
+    th {
+      font-weight: 500;
+    }
+
+    th, td {
+      border-top: 1px solid var(--color-black-30);
+      text-align: left;
+      width: auto;
+      padding: var(--spacing-xs);
+      vertical-align: top;
+    }
+  }
+
+  .sumColumn {
+    text-align: right;
+    padding-right: var(--spacing-l);
+  }
+}
+
+.indented {
+  padding-left: var(--spacing-xl) !important;
+}
+
+.closeBtn {
+  margin-left: var(--spacing-s);
+}

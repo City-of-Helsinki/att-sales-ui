@@ -1,0 +1,42 @@
+.singleProject {
+  padding: var(--spacing-2-xs) 0;
+
+  & + .singleProject {
+    border-top: 1px solid var(--color-black-20);
+  }
+
+  &.open {
+    padding-bottom: var(--spacing-m);
+  }
+}
+
+.projectRow {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) 0;
+
+  [class*=ProjectName] {
+    margin-bottom: 0 !important;
+  }
+}
+
+.accordionButton {
+  [class*=Button-module_icon] {
+    margin: 0 !important;
+  }
+
+  [class*=Button-module_label] {
+    display: none;
+  }
+}
+
+.singleApartment {
+  background-color: var(--color-white);
+  padding: var(--spacing-s);
+
+  & + .singleApartment {
+    margin-top: var(--spacing-s);
+  }
+}

@@ -1,0 +1,19 @@
+.textarea {
+  margin-bottom: var(--spacing-s);
+  height: 100%;
+
+  textarea {
+    background-color: var(--color-black-10) !important;
+    cursor: default !important;
+    color: var(--color-black-70) !important;
+    height: 100% !important;
+  }
+}
+
+.link {
+  text-decoration: none !important;
+
+  svg {
+    display: block;
+  }
+}

@@ -3,12 +3,18 @@ import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import { Button, IconAngleDown, IconAngleRight, IconBell, IconGroup, IconPlus } from 'hds-react';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
 import ApartmentBaseDetails from './ApartmentBaseDetails';
 import useSessionStorage from '../../utils/useSessionStorage';
 import formatDateTime from '../../utils/formatDateTime';
-import { Apartment, ApartmentReservationWithCustomer, Project } from '../../types';
+import OfferStatusText from '../offer/OfferStatusText';
+import { Apartment, ApartmentReservationCustomer, ApartmentReservationWithCustomer, Project } from '../../types';
 import { ApartmentReservationStates, ROUTES } from '../../enums';
+import { showOfferModal } from '../../redux/features/offerModalSlice';
+import { showReservationAddModal } from '../../redux/features/reservationAddModalSlice';
+import { showReservationCancelModal } from '../../redux/features/reservationCancelModalSlice';
+import { showReservationEditModal } from '../../redux/features/reservationEditModalSlice';
 
 import styles from './ApartmentRow.module.scss';
 
@@ -17,10 +23,11 @@ const T_PATH = 'components.apartment.ApartmentRow';
 interface IProps {
   apartment: Apartment;
   ownershipType: Project['ownership_type'];
-  lotteryCompleted: Project['lottery_completed'];
+  isLotteryCompleted: boolean;
+  project: Project;
 }
 
-const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): JSX.Element => {
+const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }: IProps): JSX.Element => {
   const { reservations, apartment_uuid } = apartment;
   const [applicationRowOpen, setApplicationRowOpen] = useSessionStorage({
     defaultValue: false,
@@ -31,62 +38,61 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
     key: `resultRowOpen-${apartment_uuid}`,
   });
   const { t } = useTranslation();
+  const dispatch = useDispatch();
 
   const toggleApplicationRow = () => setApplicationRowOpen(!applicationRowOpen);
   const toggleResultRow = () => setResultRowOpen(!resultRowOpen);
 
   const isCanceled = (reservation: ApartmentReservationWithCustomer): boolean => {
-    // TODO: Remove 'reservation.state' when API gets updated
-    return (
-      reservation.current_state?.value === ApartmentReservationStates.CANCELED ||
-      reservation.state === ApartmentReservationStates.CANCELED
-    );
+    return reservation.state === ApartmentReservationStates.CANCELED;
   };
 
   const renderApplicants = (reservation: ApartmentReservationWithCustomer, isLotteryResult: boolean) => {
-    if (reservation.applicants) {
-      const sortedApplicants = [...reservation.applicants];
+    if (reservation.customer) {
+      const renderPositionNumber = () => {
+        if (isCanceled(reservation)) {
+          if (reservation.lottery_position) {
+            return `00${reservation.lottery_position}`;
+          } else {
+            return '-';
+          }
+        }
+        return `${reservation.queue_position}.`;
+      };
 
-      if (sortedApplicants.length > 1) {
-        // Sort primary applicants to be shown first
-        sortedApplicants.sort((a, b) => {
-          return a.is_primary_applicant < b.is_primary_applicant
-            ? 1
-            : a.is_primary_applicant > b.is_primary_applicant
-            ? -1
-            : 0;
-        });
-      }
-
-      const renderOfferInfo = () => {
-        return <span className={styles.offer}>TODO: Offers</span>;
+      const renderCustomerProfile = (
+        profile: ApartmentReservationCustomer['primary_profile' | 'secondary_profile']
+      ) => {
+        return (
+          <>
+            {profile?.last_name}, {profile?.first_name} {isLotteryResult && profile?.email && `\xa0 ${profile.email}`}
+          </>
+        );
       };
 
       return (
         <div className={cx(styles.customer, isLotteryResult && styles.isLottery)}>
-          <Link to={`/${ROUTES.CUSTOMERS}/${reservation.customer_id || 0}`} className={styles.customerLink}>
-            {sortedApplicants.map((applicant, index) => (
-              <div key={index}>
-                {isLotteryResult && (
-                  <span className={styles.queueNumberSpacer}>
-                    {index === 0 &&
-                      (isCanceled(reservation)
-                        ? `00${reservation.lottery_position}`
-                        : `${reservation.queue_position}.`)}
-                  </span>
-                )}
-                {applicant.last_name}, {applicant.first_name}{' '}
-                {isLotteryResult && applicant.email && `\xa0 ${applicant.email}`}
+          <Link to={`/${ROUTES.CUSTOMERS}/${reservation.customer.id}`} className={styles.customerLink}>
+            <div className={styles.user}>
+              {isLotteryResult && <span className={styles.queueNumberSpacer}>{renderPositionNumber()}</span>}
+              {renderCustomerProfile(reservation.customer.primary_profile)}
+            </div>
+            {reservation.customer.secondary_profile && (
+              <div className={styles.user}>
+                {isLotteryResult && <span className={styles.queueNumberSpacer} />}
+                {renderCustomerProfile(reservation.customer.secondary_profile)}
               </div>
-            ))}
-            {isLotteryResult && reservation.offer_info && (
+            )}
+            {isLotteryResult && reservation.offer && (
               <div>
                 <span className={styles.queueNumberSpacer} />
-                {renderOfferInfo()}
+                <span className={styles.offer}>
+                  <OfferStatusText offer={reservation.offer} />
+                </span>
               </div>
             )}
           </Link>
-          {isLotteryResult && renderReviewNotification(reservation)}
+          {renderNotificationIcon(reservation, isLotteryResult)}
         </div>
       );
     }
@@ -101,14 +107,13 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
     }
   };
 
-  const renderReviewNotification = (reservation: ApartmentReservationWithCustomer) => {
-    // TODO: Remove 'reservation.state' when API gets updated
-    if (
-      reservation.current_state?.value === ApartmentReservationStates.REVIEW ||
-      reservation.state === ApartmentReservationStates.REVIEW
-    ) {
+  // Show bell icon for customers where the customer has multiple winning apartments/reservations
+  // Ignore canceled reservations
+  const renderNotificationIcon = (reservation: ApartmentReservationWithCustomer, isLotteryResult: boolean) => {
+    if (!isCanceled(reservation) && isLotteryResult && reservation.has_multiple_winning_apartments) {
       return (
         <span className={cx(styles.bellIcon, resultRowOpen && styles.rowOpen)}>
+          <span className={styles.tooltip}>{t(`${T_PATH}.hasMultipleWinningApartments`)}</span>
           <IconBell />
         </span>
       );
@@ -116,37 +121,89 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
   };
 
   const renderLotteryResults = () => {
-    const sortedReservations = [...reservations];
-
-    // Sort results by initial lottery position
-    sortedReservations.sort((a, b) => a.lottery_position - b.lottery_position);
-
     const addReservation = () => (
       <div className={styles.addNewReservationButton}>
-        <Button size="small" variant="supplementary" iconLeft={<IconPlus size="xs" />}>
+        <Button
+          size="small"
+          variant="supplementary"
+          iconLeft={<IconPlus size="xs" />}
+          onClick={() =>
+            dispatch(
+              showReservationAddModal({
+                project: project,
+                apartment: apartment,
+              })
+            )
+          }
+        >
           {t(`${T_PATH}.btnAddApplicant`)}
         </Button>
       </div>
     );
 
-    const renderActionButtons = (reservation: ApartmentReservationWithCustomer, showAllButtons: boolean) => (
+    const renderActionButtons = (
+      reservation: ApartmentReservationWithCustomer,
+      projectOwnershipType: Project['ownership_type'],
+      showAllButtons: boolean
+    ) => (
       <div className={styles.actionButtons}>
         {isCanceled(reservation) ? (
           <div className={styles.cancellationReason}>
-            {reservation.cancellation_info?.cancellation_reason}{' '}
-            {reservation.cancellation_info?.date ? formatDateTime(reservation.cancellation_info.date, true) : '-'}
+            {reservation.cancellation_reason &&
+              t(`ENUMS.ReservationCancelReasons.${reservation.cancellation_reason.toUpperCase()}`)}{' '}
+            {reservation.cancellation_timestamp && formatDateTime(reservation.cancellation_timestamp)}
           </div>
         ) : (
           <>
-            <Button variant="supplementary" size="small" iconLeft={''}>
+            <Button
+              variant="supplementary"
+              size="small"
+              iconLeft={''}
+              onClick={() =>
+                dispatch(
+                  showReservationCancelModal({
+                    ownershipType: projectOwnershipType,
+                    projectId: project.uuid,
+                    reservationId: reservation.id,
+                    customer: reservation.customer,
+                  })
+                )
+              }
+            >
               {t(`${T_PATH}.btnCancel`)}
             </Button>
             {showAllButtons && (
               <>
-                <Button variant="supplementary" size="small" iconLeft={''}>
+                <Button
+                  variant="supplementary"
+                  size="small"
+                  iconLeft={''}
+                  onClick={() =>
+                    dispatch(
+                      showReservationEditModal({
+                        reservation: reservation,
+                        projectId: project.uuid,
+                      })
+                    )
+                  }
+                >
                   {t(`${T_PATH}.btnEdit`)}
                 </Button>
-                <Button variant="secondary" size="small">
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      showOfferModal({
+                        apartment: apartment,
+                        customer: reservation.customer,
+                        isNewOffer: !reservation.offer,
+                        project: project,
+                        reservation: reservation,
+                      })
+                    )
+                  }
+                >
                   {t(`${T_PATH}.btnOffer`)}
                 </Button>
               </>
@@ -158,7 +215,7 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
 
     const renderFirstInQueue = () => {
       // Find the applicant that is currently first in the reservation queue
-      const firstInQueue = sortedReservations.find((r) => r.queue_position === 1);
+      const firstInQueue = reservations.find((r) => r.queue_position === 1);
 
       // If there's no one in the queue or the reservation is canceled, show "add new reservation" button
       if (!firstInQueue || isCanceled(firstInQueue)) return addReservation();
@@ -168,7 +225,7 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
           {renderApplicants(firstInQueue, true)}
           <div className={styles.rowActions}>
             <span>{renderHasoNumberOrFamilyIcon(firstInQueue)}</span>
-            {renderActionButtons(firstInQueue, true)}
+            {renderActionButtons(firstInQueue, ownershipType, true)}
           </div>
         </>
       );
@@ -191,9 +248,9 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
           className={resultRowOpen ? cx(styles.toggleContent, styles.open) : styles.toggleContent}
           id={`apartment-row-${apartment_uuid}`}
         >
-          {!!sortedReservations.length ? (
+          {!!reservations.length ? (
             <>
-              {sortedReservations.map((reservation) => (
+              {reservations.map((reservation) => (
                 <div
                   className={cx(
                     styles.singleReservation,
@@ -206,7 +263,7 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
                   <div className={styles.singleReservationColumn}>
                     <div className={cx(styles.rowActions, resultRowOpen && styles.rowOpen)}>
                       <span>{renderHasoNumberOrFamilyIcon(reservation)}</span>
-                      {renderActionButtons(reservation, reservation.queue_position === 1)}
+                      {renderActionButtons(reservation, ownershipType, reservation.queue_position === 1)}
                     </div>
                   </div>
                 </div>
@@ -270,11 +327,11 @@ const ApartmentRow = ({ apartment, ownershipType, lotteryCompleted }: IProps): J
       <div className={cx(styles.cell, styles.apartmentCell)}>
         <ApartmentBaseDetails
           apartment={apartment}
-          isLotteryResult={lotteryCompleted}
-          showState={lotteryCompleted ? resultRowOpen : false}
+          isLotteryResult={isLotteryCompleted}
+          showState={isLotteryCompleted ? resultRowOpen : false}
         />
       </div>
-      {lotteryCompleted ? renderLotteryResults() : renderReservations()}
+      {isLotteryCompleted ? renderLotteryResults() : renderReservations()}
     </div>
   );
 };

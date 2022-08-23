@@ -1,0 +1,71 @@
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--spacing-l) 0 var(--spacing-s) 0;
+
+  h1 {
+    margin: 0;
+  }
+
+  .customerEditLink {
+    margin-left: var(--spacing-l);
+  }
+
+  .editBtn {
+    text-decoration: none !important;
+  }
+}
+
+.tabsWrapper {
+  margin: var(--spacing-2-xl) 0;
+}
+
+.tabs {
+  ul {
+    position: relative;
+    width: 100% !important;
+
+    &::before {
+      content: "";
+      width: 100%;
+      height: 1px;
+      background: var(--tablist-border-color);
+      position: absolute;
+      bottom: 2px;
+    }
+  }
+}
+
+.tabPanel {
+  background-color: var(--color-black-5);
+  padding: var(--spacing-xs) var(--spacing-l);
+  margin-top: -2px;
+}
+
+.loadingSpinnerContainer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--spacing-l);
+  margin-bottom: var(--spacing-l);
+}
+
+.fixedSpinner {
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none !important;
+}

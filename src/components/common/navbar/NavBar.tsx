@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconSignout, Navigation } from 'hds-react';
-import { matchPath, useLocation } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import useLocalStorage from '../../../utils/useLocalStorage';
@@ -21,6 +21,7 @@ const NavBar = (): JSX.Element => {
   const initialized = client.isInitialized();
   const user = client.getUser();
   const location = useLocation();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [language, setLang] = useLocalStorage({
     defaultValue: LANGUAGES[0],
@@ -41,16 +42,20 @@ const NavBar = (): JSX.Element => {
       path: `/${ROUTES.CUSTOMERS}`,
       label: t(`${T_PATH}.customers`),
     },
+    {
+      path: `/${ROUTES.REPORTS}`,
+      label: t(`${T_PATH}.reports`),
+    },
   ];
 
   return (
     <Navigation
       menuToggleAriaLabel="menu"
       title={t(`${T_PATH}.title`)}
-      titleUrl={ROUTES.INDEX}
       skipTo="#mainContent"
       skipToContentLabel={t(`${T_PATH}.skipToContent`)}
       className={styles.navbar}
+      onTitleClick={() => navigate(ROUTES.INDEX)}
     >
       <Navigation.Actions>
         <Navigation.LanguageSelector label={language.toUpperCase()}>
@@ -83,7 +88,12 @@ const NavBar = (): JSX.Element => {
       {initialized && authenticated && (
         <Navigation.Row>
           {navLinks.map(({ path, label }) => (
-            <Navigation.Item key={path} href={path} label={label} active={isActiveLink(path, location.pathname)} />
+            <Navigation.Item
+              key={path}
+              label={label}
+              active={isActiveLink(path, location.pathname)}
+              onClick={() => navigate(path)}
+            />
           ))}
         </Navigation.Row>
       )}

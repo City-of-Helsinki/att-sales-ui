@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import cx from 'classnames';
-import { Button, Dialog, Notification, DateInput, TextArea, TextInput, ToggleButton } from 'hds-react';
-import { useTranslation } from 'react-i18next';
+import { Button, Dialog, Notification, Tooltip } from 'hds-react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
+import OfferForm from './OfferForm';
 import ProjectName from '../project/ProjectName';
-import { getCurrentLangCode } from '../../utils/getCurrentLangCode';
+import Spinner from '../common/spinner/Spinner';
+import { ApartmentReservationOffer, OfferFormData } from '../../types';
+import { OfferState } from '../../enums';
 import { RootState } from '../../redux/store';
 import { formattedLivingArea } from '../../utils/formatLivingArea';
-import { toast } from '../common/toast/ToastManager';
 import { hideOfferModal } from '../../redux/features/offerModalSlice';
+import { renderBooleanTextualValue } from '../../utils/renderBooleanTextualValue';
+import { renderOfferDate, renderOfferState } from '../../utils/getOfferText';
+import { toast } from '../common/toast/ToastManager';
+import { useCreateOfferMutation, useGetOfferByIdQuery, useUpdateOfferByIdMutation } from '../../redux/services/api';
 
 import styles from './OfferModal.module.scss';
 
@@ -19,52 +25,181 @@ const OfferModal = (): JSX.Element | null => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const offerModal = useSelector((state: RootState) => state.offerModal);
+  const openConfirmDialogButtonRef = useRef(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+
+  const closeOfferDialog = () => dispatch(hideOfferModal());
+  const closeConfirmDialog = () => setIsConfirmDialogOpen(false);
+
   const isOfferDialogOpen = offerModal.isOpened;
   const apartment = offerModal.content?.apartment;
   const customer = offerModal.content?.customer;
+  const isNewOffer = offerModal.content?.isNewOffer;
   const project = offerModal.content?.project;
-  const [formData, setFormData] = useState({
-    offerMessage: '',
-    offerDeclined: false,
-    offerAccepted: false,
-    offerDueDate: '',
-    offerExtra: '',
-  });
+  const reservation = offerModal.content?.reservation;
+  const offerId = reservation?.offer?.id || 0;
 
-  const closeOfferDialog = () => dispatch(hideOfferModal());
-
-  const handleSubmit = () => {
-    // TODO: Add operations here
-    console.log(formData);
-    closeOfferDialog();
-  };
+  const {
+    data: offer,
+    isLoading: offerIsLoading,
+    isError: offerIsError,
+  } = useGetOfferByIdQuery(offerId, { skip: isNewOffer || offerId === 0 });
+  const [createOffer, { isLoading: isCreatingOffer }] = useCreateOfferMutation();
+  const [updateOfferById, { isLoading: isUpdatingOffer }] = useUpdateOfferByIdMutation();
 
   if (!isOfferDialogOpen) return null;
 
-  if (!project || !apartment || !customer) {
+  if (!project || !apartment || !customer || !reservation) {
     toast.show({
       type: 'error',
       title: t(`${T_PATH}.missingValuesErrorTitle`),
-      content: t(`${T_PATH}.noProjectApartmentOrCustomer`),
+      content: t(`${T_PATH}.noRequiredDataAvailable`),
     });
 
     return null;
   }
 
-  const renderOfferStatus = () => {
-    const offerStatusTime = 'D.M.YYYY 11:22'; // TODO: get actual time
-    const offerSentText = t(`${T_PATH}.offerSent`);
-    // TODO Return sent / accepted / declined messages
-    // const offerAcceptedText = t(`${T_PATH}.offerAccepted`);
-    // const offerDeclinedText = t(`${T_PATH}.offerDeclined`);
+  const apiErrorToast = () =>
+    toast.show({
+      type: 'error',
+      title: t(`${T_PATH}.errorSavingOfferTitle`),
+      content: t(`${T_PATH}.errorSavingOfferContent`),
+    });
+
+  const handleCreateOffer = async (formData: OfferFormData) => {
+    if (!isCreatingOffer) {
+      try {
+        await createOffer({
+          formData: formData,
+          reservationId: reservation.id,
+          projectId: project.uuid,
+          customerId: customer.id,
+        })
+          .unwrap()
+          .then(() => {
+            toast.show({ type: 'success', content: t(`${T_PATH}.createdSuccessfully`) });
+            closeOfferDialog();
+          });
+      } catch (err: any) {
+        apiErrorToast();
+        console.error(err);
+      }
+    }
+  };
+
+  const handleUpdateOffer = async (formData: OfferFormData) => {
+    if (!isUpdatingOffer) {
+      try {
+        await updateOfferById({
+          formData: formData,
+          offerId: offerId,
+          reservationId: reservation.id,
+          projectId: project.uuid,
+          customerId: customer.id,
+        })
+          .unwrap()
+          .then(() => {
+            toast.show({ type: 'success', content: t(`${T_PATH}.updatedSuccessfully`) });
+            closeOfferDialog();
+          });
+      } catch (err: any) {
+        apiErrorToast();
+        console.error(err);
+      }
+    }
+  };
+
+  const handleFormCallback = (formValues: OfferFormData) => {
+    // Check if we are creating or updating an offer
+    if (isNewOffer) {
+      handleCreateOffer(formValues);
+    } else {
+      // If the existing offer is not in a 'rejected' state and the user is about to save it as 'rejected',
+      // then show a confirm dialog for the user
+      if (offer?.state !== OfferState.REJECTED && formValues.state === OfferState.REJECTED) {
+        if (!isConfirmDialogOpen) {
+          // Show confirm dialog if the confirm dialog was not already open
+          setIsConfirmDialogOpen(true);
+        } else {
+          // If the confirm dialog is already open and we click the submit button inside that dialog,
+          // then we submit the form
+          handleUpdateOffer(formValues);
+          setIsConfirmDialogOpen(false);
+        }
+      } else {
+        // Handle regular offer updates
+        handleUpdateOffer(formValues);
+      }
+    }
+  };
+
+  const formId = `offer-form-${reservation.id}`;
+
+  const renderConfirmModal = (): JSX.Element | null => {
+    if (!isConfirmDialogOpen) return null;
+
+    return (
+      <Dialog
+        id={`offer-confirm-dialog-${reservation.id}`}
+        variant="danger"
+        aria-labelledby="offer-confirmation-dialog-header"
+        isOpen={isConfirmDialogOpen}
+        close={closeConfirmDialog}
+        closeButtonLabelText={t(`${T_PATH}.closeDialog`)}
+      >
+        <Dialog.Header id="offer-confirmation-dialog-header" title={t(`${T_PATH}.confirmDialogTitle`)} />
+        <Dialog.Content>
+          {project.ownership_type.toLowerCase() === 'haso'
+            ? t(`${T_PATH}.confirmDialogHasoContent`)
+            : t(`${T_PATH}.confirmDialogHitasContent`)}
+        </Dialog.Content>
+        <Dialog.ActionButtons>
+          <Button variant="danger" type="submit" form={formId}>
+            {t(`${T_PATH}.rejectOffer`)}
+          </Button>
+          <Button variant="secondary" onClick={() => closeConfirmDialog()}>
+            {t(`${T_PATH}.cancel`)}
+          </Button>
+        </Dialog.ActionButtons>
+      </Dialog>
+    );
+  };
+
+  const renderOfferStatusNotification = (offerItem: ApartmentReservationOffer) => {
+    const notificationText = `${renderOfferState(offerItem)} ${renderOfferDate(offerItem)}`;
+
+    const getOfferStateNotification = () => {
+      switch (offerItem.state) {
+        case OfferState.PENDING:
+          return (
+            <Notification type="info" size="small">
+              {notificationText}
+            </Notification>
+          );
+        case OfferState.ACCEPTED:
+          return (
+            <Notification type="success" size="small">
+              {notificationText}
+            </Notification>
+          );
+        case OfferState.REJECTED:
+          return (
+            <Notification type="error" size="small">
+              {notificationText}
+            </Notification>
+          );
+      }
+    };
 
     return (
       <div className={styles.offerStatus}>
-        <Notification type="info" label={`${offerSentText} ${offerStatusTime}`} />
-        {/* TODO: Return sent / accepted / declined messages
-        <Notification type="success" label={`${offerAcceptedText} ${offerStatusTime}`} />
-        <Notification type="error" label={`${offerDeclinedText} ${offerStatusTime}`} />
-        */}
+        {offerItem.is_expired ? (
+          <Notification type="error" size="small">
+            {notificationText}
+          </Notification>
+        ) : (
+          getOfferStateNotification()
+        )}
       </div>
     );
   };
@@ -74,16 +209,60 @@ const OfferModal = (): JSX.Element | null => {
       <thead className="hds-table__header-row">
         <tr>
           <th>{t(`${T_PATH}.apartment`)}</th>
-          <th>{t(`${T_PATH}.floor`)}</th>
-          <th>{t(`${T_PATH}.applicant`)}</th>
+          <th>
+            <div className={styles.tooltipWrapper}>
+              {t(`${T_PATH}.applicant`)}
+              <Tooltip placement="top" small className={styles.tooltip}>
+                {t(`${T_PATH}.basedOnCustomerData`)}
+              </Tooltip>
+            </div>
+          </th>
           {project.ownership_type.toLowerCase() === 'haso' ? (
             <>
-              <th>{t(`${T_PATH}.hasoNumber`)}</th>
-              <th>{t(`${T_PATH}.customerIsOver55`)}</th>
-              <th>{t(`${T_PATH}.customerHasHasoOwnership`)}</th>
+              <th>
+                <div className={styles.tooltipWrapper}>
+                  {t(`${T_PATH}.hasoNumber`)}
+                  <Tooltip placement="top" small className={styles.tooltip}>
+                    {t(`${T_PATH}.basedOnReservationData`)}
+                  </Tooltip>
+                </div>
+              </th>
+              <th>
+                <div className={styles.tooltipWrapper}>
+                  {t(`${T_PATH}.isOver55`)}
+                  <Tooltip placement="top" small className={styles.tooltip}>
+                    {t(`${T_PATH}.basedOnReservationData`)}
+                  </Tooltip>
+                </div>
+              </th>
+              <th>
+                <div className={styles.tooltipWrapper}>
+                  {t(`${T_PATH}.hasHasoOwnership`)}
+                  <Tooltip placement="top" small className={styles.tooltip}>
+                    {t(`${T_PATH}.basedOnReservationData`)}
+                  </Tooltip>
+                </div>
+              </th>
             </>
           ) : (
-            <th>{t(`${T_PATH}.familyWithChildren`)}</th>
+            <>
+              <th>
+                <div className={styles.tooltipWrapper}>
+                  {t(`${T_PATH}.familyWithChildren`)}
+                  <Tooltip placement="top" small className={styles.tooltip}>
+                    {t(`${T_PATH}.basedOnReservationData`)}
+                  </Tooltip>
+                </div>
+              </th>
+              <th>
+                <div className={styles.tooltipWrapper}>
+                  {t(`${T_PATH}.hasHitasOwnership`)}
+                  <Tooltip placement="top" small className={styles.tooltip}>
+                    {t(`${T_PATH}.basedOnReservationData`)}
+                  </Tooltip>
+                </div>
+              </th>
+            </>
           )}
         </tr>
       </thead>
@@ -97,146 +276,104 @@ const OfferModal = (): JSX.Element | null => {
             </span>
           </td>
           <td>
-            {apartment.floor}/{apartment.floor_max}
-          </td>
-          <td>
-            {/* TODO: get reservation number */}
-            123. {customer.primary_profile?.last_name}, {customer.primary_profile?.first_name}{' '}
-            {customer.primary_profile?.national_identification_number}
+            <div>
+              {customer.primary_profile.last_name}, {customer.primary_profile.first_name}{' '}
+              {customer.primary_profile.email && `\xa0 ${customer.primary_profile.email}`}
+            </div>
+            {customer.secondary_profile && (
+              <div>
+                {customer.secondary_profile.last_name}, {customer.secondary_profile.first_name}{' '}
+                {customer.secondary_profile.email && `\xa0 ${customer.secondary_profile.email}`}
+              </div>
+            )}
           </td>
           {project.ownership_type.toLowerCase() === 'haso' ? (
             <>
-              <td>{customer.right_of_residence}</td>
-              <td>{customer.is_age_over_55 ? t(`${T_PATH}.yes`) : t(`${T_PATH}.no`)}</td>
-              <td>{customer.is_right_of_occupancy_housing_changer ? t(`${T_PATH}.yes`) : t(`${T_PATH}.no`)}</td>
+              <td>{reservation.right_of_residence || '-'}</td>
+              <td>{renderBooleanTextualValue(reservation.is_age_over_55)}</td>
+              <td>{renderBooleanTextualValue(reservation.is_right_of_occupancy_housing_changer)}</td>
             </>
           ) : (
-            <td>{customer.has_children ? t(`${T_PATH}.yes`) : t(`${T_PATH}.no`)}</td>
+            <>
+              <td>{renderBooleanTextualValue(reservation.has_children)}</td>
+              <td>{renderBooleanTextualValue(reservation.has_hitas_ownership)}</td>
+            </>
           )}
         </tr>
       </tbody>
     </table>
   );
 
-  const renderForm = () => {
-    const handleAcceptedToggle = () => {
-      if (formData.offerAccepted) {
-        setFormData({ ...formData, offerAccepted: false });
-      } else {
-        setFormData({ ...formData, offerAccepted: true, offerDeclined: false });
-      }
-    };
+  const renderError = () => (
+    <Notification type="error" size="small" style={{ marginTop: 15 }}>
+      {t(`${T_PATH}.errorLoadingOffer`)}
+    </Notification>
+  );
 
-    const handleDeclinedToggle = () => {
-      if (formData.offerDeclined) {
-        setFormData({ ...formData, offerDeclined: false });
-      } else {
-        setFormData({ ...formData, offerDeclined: true, offerAccepted: false });
-      }
-    };
+  const renderModalContent = () => (
+    <>
+      {!isNewOffer && offer && renderOfferStatusNotification(offer)}
 
-    return (
-      <form id="offer-form" className={styles.offerDialogForm}>
-        <div className={cx(styles.textareaColumn, styles.fullHeightColumn)}>
-          <div className={styles.inputWrapper}>
-            <TextArea
-              id="offer-message"
-              label={t(`${T_PATH}.message`)}
-              helperText={t(`${T_PATH}.messageHelpText`)}
-              defaultValue={formData.offerMessage}
-              onChange={(e) => setFormData({ ...formData, offerMessage: e.target.value })}
-            />
-          </div>
-        </div>
-        <div className={styles.textareaColumn}>
-          <div className={styles.inputWrapper}>
-            <TextInput id="offer-date-sent" label={t(`${T_PATH}.offerSent`)} readOnly defaultValue="D.M.YYYY 11:22" />
-          </div>
-          <div className={styles.inputWrapper}>
-            <DateInput
-              id="offer-due-date"
-              label={t(`${T_PATH}.offerDueDate`)}
-              helperText={t(`${T_PATH}.dateFormatHelpText`)}
-              language={getCurrentLangCode()}
-              disableConfirmation
-              defaultValue={formData.offerDueDate}
-              onChange={(value) => setFormData({ ...formData, offerDueDate: value })}
-            />
-          </div>
-          <div className={cx(styles.inputWrapper, styles.toggleWrapper)}>
-            <div className={styles.toggle}>
-              <ToggleButton
-                checked={formData.offerAccepted}
-                id="offer-toggle-accepted"
-                label={t(`${T_PATH}.offerAccepted`)}
-                onChange={() => handleAcceptedToggle()}
-                variant="inline"
-              />
-            </div>
-            <div className={styles.toggle}>
-              <ToggleButton
-                checked={formData.offerDeclined}
-                id="offer-toggle-declined"
-                label={t(`${T_PATH}.offerDeclined`)}
-                onChange={() => handleDeclinedToggle()}
-                theme={{
-                  '--toggle-button-color': 'var(--color-brick)',
-                  '--toggle-button-hover-color': 'var(--color-brick-dark)',
-                }}
-                variant="inline"
-              />
-              <div className={styles.toggleHelpText}>
-                {project.ownership_type.toLowerCase() === 'haso'
-                  ? t(`${T_PATH}.toggleDeclineHelpHaso`)
-                  : t(`${T_PATH}.toggleDeclineHelpHitas`)}
-              </div>
-            </div>
-          </div>
-          <div className={styles.inputWrapper}>
-            <TextArea
-              id="offer-extra-info"
-              label={t(`${T_PATH}.offerExtraInfo`)}
-              rows={3}
-              helperText={t(`${T_PATH}.offerExtraInfoDescription`)}
-              defaultValue={formData.offerExtra}
-              onChange={(e) => setFormData({ ...formData, offerExtra: e.target.value })}
-            />
-          </div>
-        </div>
-      </form>
-    );
-  };
+      <div className={styles.projectDetails}>
+        <ProjectName project={project} />
+      </div>
+
+      {renderTable()}
+
+      <OfferForm
+        formId={formId}
+        handleFormCallback={handleFormCallback}
+        offer={isNewOffer ? undefined : offer}
+        ownershipType={project.ownership_type}
+        reservationId={reservation.id}
+      />
+
+      <hr />
+    </>
+  );
 
   return (
-    <Dialog
-      id={`offer-dialog-${apartment.uuid}-${customer.id}`}
-      aria-labelledby="offer-dialog-header"
-      isOpen={isOfferDialogOpen}
-      close={closeOfferDialog}
-      closeButtonLabelText={t(`${T_PATH}.closeDialog`)}
-      className={styles.offerDialog}
-    >
-      <Dialog.Header id="offer-dialog-header" title={t(`${T_PATH}.offer`)} />
-      <Dialog.Content>
-        {renderOfferStatus()}
-        <div className={styles.projectDetails}>
-          <ProjectName project={project} />
-        </div>
-        {renderTable()}
-        {renderForm()}
-      </Dialog.Content>
-      <Dialog.ActionButtons>
-        <Button variant="primary" onClick={() => handleSubmit()}>
-          {t(`${T_PATH}.sendOffer`)}
-          {/* TODO: Show save button text when offer has already been sent
-          {t(`${T_PATH}.save`)}
-          */}
-        </Button>
-        <Button variant="secondary" onClick={() => closeOfferDialog()}>
-          {t(`${T_PATH}.cancel`)}
-        </Button>
-      </Dialog.ActionButtons>
-    </Dialog>
+    <>
+      <Dialog
+        id={`offer-dialog-${reservation.id}`}
+        aria-labelledby="offer-dialog-header"
+        isOpen={isOfferDialogOpen}
+        close={closeOfferDialog}
+        closeButtonLabelText={t(`${T_PATH}.closeDialog`)}
+        className={styles.offerDialog}
+      >
+        <Dialog.Header id="offer-dialog-header" title={isNewOffer ? t(`${T_PATH}.newOffer`) : t(`${T_PATH}.offer`)} />
+        <Dialog.Content>
+          {isNewOffer ? (
+            renderModalContent()
+          ) : offerIsLoading ? (
+            <Spinner />
+          ) : offerIsError ? (
+            renderError()
+          ) : (
+            renderModalContent()
+          )}
+        </Dialog.Content>
+        {((!isNewOffer && offer) || isNewOffer) && (
+          <Dialog.ActionButtons>
+            <Button
+              variant="primary"
+              type="submit"
+              form={formId}
+              isLoading={isCreatingOffer || isUpdatingOffer}
+              loadingText={t(`${T_PATH}.saving`)}
+              ref={openConfirmDialogButtonRef}
+            >
+              {isNewOffer ? t(`${T_PATH}.setOfferAsSent`) : t(`${T_PATH}.saveOffer`)}
+            </Button>
+            <Button variant="secondary" onClick={() => closeOfferDialog()}>
+              {t(`${T_PATH}.cancel`)}
+            </Button>
+          </Dialog.ActionButtons>
+        )}
+      </Dialog>
+      {renderConfirmModal()}
+    </>
   );
 };
 

@@ -1,7 +1,7 @@
 import { getProjectState } from './getProjectState';
 import { StateOfSale } from '../enums';
 
-describe('groupProjectsByState', () => {
+describe('getProjectState', () => {
   it('should render correctly', () => {
     const project = {
       state_of_sale: StateOfSale.ForSale,
@@ -27,9 +27,10 @@ describe('groupProjectsByState', () => {
     const project = {
       state_of_sale: StateOfSale.Ready,
       archived: true,
+      published: false,
     };
     const input = getProjectState(project);
 
-    expect(input).toEqual('Valmis (Julkaisematon)');
+    expect(input).toEqual('Valmis (Arkistoitu)');
   });
 });

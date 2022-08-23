@@ -3,23 +3,45 @@ import { useTranslation } from 'react-i18next';
 import { Button, Dialog, IconQuestionCircle } from 'hds-react';
 
 import formatDateTime from '../../utils/formatDateTime';
-import { ApartmentInstallment } from '../../types';
+import formattedCurrency from '../../utils/formatCurrency';
+import { ApartmentInstallment, ApartmentReservation } from '../../types';
+import { useSendApartmentInstallmentsToSAPMutation } from '../../redux/services/api';
+import { toast } from '../common/toast/ToastManager';
 
 import styles from './InstallmentsTableRow.module.scss';
-import formattedCurrency from '../../utils/formatCurrency';
 
 const T_PATH = 'components.installments.InstallmentsTableRow';
 
 interface IProps {
   installment: ApartmentInstallment;
+  reservationId: ApartmentReservation['id'];
 }
 
-const InstallmentsTableRow = ({ installment }: IProps) => {
+const InstallmentsTableRow = ({ installment, reservationId }: IProps) => {
   const { t } = useTranslation();
   const openConfirmationDialogButtonRef = useRef(null);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const installmentAmount = installment.amount / 100;
+  const [sendApartmentInstallmentsToSAP, { isLoading: isLoadingSendToSAP }] =
+    useSendApartmentInstallmentsToSAPMutation();
+
   const closeConfirmation = () => setIsConfirmationOpen(false);
+
+  const handleSendToSAP = async () => {
+    if (!isLoadingSendToSAP) {
+      try {
+        await sendApartmentInstallmentsToSAP({ types: [installment.type], id: reservationId })
+          .unwrap()
+          .then(() => {
+            // Show success toast
+            toast.show({ type: 'success', content: t(`${T_PATH}.sentSuccessfully`) });
+            closeConfirmation();
+          });
+      } catch (err: any) {
+        toast.show({ type: 'error' });
+      }
+    }
+  };
 
   const renderConfirmationDialog = () => (
     <Dialog
@@ -40,7 +62,7 @@ const InstallmentsTableRow = ({ installment }: IProps) => {
             <tbody>
               <tr>
                 <th style={{ textAlign: 'right' }}>{t(`${T_PATH}.installmentType`)}</th>
-                <td>{t(`ENUMS.${installment.type}`)}</td>
+                <td>{t(`ENUMS.InstallmentTypes.${installment.type}`)}</td>
               </tr>
               <tr>
                 <th style={{ textAlign: 'right' }}>{t(`${T_PATH}.sum`)}</th>
@@ -64,11 +86,8 @@ const InstallmentsTableRow = ({ installment }: IProps) => {
       </Dialog.Content>
       <Dialog.ActionButtons>
         <Button
-          onClick={() => {
-            // TODO: Add operations here
-            closeConfirmation();
-          }}
-          disabled
+          disabled={!!installment.added_to_be_sent_to_sap_at || !installment.due_date || isLoadingSendToSAP}
+          onClick={() => handleSendToSAP()}
         >
           {t(`${T_PATH}.sendToSAP`)}
         </Button>
@@ -81,20 +100,27 @@ const InstallmentsTableRow = ({ installment }: IProps) => {
 
   return (
     <tr>
-      <td>{t(`ENUMS.${installment.type}`)}</td>
+      <td>{t(`ENUMS.InstallmentTypes.${installment.type}`)}</td>
       <td style={{ textAlign: 'right' }}>{formattedCurrency(installmentAmount)}</td>
       <td>{installment.due_date ? formatDateTime(installment.due_date, true) : '-'}</td>
       <td>{installment.account_number}</td>
       <td>{installment.reference_number}</td>
       <td className={styles.buttonCell}>
-        <Button
-          variant="secondary"
-          size="small"
-          ref={openConfirmationDialogButtonRef}
-          onClick={() => setIsConfirmationOpen(true)}
-        >
-          {t(`${T_PATH}.sendToSAP`)}
-        </Button>
+        {!!installment.added_to_be_sent_to_sap_at ? (
+          <>
+            {t(`${T_PATH}.sent`)} {formatDateTime(installment.added_to_be_sent_to_sap_at, false)}
+          </>
+        ) : (
+          <Button
+            variant="secondary"
+            size="small"
+            ref={openConfirmationDialogButtonRef}
+            onClick={() => setIsConfirmationOpen(true)}
+            disabled={!installment.due_date || isLoadingSendToSAP}
+          >
+            {t(`${T_PATH}.sendToSAP`)}
+          </Button>
+        )}
       </td>
       <>{renderConfirmationDialog()}</>
     </tr>

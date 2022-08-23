@@ -1,4 +1,6 @@
+import { BrowserRouter } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
+
 import Breadcrumbs from './Breadcrumbs';
 
 const breadcrumbAncestors = [
@@ -14,7 +16,11 @@ const breadcrumbAncestors = [
 
 describe('Breadcrumbs', () => {
   it('renders Breadcrumbs', () => {
-    render(<Breadcrumbs ancestors={breadcrumbAncestors} current="current page" />);
+    render(
+      <BrowserRouter>
+        <Breadcrumbs ancestors={breadcrumbAncestors} current="current page" />
+      </BrowserRouter>
+    );
 
     expect(screen.getByText('ancestor page 1')).toBeDefined();
     expect(screen.getByText('ancestor page 2')).toBeDefined();

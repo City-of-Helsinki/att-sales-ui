@@ -1,0 +1,209 @@
+.apartmentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+
+  &.disabledRow {
+    color: var(--color-black-40);
+
+    .offer span {
+      color: inherit;
+    }
+  }
+
+  .cancelText {
+    font-size: var(--fontsize-body-m);
+  }
+}
+
+.apartmentRowLeft {
+  font-size: var(--fontsize-body-l);
+  align-items: baseline;
+  display: flex;
+  flex-shrink: 1;
+
+  > div {
+    margin-right: var(--spacing-xl);
+  }
+}
+
+.apartmentRowRight {
+  flex-wrap: nowrap;
+  display: flex;
+}
+
+.apartmentStructure {
+  min-width: 200px;
+
+  .emphasized {
+    margin-right: var(--spacing-xs);
+  }
+}
+
+.emphasized {
+  font-size: var(--fontsize-body-xl);
+  font-weight: bold;
+}
+
+.buttons {
+  margin-top: var(--spacing-s);
+  padding-top: var(--spacing-s);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-top: 1px solid var(--color-black-5);
+
+  button + button {
+    margin-left: var(--spacing-xs);
+  }
+}
+
+.infoBtn {
+  margin-left: var(--spacing-s);
+  position: relative;
+
+  &:hover {
+    .tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  [class*="Button-module_icon"] {
+    margin: 0 !important;
+  }
+
+  [class*="Button-module_label"] {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .tooltip {
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translate(-10px, -50%);
+    text-align: center;
+    white-space: nowrap;
+    font-size: var(--fontsize-body-s);
+    font-weight: 500;
+    color: #fff;
+    background-color: var(--color-black-80);
+    padding: var(--spacing-3-xs) var(--spacing-xs);
+    opacity: 0;
+    visibility: hidden;
+
+    &:before {
+      content: "";
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translate(-1px, -50%);
+      border: solid;
+      border-width: 8px 0 8px 8px;
+      border-color: transparent;
+      border-left-color: var(--color-black-80);
+    }
+  }
+}
+
+.offer {
+  display: flex;
+  align-items: center;
+  font-size: var(--fontsize-body-s);
+  white-space: nowrap;
+}
+
+.noWrap {
+  white-space: nowrap;
+}
+
+.reservationDialog {
+  width: var(--container-width-xl) !important;
+}
+
+.dialogTitle {
+  margin: var(--spacing-s) 0 var(--spacing-m) 0;
+  font-weight: 500;
+
+  span+span {
+    margin-left: var(--spacing-2-xs);
+  }
+}
+
+.historyTable,
+.reservationDetailTable {
+  text-align: left;
+
+  tbody tr {
+    td, th {
+      font-size: var(--fontsize-body-s) !important;
+      vertical-align: top !important;
+      line-height: var(--lineheight-m) !important;
+    }
+  }
+
+  tr td {
+    border-bottom-color: var(--color-black-20) !important;
+    background-color: transparent !important;
+  }
+
+  tbody tr:last-child {
+    td, th {
+      border-bottom: none !important;
+    }
+  }
+}
+
+.cancelBtn {
+  [class*=Button-module_label] {
+    margin: 0 var(--spacing-xs) !important;
+    padding: var(--spacing-2-xs) var(--spacing-xs) !important;
+  }
+}
+
+.reservationDetailTable {
+  th {
+    width: 1%;
+    text-align: right !important;
+  }
+}
+
+.asterisk {
+  color: var(--color-black-60) !important;
+}
+
+.historyTable {
+  thead,
+  thead tr {
+    background-color: transparent !important;
+  }
+}
+
+.tabList ul {
+  width: 100% !important;
+  position: relative;
+
+  &::before {
+    content: "";
+    width: 100%;
+    height: 1px;
+    background: var(--tablist-border-color);
+    position: absolute;
+    bottom: 2px;
+  }
+}
+
+.tabPanel {
+  background-color: var(--color-black-5);
+  padding: var(--spacing-m);
+  margin-top: -2px;
+}
+
+.tableHelpText {
+  color: var(--color-black-60);
+  font-size: var(--fontsize-body-s);
+  font-style: italic;
+  margin: var(--spacing-m) 0 0 var(--spacing-m);
+}

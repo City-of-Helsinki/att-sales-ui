@@ -18,7 +18,11 @@ interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
 
 function renderWithProviders(
   ui: React.ReactElement,
-  { preloadedState = {}, store = setupStore(preloadedState), ...renderOptions }: ExtendedRenderOptions = {}
+  {
+    preloadedState = { tokens: { apiToken: 'test-token' } },
+    store = setupStore(preloadedState),
+    ...renderOptions
+  }: ExtendedRenderOptions = {}
 ) {
   function Wrapper({ children }: PropsWithChildren<{}>): JSX.Element {
     return (

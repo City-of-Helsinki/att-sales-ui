@@ -2,6 +2,7 @@ import React from 'react';
 import { StatusLabel } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
+import ApartmentStateIndicator from './ApartmentStateIndicator';
 import formattedLivingArea from '../../utils/formatLivingArea';
 import { Apartment } from '../../types';
 import { fullURL } from '../../utils/fullURL';
@@ -22,15 +23,12 @@ const ApartmentBaseDetails = ({ apartment, isLotteryResult, showState }: IProps)
 
   const renderDetails = () => (
     <div className={styles.details}>
-      {isLotteryResult && (
-        // TODO: Show correct dot colors and icons based on apartment state
-        <span className={styles.stateIncicator} />
-      )}
-      <strong>
+      {isLotteryResult && <ApartmentStateIndicator state={apartment.state} />}
+      <strong className={styles.apartmentNumber}>
         <span className="hiddenFromScreen">{t(`${T_PATH}.apartment`)}: </span>
         {apartment_number}
       </strong>
-      <span>
+      <span className={styles.apartmentExtra}>
         <span className="hiddenFromScreen">{t(`${T_PATH}.ariaApartmentStructure`)}: </span>
         {apartment_structure}{' '}
         {living_area && <span className={styles.apartmentLivingArea}>({formattedLivingArea(living_area)})</span>}
@@ -38,8 +36,9 @@ const ApartmentBaseDetails = ({ apartment, isLotteryResult, showState }: IProps)
     </div>
   );
 
-  // Render TODO message while there's no apartment_state in the API data
-  const renderState = () => <StatusLabel className={styles.label}>{apartment.apartment_state || 'TODO'}</StatusLabel>;
+  const renderState = () => (
+    <StatusLabel className={styles.label}>{t(`ENUMS.ApartmentState.${apartment.state}`)}</StatusLabel>
+  );
 
   if (url) {
     return (

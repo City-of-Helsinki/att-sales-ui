@@ -1,0 +1,22 @@
+.wrapper {
+  margin-top: var(--spacing-s);
+  margin-bottom: var(--spacing-l);
+  padding: var(--spacing-xl) var(--spacing-2-xl);
+  background-color: var(--color-black-5);
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-l);
+  }
+}
+
+.formFields {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  > span {
+    margin-right: var(--spacing-l);
+  }
+}
+

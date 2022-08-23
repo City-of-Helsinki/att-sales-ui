@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Apartment, Customer, Project } from '../../types';
+import { Apartment, ApartmentReservationCustomer, OfferModalReservationData, Project } from '../../types';
 
 interface OfferModalContent {
-  project: Project;
   apartment: Apartment;
-  customer: Customer;
+  customer: ApartmentReservationCustomer;
+  isNewOffer: boolean;
+  project: Project;
+  reservation: OfferModalReservationData;
 }
 
 interface OfferModalState {

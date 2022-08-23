@@ -136,7 +136,7 @@ export interface ClientConfig {
   /**
    * Path for exchanging tokens. Leave blank to use default keycloak path realms/<realm>/protocol/openid-connect/token
    */
-  tokenExchangePath?: string;
+  tokenExchangeUrl?: string;
   /**
    * does the server, this config is for, provide api tokens
    */
@@ -312,7 +312,7 @@ export function createClient(): ClientFactory {
 
 const configUrl = String(process.env[`REACT_APP_OIDC_URL`]);
 const configRealm = String(process.env[`REACT_APP_OIDC_REALM`]);
-const configTokenExchangePath = process.env[`REACT_APP_OIDC_TOKEN_EXCHANGE_PATH`];
+const configTokenExchangeUrl = process.env[`REACT_APP_OIDC_TOKEN_EXCHANGE_URL`];
 
 const config: ClientConfig = {
   realm: configRealm,
@@ -327,8 +327,8 @@ const config: ClientConfig = {
   autoSignIn: envValueToBoolean(process.env[`REACT_APP_OIDC_AUTO_SIGN_IN`], true),
   automaticSilentRenew: envValueToBoolean(process.env[`REACT_APP_OIDC_AUTO_SILENT_RENEW`], true),
   enableLogging: envValueToBoolean(process.env[`REACT_APP_OIDC_LOGGING`], false),
-  tokenExchangePath: configTokenExchangePath,
-  hasApiTokenSupport: Boolean(configTokenExchangePath),
+  tokenExchangeUrl: configTokenExchangeUrl,
+  hasApiTokenSupport: Boolean(configTokenExchangeUrl),
 };
 
 export function isCallbackUrl(route: string): boolean {
@@ -352,8 +352,8 @@ export function getLocationBasedUri(property: string | undefined): string | unde
 }
 
 export function getTokenUri(clientConfig: ClientConfig): string {
-  if (clientConfig.tokenExchangePath) {
-    return `${clientConfig.url}${clientConfig.tokenExchangePath}`;
+  if (clientConfig.tokenExchangeUrl) {
+    return `${clientConfig.tokenExchangeUrl}`;
   }
   return `${clientConfig.url}/realms/${clientConfig.realm}/protocol/openid-connect/token`;
 }

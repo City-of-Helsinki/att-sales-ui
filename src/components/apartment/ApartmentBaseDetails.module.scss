@@ -1,10 +1,14 @@
 .apartmentLink {
   color: var(--color-black-90);
-  border-bottom: 1px solid transparent;
+  text-decoration: none;
 
   &:hover,
   &:focus {
-    border-color: var(--color-black-90);
+    .apartmentNumber,
+    .apartmentExtra {
+      text-decoration: underline !important;
+      text-decoration-color: var(--color-black-90) !important;
+    }
   }
 }
 
@@ -29,13 +33,4 @@
   --status-label-background: var(--color-black-5);
   --status-label-height: 1.7rem;
   margin-top: var(--spacing-xs);
-}
-
-.stateIncicator {
-  width: 12px;
-  height: 12px;
-  background-color: var(--color-tram);
-  display: inline-block;
-  margin-right: var(--spacing-2-xs);
-  border-radius: 50%;
 }

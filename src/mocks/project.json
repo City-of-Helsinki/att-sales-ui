@@ -13,60 +13,56 @@
         {
           "id": 1,
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
-          "customer_id": 2,
           "has_children": false,
           "lottery_position": 2,
           "queue_position": 1,
+          "priority_number": 2,
           "right_of_residence": "12345",
-          "applicants": [
-            {
+          "customer": {
+            "id": 2,
+            "primary_profile": {
               "first_name": "Maija",
               "last_name": "Meikäläinen",
-              "is_primary_applicant": true,
               "email": "maija.meikalainen@example.com"
             }
-          ],
-          "current_state": {
-            "value": "offered",
-            "extra_info": "tarjottu 1. varaukselle"
           },
-          "cancellation_info": null,
-          "offer_info": {
-            "accept_date": null,
-            "due_date": "2022-02-28"
+          "state": "offered",
+          "cancellation_reason": null,
+          "cancellation_timestamp": null,
+          "offer": {
+            "id": 0,
+            "created_at": "2019-08-24T14:15:22Z",
+            "valid_until": "2019-08-24",
+            "state": "pending",
+            "concluded_at": "2019-08-24T14:15:22Z",
+            "comment": "string"
           }
         },
         {
           "id": 2,
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
-          "customer_id": 3,
           "has_children": true,
           "lottery_position": 1,
-          "queue_position": 2,
+          "queue_position": null,
+          "priority_number": 1,
           "right_of_residence": "12345",
-          "applicants": [
-            {
+          "customer": {
+            "id": 3,
+            "primary_profile": {
               "first_name": "Testi",
               "last_name": "Testinen",
-              "is_primary_applicant": true,
               "email": "testinen.testi@example.com"
             },
-            {
+            "secondary_profile": {
               "first_name": "Matti",
               "last_name": "Meikäläinen",
-              "is_primary_applicant": false,
               "email": "matti.meikalainen@example.com"
             }
-          ],
-          "current_state": {
-            "value": "canceled",
-            "extra_info": "peruuteltiin kun asiakas halusi"
           },
-          "cancellation_info": {
-            "cancellation_reason": "Varaus peruttu",
-            "date": "2022-02-20"
-          },
-          "offer_info": null
+          "state": "canceled",
+          "cancellation_reason": "canceled",
+          "cancellation_timestamp": "2022-02-20",
+          "offer": null
         }
       ]
     },
@@ -88,124 +84,106 @@
         {
           "id": 1,
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "customer_id": 1,
           "has_children": true,
           "lottery_position": 2,
-          "queue_position": 4,
+          "queue_position": null,
+          "priority_number": 3,
           "right_of_residence": "2424",
-          "applicants": [
-            {
+          "customer": {
+            "id": 1,
+            "secondary_profile": {
               "first_name": "Testi",
               "last_name": "Testinen",
-              "is_primary_applicant": false,
               "email": "test.testinen@example.com"
             },
-            {
+            "primary_profile": {
               "first_name": "Matti",
               "last_name": "Meikäläinen",
-              "is_primary_applicant": true,
               "email": "matti.meikalainen@example.com"
             }
-          ],
-          "current_state": {
-            "value": "canceled",
-            "extra_info": null
           },
-          "cancellation_info": {
-            "cancellation_reason": "Varaussopimus peruttu",
-            "date": "2022-1-30"
-          },
-          "offer_info": null
+          "state": "canceled",
+          "cancellation_reason": "reservation_agreement_cancelled",
+          "cancellation_timestamp": "2022-1-30",
+          "offer": null
         },
         {
           "id": 2,
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "customer_id": 4,
-          "applicants": [
-            {
+          "customer": {
+            "id": 4,
+            "secondary_profile": {
               "first_name": "Testi 2",
               "last_name": "Testinen",
-              "is_primary_applicant": false,
               "email": "testi.2.testinen@secondary-example.com"
             },
-            {
+            "primary_profile": {
               "first_name": "Matti 2",
               "last_name": "Meikäläinen",
-              "is_primary_applicant": true,
               "email": "matti.2.meikalainen@primary-example.com"
             }
-          ],
+          },
           "has_children": false,
           "lottery_position": 1,
-          "queue_position": 3,
+          "queue_position": null,
+          "priority_number": 1,
           "right_of_residence": "12",
-          "current_state": {
-            "value": "canceled",
-            "extra_info": "peruuteltiin kun asiakas halusi"
-          },
-          "cancellation_info": {
-            "cancellation_reason": "Varaussopimus peruttu",
-            "date": "2022-1-30"
-          },
-          "offer_info": null
+          "state": "canceled",
+          "cancellation_reason": "reservation_agreement_cancelled",
+          "cancellation_timestamp": "2022-1-30",
+          "offer": null
         },
         {
           "id": 3,
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "customer_id": 5,
-          "applicants": [
-            {
+          "customer": {
+            "id": 5,
+            "primary_profile": {
               "first_name": "Testi 3",
               "last_name": "Testinen",
-              "is_primary_applicant": true,
               "email": "testi3.testinen@example.com"
             },
-            {
+            "secondary_profile": {
               "first_name": "Matti 3",
               "last_name": "Meikäläinen",
-              "is_primary_applicant": false,
               "email": "matti3@example.com"
             }
-          ],
+          },
           "has_children": false,
           "lottery_position": 4,
           "queue_position": 2,
+          "priority_number": 2,
           "right_of_residence": null,
-          "current_state": {
-            "value": "submitted",
-            "extra_info": null
-          },
-          "cancellation_info": null,
-          "offer_info": null
+          "state": "submitted",
+          "cancellation_reason": null,
+          "cancellation_timestamp": null,
+          "offer": null
         },
         {
           "id": 4,
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "customer_id": 6,
-          "applicants": [
-            {
+          "customer": {
+            "id": 6,
+            "primary_profile": {
               "first_name": "Testi 4",
               "last_name": "Testinen",
-              "is_primary_applicant": true,
               "email": "testi4.testinen@example.com"
             },
-            {
+            "secondary_profile": {
               "first_name": "Matti 4",
               "last_name": "Meikäläinen",
-              "is_primary_applicant": false,
               "email": "matti4@example.com"
             }
-          ],
+          },
           "has_children": true,
           "lottery_position": 3,
           "queue_position": 1,
+          "priority_number": 4,
           "right_of_residence": "32456",
-          "current_state": {
-            "value": "review",
-            "extra_info": null
-          },
-          "cancellation_info": null,
-          "offer_info": null
+          "state": "review",
+          "cancellation_reason": null,
+          "cancellation_timestamp": null,
+          "offer": null
         }
       ]
     },
@@ -219,25 +197,23 @@
         {
           "id": 1,
           "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
-          "customer_id": 1,
           "has_children": false,
           "lottery_position": 1,
           "queue_position": 1,
+          "priority_number": 1,
           "right_of_residence": "12345",
-          "applicants": [
-            {
+          "customer": {
+            "id": 1,
+            "primary_profile": {
               "first_name": "Teppo",
               "last_name": "Testaaja",
-              "is_primary_applicant": true,
               "email": "teppo.testaaja@example.com"
             }
-          ],
-          "current_state": {
-            "value": "reserved",
-            "extra_info": null
           },
-          "cancellation_info": null,
-          "offer_info": null
+          "state": "reserved",
+          "cancellation_reason": null,
+          "cancellation_timestamp": null,
+          "offer": null
         }
       ]
     }
@@ -271,7 +247,7 @@
   "image_urls": [
     "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2021-08/room_6.jpeg"
   ],
-  "lottery_completed": false,
+  "lottery_completed_at": null,
   "main_image_url": "https://nginx-asuntotuotanto-test.agw.arodevtest.hel.fi/sites/default/files/2021-08/room_6.jpeg",
   "manager": null,
   "material_choice_dl": null,

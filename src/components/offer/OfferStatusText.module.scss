@@ -1,0 +1,25 @@
+.offer {
+  display: inline-flex;
+  align-items: center;
+
+  .offerState {
+    font-weight: 500;
+  }
+
+  .offerIcon {
+    margin: 0 var(--spacing-3-xs) 0 var(--spacing-2-xs);
+  }
+
+  .offerDate {
+    display: flex;
+    align-items: center;
+
+    &.offerSuccess {
+      color: var(--color-success);
+    }
+
+    &.offerError {
+      color: var(--color-error);
+    }
+  }
+}

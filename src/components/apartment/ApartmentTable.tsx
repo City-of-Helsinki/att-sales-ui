@@ -4,7 +4,7 @@ import { IconSortAscending, IconSortDescending } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import ApartmentRow from './ApartmentRow';
-import SortApartments from './SortApartments';
+import useSortApartments from '../../utils/useSortApartments';
 import StatusText from '../common/statusText/StatusText';
 import { Apartment, Project } from '../../types';
 
@@ -14,23 +14,25 @@ const T_PATH = 'components.apartment.ApartmentTable';
 
 interface IProps {
   apartments: Apartment[] | undefined;
-  projectId: Project['id'];
+  hasActiveFilters: boolean;
+  project: Project;
   ownershipType: Project['ownership_type'];
   housingCompany: Project['housing_company'];
-  lotteryCompleted: Project['lottery_completed'];
+  isLotteryCompleted: boolean;
 }
 
 const ApartmentTable = ({
   apartments,
+  hasActiveFilters,
   housingCompany,
   ownershipType,
-  projectId,
-  lotteryCompleted,
+  project,
+  isLotteryCompleted,
 }: IProps): JSX.Element => {
   const { t } = useTranslation();
-  const { sortedApartments, requestSort, sortConfig } = SortApartments(
+  const { sortedApartments, requestSort, sortConfig } = useSortApartments(
     apartments ? apartments : [],
-    `project-${projectId}`
+    `project-${project.uuid}`
   );
 
   const isCurrentlyActiveSort = (key: string) => {
@@ -83,7 +85,10 @@ const ApartmentTable = ({
       <ul className={styles.apartmentListTable}>
         {!sortedApartments.length ? (
           <li key="apartment-list-empty">
-            <StatusText>{t(`${T_PATH}.noApartments`)}</StatusText>
+            <StatusText>
+              {t(`${T_PATH}.noApartments`)}
+              {hasActiveFilters && ` ` + t(`${T_PATH}.withSelectedFilters`)}
+            </StatusText>
           </li>
         ) : (
           <>
@@ -97,7 +102,7 @@ const ApartmentTable = ({
               </div>
               <div className={styles.headerCellParent}>
                 <div className={cx(styles.headerCell, styles.headerCellHalf)}>
-                  {lotteryCompleted ? t(`${T_PATH}.priorityOrder`) : t(`${T_PATH}.applicants`)}
+                  {isLotteryCompleted ? t(`${T_PATH}.priorityOrder`) : t(`${T_PATH}.applicants`)}
                 </div>
                 <div className={cx(styles.headerCell, styles.headerCellHalf)}>
                   {ownershipType === 'haso' ? t(`${T_PATH}.hasoNumber`) : t(`${T_PATH}.familyWithChildren`)}
@@ -109,7 +114,8 @@ const ApartmentTable = ({
                 key={index}
                 apartment={apartment}
                 ownershipType={ownershipType}
-                lotteryCompleted={lotteryCompleted}
+                isLotteryCompleted={isLotteryCompleted}
+                project={project}
               />
             ))}
           </>

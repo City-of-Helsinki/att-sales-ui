@@ -8,6 +8,8 @@ interface ToastOptions {
   id?: string;
   title?: string;
   type: 'error' | 'success';
+  showAsModal?: boolean;
+  onCloseActions?: () => void;
 }
 
 export class ToastManager {

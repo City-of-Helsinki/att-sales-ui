@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import ProjectName from './ProjectName';
 
 import dummyProjects from '../../mocks/projects.json';
+import { BrowserRouter } from 'react-router-dom';
 
 const project = dummyProjects[0];
 
@@ -23,5 +24,17 @@ describe('ProjectName Page', () => {
     expect(screen.getByText('Taloyhti\u00f6 30+')).toBeDefined(); // housing_company
     expect(screen.getByText('Pasila', { exact: false })).toBeDefined(); // district
     expect(screen.getByText('Kolkyt 30')).toBeDefined(); // street_address
+  });
+
+  it('renders project page link', () => {
+    render(
+      <BrowserRouter>
+        <ProjectName project={project} asLink />
+      </BrowserRouter>
+    );
+    expect(screen.getByText('Taloyhti\u00f6 30+').closest('a')).toHaveAttribute(
+      'href',
+      '/projects/9f79116b-898c-4fa0-80ba-c3870c624373'
+    );
   });
 });

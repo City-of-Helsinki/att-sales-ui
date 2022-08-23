@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import cx from 'classnames';
 import { Notification } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,9 +12,19 @@ export type ToastProps = {
   id: string;
   title?: string;
   type: 'error' | 'success';
+  showAsModal?: boolean;
+  onCloseActions?: () => void;
 };
 
-const Toast = ({ content, destroy, duration = 6000, id, title, type }: ToastProps): JSX.Element => {
+const Toast = ({
+  content,
+  destroy,
+  duration = 6000,
+  title,
+  type,
+  showAsModal = false,
+  onCloseActions = undefined,
+}: ToastProps): JSX.Element => {
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -46,23 +57,41 @@ const Toast = ({ content, destroy, duration = 6000, id, title, type }: ToastProp
     return message;
   };
 
-  return (
+  const onClose = () => {
+    if (onCloseActions) {
+      onCloseActions();
+    }
+    destroy();
+  };
+
+  const renderNotification = () => (
     <Notification
       autoClose
       autoCloseDuration={duration}
-      className="custom-toast"
+      className={cx('custom-toast', showAsModal && 'as-modal')}
       closeButtonLabelText={t(`${T_PATH}.ariaCloseNotification`)}
       dismissible
       displayAutoCloseProgress
       label={title ? title : renderDefaultLabel()}
-      onClose={destroy}
-      position={'top-right'}
+      onClose={() => onClose()}
+      position="top-right"
       size="default"
       type={type}
     >
       {content ? content : renderDefaultMessage()}
     </Notification>
   );
+
+  if (showAsModal) {
+    return (
+      <div className="custom-toast-modal-container">
+        <div className="custom-toast-modal-content">{renderNotification()}</div>
+        <div className="custom-toast-modal-overlay" />
+      </div>
+    );
+  }
+
+  return renderNotification();
 };
 
 const shouldRerender = (prevProps: ToastProps, nextProps: ToastProps) => {

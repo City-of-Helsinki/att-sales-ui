@@ -13,7 +13,7 @@
 }
 
 .offerTable {
-  margin: var(--spacing-l) 0;
+  margin: var(--spacing-s) 0 var(--spacing-l) 0;
 
   thead {
     background-color: transparent;
@@ -26,11 +26,12 @@
 
   td {
     font-size: var(--fontsize-body-l) !important;
+    vertical-align: top;
   }
 }
 
 .offerStatus {
-  margin: var(--spacing-s) 0 var(--spacing-xl) 0;
+  margin: var(--spacing-xs) 0 var(--spacing-l) 0;
 }
 
 .projectDetails {
@@ -47,65 +48,14 @@
   color: var(--color-black-60);
 }
 
-.offerDialogForm {
+.tooltipWrapper {
   display: flex;
-  margin: var(--spacing-s) calc(#{var(--spacing-s)} * -1);
-  justify-content: space-between;
 }
 
-.textareaColumn {
-  flex: 1 1 50%;
-  padding: 0 var(--spacing-s);
+.tooltip {
+  margin-left: var(--spacing-2-xs);
 
-  textarea {
-    height: auto;
-  }
-}
-
-.fullHeightColumn {
-  display: flex;
-
-  .inputWrapper {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-
-    [class*=TextInput-module_root] {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-
-      [class*=input-wrapper] {
-        flex-grow: 1;
-      }
-    }
-  }
-
-  textarea {
-    height: 100% !important;
-  }
-}
-
-.inputWrapper + .inputWrapper {
-  margin-top: var(--spacing-m);
-}
-
-.toggleWrapper {
-  display: flex;
-  margin: 0 calc(#{var(--spacing-s)} * -1);
-
-  .toggle {
-    padding: 0 var(--spacing-s);
-    flex: 1 1 50%;
-
-    [class*=toggleButtonContainer] button {
-      margin-left: var(--spacing-s) !important;
-    }
-  }
-
-  .toggleHelpText {
-    font-size: var(--fontsize-body-s);
-    color: var(--color-black-60);
-    margin-top: var(--spacing-2-xs);
+  button {
+    display: block;
   }
 }

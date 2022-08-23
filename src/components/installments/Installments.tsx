@@ -22,11 +22,18 @@ interface IProps {
 
 const Installments = ({ customer }: IProps): JSX.Element => {
   const { t } = useTranslation();
+
+  // Filter reservations:
+  // 1. All reservations that have saved installments
+  // Or
+  // 2. Reservation's state is not in a state "REVIEW" and reservation's queue position is 1
   const visibleReservations =
     customer.apartment_reservations?.filter(
       (reservation) =>
-        !!reservation.apartment_installments?.length || reservation.state === ApartmentReservationStates.RESERVED
+        !!reservation.apartment_installments?.length ||
+        (reservation.state !== ApartmentReservationStates.REVIEW && reservation.queue_position === 1)
     ) || [];
+
   const reservationsByProject = groupReservationsByProject(visibleReservations);
 
   if (!reservationsByProject.length) {
@@ -41,13 +48,14 @@ const Installments = ({ customer }: IProps): JSX.Element => {
     <>
       {sortedReservationsByProject.map((projectReservations, index) => (
         <div className={styles.singleProject} key={index}>
-          <ProjectName project={getReservationProjectData(projectReservations[0])} />
+          <ProjectName project={getReservationProjectData(projectReservations[0])} asLink />
           {projectReservations.map((reservation) => (
             <div key={reservation.id} className={styles.singleApartment}>
               <InstallmentsItem
                 apartment={getReservationApartmentData(reservation)}
                 project={getReservationProjectData(reservation)}
                 reservationId={reservation.id}
+                isCanceled={reservation.state === ApartmentReservationStates.CANCELED}
               />
             </div>
           ))}

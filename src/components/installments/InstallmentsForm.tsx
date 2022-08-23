@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import moment from 'moment';
 import Big from 'big.js';
@@ -15,7 +15,9 @@ import {
   useAccordion,
 } from 'hds-react';
 import { useTranslation } from 'react-i18next';
+import { unionBy } from 'lodash';
 
+import formatDateTime from '../../utils/formatDateTime';
 import formattedSalesPrice from '../../utils/formatSalesPrice';
 import { InstallmentTypes } from '../../enums';
 import {
@@ -112,6 +114,12 @@ const InstallmentsForm = ({
 
   const formatDueDate = (dueDate: string) => moment(dueDate, 'YYYY-MM-DD').format('D.M.YYYY');
 
+  // Combine a list of installments from candidates and saved installments
+  // Use unionBy to remove duplicates by installment type
+  const combinedPossibleInstallments = useCallback(() => {
+    return unionBy(installmentCandidates, installments, 'type');
+  }, [installmentCandidates, installments]);
+
   // Calculate total sum of all amount fields
   useEffect(() => {
     const sum = inputFields.reduce((previousValue, currentValue) => {
@@ -132,11 +140,12 @@ const InstallmentsForm = ({
       due_date: '',
       account_number: '',
       reference_number: '',
+      added_to_be_sent_to_sap_at: '',
     };
 
-    // Create an array with a length of installmentCandidates.
+    // Create an array with a length of all possible installment rows (installments and candidates combined).
     // Initially fill all array items with emptyInputRow objects
-    const initialInputRows = [...new Array(Object.keys(installmentCandidates).length)].map(() => ({
+    const initialInputRows = [...new Array(Object.keys(combinedPossibleInstallments()).length)].map(() => ({
       ...emptyInputRow,
     }));
 
@@ -155,6 +164,9 @@ const InstallmentsForm = ({
         }
         if (installment.reference_number) {
           installmentRows[index].reference_number = installment.reference_number;
+        }
+        if (installment.added_to_be_sent_to_sap_at) {
+          installmentRows[index].added_to_be_sent_to_sap_at = formatDateTime(installment.added_to_be_sent_to_sap_at);
         }
       });
     } else {
@@ -185,7 +197,7 @@ const InstallmentsForm = ({
 
     // Set initial inputRows after fetching all the saved installments
     setInputFields(sortedInputRows);
-  }, [installments, installmentCandidates]);
+  }, [installments, installmentCandidates, combinedPossibleInstallments]);
 
   // Set data to be sent to the API
   useEffect(() => {
@@ -240,18 +252,34 @@ const InstallmentsForm = ({
     setInputFields(inputs);
   };
 
-  const InstallmentTypeOptions = () => {
-    // Define an empty value as the first dropdown item
-    let options: SelectOption[] = [{ label: '', name: 'type', selectValue: '' }];
-    // Loop through InstallmentTypes ENUMs and create dropdown options out of them
-    Object.values(installmentCandidates).forEach((installmentCandidate) => {
+  const InstallmentTypeOptions = (): SelectOption[] => {
+    let options: SelectOption[] = [];
+
+    // Loop through all available installment types and create dropdown options out of them
+    Object.values(combinedPossibleInstallments()).forEach((installment) => {
       options.push({
-        label: t(`ENUMS.${installmentCandidate.type}`),
+        label: t(`ENUMS.InstallmentTypes.${installment.type}`),
         name: 'type',
-        selectValue: installmentCandidate.type,
+        selectValue: installment.type,
       });
     });
-    return options;
+
+    // Sort type options in the order of the InstallmentTypes ENUM list to stay consistent throughout the app
+    const sortedOptions = () => {
+      const InstallmentOrder = Object.values(InstallmentTypes);
+      const optionsCopy = [...options];
+      return optionsCopy.sort((a, b) =>
+        a.selectValue
+          ? b.selectValue
+            ? InstallmentOrder.indexOf(a.selectValue as InstallmentTypes) -
+              InstallmentOrder.indexOf(b.selectValue as InstallmentTypes)
+            : -1
+          : 1
+      );
+    };
+
+    // Return options with an empty value as the first dropdown item
+    return [{ label: '', name: 'type', selectValue: '' }, ...sortedOptions()];
   };
 
   const sumsMatch = (value: number, target: number) => {
@@ -310,6 +338,7 @@ const InstallmentsForm = ({
               options={InstallmentTypeOptions()}
               value={InstallmentTypeOptions().find((value) => value.selectValue === input.type) || emptySelectOption}
               onChange={(value: SelectOption) => handleSelectChange(index, value)}
+              disabled={!!input.added_to_be_sent_to_sap_at}
             />
           </td>
           <td>
@@ -323,18 +352,20 @@ const InstallmentsForm = ({
               value={input.amount}
               onChange={(event) => handleInputChange(index, event)}
               data-testid="amount"
+              disabled={!!input.added_to_be_sent_to_sap_at}
             />
           </td>
           <td>
             <TextInput
               id={`dueDate-${index}`}
               name="due_date"
-              placeholder={'D.M.YYYY'}
+              placeholder={t('d.m.yyyy')}
               label=""
               className={styles.input}
               value={input.due_date}
               onChange={(event) => handleInputChange(index, event)}
               autoComplete="off"
+              disabled={!!input.added_to_be_sent_to_sap_at}
             />
           </td>
           <td>
@@ -346,6 +377,7 @@ const InstallmentsForm = ({
               value={input.account_number}
               onChange={(event) => handleInputChange(index, event)}
               autoComplete="off"
+              disabled={!!input.added_to_be_sent_to_sap_at}
             />
           </td>
           <td className={styles.moreHorizontalPadding}>
@@ -358,7 +390,16 @@ const InstallmentsForm = ({
               readOnly
             />
           </td>
-          <td>-</td>
+          <td>
+            <TextInput
+              id={`sentToSAP-${index}`}
+              name="added_to_be_sent_to_sap_at"
+              label=""
+              className={styles.input}
+              value={input.added_to_be_sent_to_sap_at || '-'}
+              readOnly
+            />
+          </td>
         </tr>
       ))}
     </tbody>
@@ -389,7 +430,7 @@ const InstallmentsForm = ({
       <tbody className="hds-table__content">
         {installmentCandidates.map((candidate, index) => (
           <tr key={index}>
-            <td>{t(`ENUMS.${candidate.type}`)}</td>
+            <td>{t(`ENUMS.InstallmentTypes.${candidate.type}`)}</td>
             <td>{(candidate.amount / 100).toFixed(2)}</td>
             <td>{candidate.due_date !== null ? formatDueDate(candidate.due_date) : '-'}</td>
             <td>{candidate.account_number}</td>

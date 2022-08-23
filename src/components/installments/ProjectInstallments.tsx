@@ -214,7 +214,7 @@ const ProjectInstallments = ({ uuid, barred_bank_account, regular_bank_account }
     let options: SelectOption[] = [{ label: '', name: 'type', selectValue: '' }];
     // Loop through InstallmentTypes ENUMs and create dropdown options out of them
     Object.values(InstallmentTypes).forEach((type) => {
-      options.push({ label: t(`ENUMS.${type}`), name: 'type', selectValue: type });
+      options.push({ label: t(`ENUMS.InstallmentTypes.${type}`), name: 'type', selectValue: type });
     });
     return options;
   };
@@ -228,7 +228,11 @@ const ProjectInstallments = ({ uuid, barred_bank_account, regular_bank_account }
     let options: SelectOption[] = [];
     // Loop through InstallmentPercentageSpecifiers ENUM and create dropdown options out of them
     Object.values(InstallmentPercentageSpecifiers).forEach((type) => {
-      options.push({ label: t(`ENUMS.${type}`), name: 'percentage_specifier', selectValue: type });
+      options.push({
+        label: t(`ENUMS.InstallmentPercentageSpecifiers.${type}`),
+        name: 'percentage_specifier',
+        selectValue: type,
+      });
     });
     return options;
   };
@@ -337,7 +341,7 @@ const ProjectInstallments = ({ uuid, barred_bank_account, regular_bank_account }
             <TextInput
               id="dueDate"
               name="due_date"
-              placeholder={'D.M.YYYY'}
+              placeholder={t('d.m.yyyy')}
               label=""
               className={styles.input}
               value={input.due_date}

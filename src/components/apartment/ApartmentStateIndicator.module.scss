@@ -1,0 +1,42 @@
+.stateIncicator {
+  display: inline-block;
+
+  &.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 12px;
+  }
+
+  &.icon {
+    margin-left: -1px;
+    margin-bottom: -2px;
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+  }
+
+  &.greenDot {
+    background-color: var(--color-success);
+  }
+
+  &.blueDot {
+    background-color: var(--color-coat-of-arms);
+  }
+
+  &.orangeDot {
+    background-color: var(--color-alert-dark);
+  }
+
+  &.redIcon {
+    color: var(--color-error);
+  }
+
+  &.orangeIcon {
+    color: var(--color-alert-dark);
+  }
+
+  &.greenIcon {
+    color: var(--color-success);
+  }
+}

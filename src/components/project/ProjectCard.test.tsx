@@ -29,7 +29,7 @@ describe('ProjectCard', () => {
     expect(screen.queryByText('components.project.ProjectCard.showProject')).toBeNull();
   });
 
-  const mockProjectNoLottery = { ...mockProject, lottery_completed: false };
+  const mockProjectNoLottery = { ...mockProject, lottery_completed_at: null };
 
   it('renders action buttons', () => {
     render(<ProjectCard project={mockProjectNoLottery} renderAsLink={false} showActions />);

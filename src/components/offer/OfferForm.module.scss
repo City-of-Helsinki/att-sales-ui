@@ -1,0 +1,48 @@
+.offerGrid {
+  display: flex;
+  margin: var(--spacing-s) calc(#{var(--spacing-s)} * -1);
+  justify-content: space-between;
+}
+
+.textareaColumn {
+  flex: 1 1 50%;
+  padding: 0 var(--spacing-s);
+
+  textarea {
+    height: auto;
+  }
+}
+
+.fullHeightColumn {
+  display: flex;
+
+  .inputWrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    [class*=TextInput-module_root] {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+
+      [class*=input-wrapper] {
+        flex-grow: 1;
+      }
+    }
+  }
+}
+
+.offerForm {
+  margin-bottom: var(--spacing-xs);
+}
+
+.inputWrapper + .inputWrapper {
+  margin-top: var(--spacing-m);
+}
+
+.radioHelpText {
+  margin-top: var(--spacing-xs);
+  color: var(--color-error);
+  opacity: 0.8;
+}
