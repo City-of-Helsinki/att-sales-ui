@@ -58,7 +58,7 @@ function bindEvents(
   manager.events.addAccessTokenExpiring((): void => eventTrigger(ClientEvent.TOKEN_EXPIRING));
 }
 
-export function getSessionStorageKey(clientConfig?: ClientConfig): string {
+export function getLocalStorageKey(clientConfig?: ClientConfig): string {
   const config = clientConfig || getClientConfig();
   return `oidc.user:${config.authority}:${config.clientId}`;
 }
@@ -72,7 +72,7 @@ export function createOidcClient(): Client {
   }
   const clientConfig = getClientConfig();
   const oidcConfig: UserManagerSettings = {
-    userStore: new WebStorageStateStore({ store: window.sessionStorage }),
+    userStore: new WebStorageStateStore({ store: window.localStorage }),
     authority: clientConfig.authority,
     automaticSilentRenew: clientConfig.automaticSilentRenew,
     client_id: clientConfig.clientId,
@@ -92,9 +92,9 @@ export function createOidcClient(): Client {
     Oidc.Log.level = Oidc.Log.DEBUG;
   }
 
-  const getSessionStorageData = (): AnyObject | undefined => {
-    const userKey = getSessionStorageKey(clientConfig);
-    const storedString = sessionStorage.getItem(userKey);
+  const getLocalStorageData = (): AnyObject | undefined => {
+    const userKey = getLocalStorageKey(clientConfig);
+    const storedString = localStorage.getItem(userKey);
     if (!storedString || storedString.length < 2 || storedString.charAt(0) !== '{') {
       return undefined;
     }
@@ -105,7 +105,7 @@ export function createOidcClient(): Client {
     }
   };
 
-  const getUserData = (): AnyObject | undefined => getStoredUser() || getSessionStorageData() || undefined;
+  const getUserData = (): AnyObject | undefined => getStoredUser() || getLocalStorageData() || undefined;
 
   const getUser: Client['getUser'] = () => {
     if (isAuthenticated()) {
@@ -343,12 +343,21 @@ export function createOidcClient(): Client {
   clientFunctions.addListener(ClientEvent.UNAUTHORIZED, () => {
     userSessionValidityPoller.stop();
     sessionStorage.clear(); // Clear session storage on logout
+    localStorage.removeItem(getLocalStorageKey(clientConfig)); // Clear user from local storage on logout
   });
 
   clientFunctions.addListener(ClientEvent.TOKEN_EXPIRING, () => {
     userSessionValidityPoller.stop();
     loginSilent();
     userSessionValidityPoller.start();
+  });
+
+  // Listen to local storage events in other tabs and set logout when
+  // current user has been logged out elsewhere
+  window.addEventListener('storage', (e) => {
+    if (e.key === getLocalStorageKey(clientConfig) && e.newValue === null) {
+      logout();
+    }
   });
 
   return client;
