@@ -61,7 +61,16 @@ const ReservationCancelForm = ({ formId, ownershipType, handleFormCallback }: IP
       const enumName = reason[0];
       const enumValue = reason[1];
 
-      // Disable "transferred" option from Hitas and Puolihitas apartments
+      // Remove unselectable reservation cancel reasons from a dropdown
+      if (
+        enumValue === ReservationCancelReasons.OTHER_APARTMENT_OFFERED ||
+        enumValue === ReservationCancelReasons.LOWER_PRIORITY ||
+        enumValue === ReservationCancelReasons.OFFER_REJECTED
+      ) {
+        return null;
+      }
+
+      // Remove "transferred" option from Hitas and Puolihitas apartments
       if (enumValue === ReservationCancelReasons.TRANSFERRED && ownershipType.toLowerCase() !== 'haso') {
         return null;
       }

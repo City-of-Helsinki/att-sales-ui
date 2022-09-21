@@ -7,7 +7,11 @@ import { useTranslation } from 'react-i18next';
 
 import StatusText from '../common/statusText/StatusText';
 import { Project, ProjectInstallment, ProjectInstallmentInputRow, SelectOption } from '../../types';
-import { InstallmentTypes, InstallmentPercentageSpecifiers } from '../../enums';
+import {
+  InstallmentTypes,
+  HasoInstallmentPercentageSpecifiers,
+  HitasInstallmentPercentageSpecifiers,
+} from '../../enums';
 import { useGetProjectInstallmentsQuery, useSetProjectInstallmentsMutation } from '../../redux/services/api';
 import { toast } from '../common/toast/ToastManager';
 
@@ -17,6 +21,7 @@ const T_PATH = 'components.installments.ProjectInstallments';
 
 interface IProps {
   uuid: Project['uuid'];
+  ownershipType: Project['ownership_type'];
   barred_bank_account?: Project['barred_bank_account'];
   regular_bank_account?: Project['regular_bank_account'];
 }
@@ -26,7 +31,12 @@ const unitOptions = {
   UNIT_AS_PERCENTAGE: 'UNIT_AS_PERCENTAGE',
 } as const;
 
-const ProjectInstallments = ({ uuid, barred_bank_account, regular_bank_account }: IProps): JSX.Element => {
+const ProjectInstallments = ({
+  uuid,
+  ownershipType,
+  barred_bank_account,
+  regular_bank_account,
+}: IProps): JSX.Element => {
   const { t } = useTranslation();
   const {
     data: installments,
@@ -69,11 +79,15 @@ const ProjectInstallments = ({ uuid, barred_bank_account, regular_bank_account }
           installment.due_date !== null ? moment(installment.due_date, 'YYYY-MM-DD').format('D.M.YYYY') : '';
 
         if (installment.percentage_specifier) {
-          installmentRows[index].sum = installment.percentage === undefined ? '' : installment.percentage;
+          installmentRows[index].sum =
+            installment.percentage === undefined || installment.percentage === null ? '' : installment.percentage;
           installmentRows[index].percentage_specifier = installment.percentage_specifier;
           installmentRows[index].unit = unitOptions.UNIT_AS_PERCENTAGE;
         } else {
-          installmentRows[index].sum = installment.amount === undefined ? '' : (installment.amount / 100).toFixed(2);
+          installmentRows[index].sum =
+            installment.amount === undefined || installment.amount === null
+              ? ''
+              : (installment.amount / 100).toFixed(2);
           installmentRows[index].unit = unitOptions.UNIT_AS_EURO;
         }
       });
@@ -226,14 +240,25 @@ const ProjectInstallments = ({ uuid, barred_bank_account, regular_bank_account }
 
   const InstallmentPercentageSpecifierOptions = () => {
     let options: SelectOption[] = [];
-    // Loop through InstallmentPercentageSpecifiers ENUM and create dropdown options out of them
-    Object.values(InstallmentPercentageSpecifiers).forEach((type) => {
-      options.push({
-        label: t(`ENUMS.InstallmentPercentageSpecifiers.${type}`),
-        name: 'percentage_specifier',
-        selectValue: type,
+    // Loop through either Hitas or Haso InstallmentPercentageSpecifiers ENUM based on project ownership type,
+    // and create dropdown options out of them
+    if (ownershipType === 'haso') {
+      Object.values(HasoInstallmentPercentageSpecifiers).forEach((type) => {
+        options.push({
+          label: t(`ENUMS.HasoInstallmentPercentageSpecifiers.${type}`),
+          name: 'percentage_specifier',
+          selectValue: type,
+        });
       });
-    });
+    } else {
+      Object.values(HitasInstallmentPercentageSpecifiers).forEach((type) => {
+        options.push({
+          label: t(`ENUMS.HitasInstallmentPercentageSpecifiers.${type}`),
+          name: 'percentage_specifier',
+          selectValue: type,
+        });
+      });
+    }
     return options;
   };
 

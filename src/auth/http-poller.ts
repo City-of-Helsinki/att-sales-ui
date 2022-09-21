@@ -49,7 +49,6 @@ export default function createHttpPoller({
         startTimer();
         return;
       }
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       pollAndHandleResult();
     }, pollIntervalInMs);
   };

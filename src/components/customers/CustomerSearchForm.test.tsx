@@ -2,16 +2,9 @@ import { screen, render } from '@testing-library/react';
 import CustomerSearchForm from './CustomerSearchForm';
 
 describe('CustomerSearchForm', () => {
-  it('renders the component', () => {
-    const searchParams = new URLSearchParams({});
-    const { container } = render(<CustomerSearchForm searchParams={searchParams} />);
-    const element = container.firstChild;
-    expect(element).toBeDefined();
-  });
-
   it('renders form labels', () => {
     const searchParams = new URLSearchParams({});
-    render(<CustomerSearchForm searchParams={searchParams} />);
+    render(<CustomerSearchForm searchParams={searchParams} handleFormCallback={() => null} />);
 
     expect(screen.getByText('components.customers.CustomerSearchForm.firstName')).toBeDefined();
     expect(screen.getByText('components.customers.CustomerSearchForm.lastName')).toBeDefined();
@@ -21,7 +14,7 @@ describe('CustomerSearchForm', () => {
 
   it('renders submit button', () => {
     const searchParams = new URLSearchParams({});
-    render(<CustomerSearchForm searchParams={searchParams} />);
+    render(<CustomerSearchForm searchParams={searchParams} handleFormCallback={() => null} />);
 
     expect(screen.getByText('components.customers.CustomerSearchForm.btnSearch')).toBeDefined();
   });
@@ -33,7 +26,7 @@ describe('CustomerSearchForm', () => {
       email: 'matti.testaaja@example.com',
       phone_number: '05012345',
     });
-    render(<CustomerSearchForm searchParams={searchParams} />);
+    render(<CustomerSearchForm searchParams={searchParams} handleFormCallback={() => null} />);
 
     expect(screen.getByDisplayValue('matti')).toBeInTheDocument();
     expect(screen.getByDisplayValue('testaaja')).toBeInTheDocument();

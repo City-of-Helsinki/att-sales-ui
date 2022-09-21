@@ -3,25 +3,11 @@ import { render, screen } from '@testing-library/react';
 
 import CustomerTableRow from './CustomerTableRow';
 import mockCustomers from '../../mocks/customers.json';
-import { Customer } from '../../types';
+import { CustomerListItem } from '../../types';
 
-const customer = mockCustomers[0] as Customer;
+const customer: CustomerListItem = mockCustomers[0];
 
 describe('CustomerTableRow', () => {
-  it('renders CustomerTableRow component', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <table>
-          <tbody>
-            <CustomerTableRow />
-          </tbody>
-        </table>
-      </BrowserRouter>
-    );
-    const element = container.firstChild;
-    expect(element).toBeDefined();
-  });
-
   it('renders customer table cell data', () => {
     render(
       <BrowserRouter>

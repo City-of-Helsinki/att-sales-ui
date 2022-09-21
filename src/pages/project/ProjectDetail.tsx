@@ -147,6 +147,7 @@ const ProjectDetail = (): JSX.Element | null => {
             <div className={styles.installmentsWrapper}>
               <ProjectInstallments
                 uuid={project.uuid}
+                ownershipType={project.ownership_type.toLowerCase()}
                 barred_bank_account={project.barred_bank_account}
                 regular_bank_account={project.regular_bank_account}
               />

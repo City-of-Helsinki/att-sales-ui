@@ -5,19 +5,21 @@ import mockProject from '../../mocks/project.json';
 import { Apartment, Project } from '../../types';
 import { renderWithProviders } from '../../test/test-utils';
 
-const apartments: Apartment[] = mockProject.apartments;
-const project: Project = mockProject;
+const apartments = mockProject.apartments as Apartment[];
+const partialProjectData = mockProject as unknown;
+const project = partialProjectData as Project;
 
 describe('ApartmentTable', () => {
-  it('renders ApartmentTable component', () => {
-    const { container } = renderWithProviders(<ApartmentTable project={project} />);
-    const element = container.firstChild;
-    expect(element).toBeDefined();
-  });
-
   it('renders table header elements', () => {
     renderWithProviders(
-      <ApartmentTable apartments={apartments} isLoading={false} isError={false} isSuccess={true} project={project} />
+      <ApartmentTable
+        apartments={apartments}
+        project={project}
+        hasActiveFilters
+        housingCompany="test"
+        ownershipType="hitas"
+        isLotteryCompleted
+      />
     );
 
     expect(screen.getAllByText('components.apartment.ApartmentTable.apartment')).toBeDefined();

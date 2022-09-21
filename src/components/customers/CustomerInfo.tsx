@@ -11,7 +11,7 @@ import styles from './CustomerInfo.module.scss';
 const T_PATH = 'components.customers.CustomerInfo';
 
 interface IProps {
-  customer: Customer;
+  customer?: Customer;
 }
 
 interface InfoItemProps {
@@ -94,7 +94,7 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
               <Checkbox
                 id="customerHasHitasOwnership"
                 label={t(`${T_PATH}.customerHasHitasOwnership`)}
-                checked={customer.has_hitas_ownership}
+                checked={Boolean(customer.has_hitas_ownership)}
                 readOnly
                 disabled
                 style={{ marginRight: 'var(--spacing-l)' }}
@@ -102,7 +102,7 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
               <Checkbox
                 id="customerHasChildren"
                 label={t(`${T_PATH}.familyWithChildren`)}
-                checked={customer.has_children}
+                checked={Boolean(customer.has_children)}
                 readOnly
                 disabled
               />
@@ -115,7 +115,7 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
               <Checkbox
                 id="customerIsOver55"
                 label={t(`${T_PATH}.customerIsOver55`)}
-                checked={customer.is_age_over_55}
+                checked={Boolean(customer.is_age_over_55)}
                 readOnly
                 disabled
                 style={{ marginRight: 'var(--spacing-l)' }}
@@ -123,7 +123,7 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
               <Checkbox
                 id="customerHasHitasOwnership"
                 label={t(`${T_PATH}.customerHasHasoOwnership`)}
-                checked={customer.is_right_of_occupancy_housing_changer}
+                checked={Boolean(customer.is_right_of_occupancy_housing_changer)}
                 readOnly
                 disabled
               />

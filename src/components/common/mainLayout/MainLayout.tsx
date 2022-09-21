@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 
+import AuthSessionExpiringModal from '../../auth/AuthSessionExpiringModal';
 import ErrorPrompt from '../../auth/ErrorPrompt';
 import NavBar from '../navbar/NavBar';
 import OfferModal from '../../offer/OfferModal';
@@ -27,6 +28,7 @@ const MainLayout = ({ authenticated }: IProps): JSX.Element => (
         <ReservationAddModal />
         <ReservationCancelModal />
         <ReservationEditModal />
+        <AuthSessionExpiringModal />
       </>
     )}
   </>

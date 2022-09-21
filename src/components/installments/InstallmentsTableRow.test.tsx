@@ -8,23 +8,11 @@ import { renderWithProviders } from '../../test/test-utils';
 const installment = dummyInstallments[0] as ApartmentInstallment;
 
 describe('InstallmentsTableRow', () => {
-  it('renders InstallmentsTableRow component', () => {
-    const { container } = renderWithProviders(
-      <table>
-        <tbody>
-          <InstallmentsTableRow installment={installment} />
-        </tbody>
-      </table>
-    );
-    const element = container.firstChild;
-    expect(element).toBeDefined();
-  });
-
   it('renders installment details', () => {
     renderWithProviders(
       <table>
         <tbody>
-          <InstallmentsTableRow installment={installment} />
+          <InstallmentsTableRow installment={installment} reservationId={1} />
         </tbody>
       </table>
     );
@@ -38,7 +26,7 @@ describe('InstallmentsTableRow', () => {
     renderWithProviders(
       <table>
         <tbody>
-          <InstallmentsTableRow installment={installment} />
+          <InstallmentsTableRow installment={installment} reservationId={1} />
         </tbody>
       </table>
     );

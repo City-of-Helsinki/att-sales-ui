@@ -1,9 +1,10 @@
 import { mapApartmentReservationCustomerData } from './mapApartmentReservationCustomerData';
 
 import mockCustomer from '../mocks/customer.json';
+import { Customer } from '../types';
 
-const customerWithTwoProfiles = mockCustomer;
-const customerWithoutSecondaryProfile = { ...mockCustomer, secondary_profile: null };
+const customerWithTwoProfiles = mockCustomer as Customer;
+const customerWithoutSecondaryProfile = { ...mockCustomer, secondary_profile: null } as Customer;
 
 const targetDataWithSecondaryProfile = {
   id: customerWithTwoProfiles.id,
@@ -13,9 +14,9 @@ const targetDataWithSecondaryProfile = {
     email: customerWithTwoProfiles.primary_profile.email,
   },
   secondary_profile: {
-    first_name: customerWithTwoProfiles.secondary_profile.first_name,
-    last_name: customerWithTwoProfiles.secondary_profile.last_name,
-    email: customerWithTwoProfiles.secondary_profile.email,
+    first_name: customerWithTwoProfiles.secondary_profile?.first_name,
+    last_name: customerWithTwoProfiles.secondary_profile?.last_name,
+    email: customerWithTwoProfiles.secondary_profile?.email,
   },
 };
 

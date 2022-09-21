@@ -135,6 +135,23 @@
   }
 }
 
+.reservationLoadError {
+  margin-left: var(--spacing-l);
+  margin-bottom: var(--spacing-s);
+
+  button {
+    background: none;
+    border: 0;
+    font-weight: 500;
+    padding: 0;
+
+    &:hover, &:focus {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+}
+
 .singleReservation {
   display: flex;
   width: 100%;
@@ -156,6 +173,11 @@
     .offer span {
       color: inherit;
     }
+  }
+
+  &.isFetching {
+    opacity: 0.5;
+    pointer-events: none;
   }
 
   & + .singleReservation {
@@ -192,6 +214,13 @@
 .queueNumberSpacer {
   min-width: 2.75rem;
   display: inline-block;
+}
+
+.noReservations {
+  color: var(--color-black-40);
+  margin-bottom: var(--spacing-s);
+  margin-top: var(--spacing-2-xs);
+  font-style: italic;
 }
 
 .customer {

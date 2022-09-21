@@ -26,10 +26,6 @@ const ReservationCancelModal = (): JSX.Element | null => {
   const [cancelApartmentReservation, { isLoading: postReservationCancelLoading }] =
     useCancelApartmentReservationMutation();
 
-  // Project UUID and customer ID is used to invalidate cached data after cancelling a reservation
-  const projectId = reservationCancelModal.content?.projectId || '';
-  const customerId = reservationCancelModal.content?.customer.id || 0;
-
   if (!isDialogOpen) return null;
 
   if (!reservationId || !ownershipType || !customer) {
@@ -48,6 +44,11 @@ const ReservationCancelModal = (): JSX.Element | null => {
     if (!postReservationCancelLoading) {
       setIsLoading(true);
 
+      // Project uuid, customer id and Apartment uuid is used to invalidate cached data after cancelling a reservation
+      const projectId = reservationCancelModal.content?.projectId || '';
+      const customerId = reservationCancelModal.content?.customer.id || 0;
+      const apartmentId = reservationCancelModal.content?.apartmentId || '';
+
       try {
         // Send reservation cancel form data to API
         await cancelApartmentReservation({
@@ -55,6 +56,7 @@ const ReservationCancelModal = (): JSX.Element | null => {
           reservationId: reservationId,
           projectId: projectId,
           customerId: customerId,
+          apartmentId: apartmentId,
         })
           .unwrap()
           .then(() => {

@@ -10,7 +10,7 @@ import InstallmentsForm from './InstallmentsForm';
 import InstallmentsTable from './InstallmentsTable';
 import ProjectName from '../project/ProjectName';
 import { Apartment, ApartmentReservation, Project } from '../../types';
-import { useGetApartmentReservationQuery } from '../../redux/services/api';
+import { useGetApartmentReservationByIdQuery } from '../../redux/services/api';
 
 import styles from './InstallmentsItem.module.scss';
 
@@ -80,7 +80,7 @@ const InstallmentsItem = ({ apartment, project, reservationId, isCanceled }: IPr
     isError,
     isSuccess,
     refetch,
-  } = useGetApartmentReservationQuery(reservationId);
+  } = useGetApartmentReservationByIdQuery(reservationId);
   const installments = reservation?.installments || [];
   const installmentCandidates = reservation?.installment_candidates || [];
   const accordionIcon = isAccordionOpen ? <IconAngleDown aria-hidden /> : <IconAngleRight aria-hidden />;

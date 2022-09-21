@@ -1,3 +1,4 @@
+import { CustomerReservation } from '../types';
 import { groupReservationsByProject } from './mapReservationData';
 
 const mockData = [
@@ -42,7 +43,7 @@ const mockData = [
     queue_position: 1,
     state: 'submitted',
   },
-];
+] as CustomerReservation[];
 
 const targetData = [
   [

@@ -5,7 +5,7 @@ import { renderWithProviders } from '../../test/test-utils';
 
 describe('SelectCustomerDropdown', () => {
   it('renders SelectCustomerDropdown component', async () => {
-    renderWithProviders(<SelectCustomerDropdown />);
+    renderWithProviders(<SelectCustomerDropdown handleSelectCallback={() => null} />);
     await screen.findByText('components.customers.SelectCustomerDropdown.selectCustomer');
   });
 });

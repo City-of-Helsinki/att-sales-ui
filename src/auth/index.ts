@@ -10,6 +10,7 @@ export type EventListener = (payload?: EventPayload) => void;
 export type Client = {
   init: () => Promise<User | undefined | null>;
   login: () => void;
+  loginSilent: () => void;
   logout: () => void;
   isAuthenticated: () => boolean;
   isInitialized: () => boolean;

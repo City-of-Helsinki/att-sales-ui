@@ -24,9 +24,6 @@ const ReservationEditModal = (): JSX.Element | null => {
   const [setApartmentReservationState, { isLoading: postReservationStateLoading }] =
     useSetApartmentReservationStateMutation();
 
-  // Project uuid is used to refetch project data (including reservations) after editing reservation state
-  const projectId = reservationEditModal.content?.projectId || '';
-
   if (!isDialogOpen) return null;
 
   if (!reservation) {
@@ -45,9 +42,18 @@ const ReservationEditModal = (): JSX.Element | null => {
     if (!postReservationStateLoading) {
       setIsLoading(true);
 
+      // Project uuid and Apartment uuid is used to invalidate cached data after editing a reservation
+      const projectId = reservationEditModal.content?.projectId || '';
+      const apartmentId = reservationEditModal.content?.apartmentId || '';
+
       try {
         // Send reservation edit form data to API
-        await setApartmentReservationState({ formData, reservationId: reservation.id, projectId: projectId })
+        await setApartmentReservationState({
+          formData,
+          reservationId: reservation.id,
+          projectId: projectId,
+          apartmentId: apartmentId,
+        })
           .unwrap()
           .then(() => {
             toast.show({ type: 'success', content: t(`${T_PATH}.formSentSuccessfully`) });

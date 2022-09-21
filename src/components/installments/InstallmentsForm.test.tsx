@@ -8,22 +8,10 @@ import { ApartmentReservationWithInstallments } from '../../types';
 const reservation = dummyReservation as ApartmentReservationWithInstallments;
 
 describe('InstallmentsForm', () => {
-  it('renders the component', () => {
-    const { container } = renderWithProviders(
-      <InstallmentsForm
-        reservationId={reservation.id}
-        installments={reservation.installments}
-        installmentCandidates={reservation.installment_candidates}
-        targetPrice={0}
-      />
-    );
-    const element = container.firstChild;
-    expect(element).toBeDefined();
-  });
-
   it('renders table header elements', () => {
     renderWithProviders(
       <InstallmentsForm
+        handleFormCallback={() => null}
         reservationId={reservation.id}
         installments={reservation.installments}
         installmentCandidates={reservation.installment_candidates}
@@ -41,6 +29,7 @@ describe('InstallmentsForm', () => {
   it('renders installment candidates table info text', () => {
     renderWithProviders(
       <InstallmentsForm
+        handleFormCallback={() => null}
         reservationId={reservation.id}
         installments={reservation.installments}
         installmentCandidates={reservation.installment_candidates}
@@ -53,18 +42,20 @@ describe('InstallmentsForm', () => {
   it('renders table tbody', () => {
     renderWithProviders(
       <InstallmentsForm
+        handleFormCallback={() => null}
         reservationId={reservation.id}
         installments={reservation.installments}
         installmentCandidates={reservation.installment_candidates}
         targetPrice={0}
       />
     );
-    expect(screen.queryByDisplayValue('reference-1')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('reference-1')).toBeInTheDocument();
   });
 
   it('renders table footer', () => {
     renderWithProviders(
       <InstallmentsForm
+        handleFormCallback={() => null}
         reservationId={reservation.id}
         installments={reservation.installments}
         installmentCandidates={reservation.installment_candidates}

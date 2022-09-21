@@ -9,62 +9,32 @@
       "apartment_state" :"offered",
       "apartment_structure": "4h+kt+s",
       "living_area": 100,
-      "reservations": [
-        {
-          "id": 1,
-          "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
-          "has_children": false,
-          "lottery_position": 2,
-          "queue_position": 1,
-          "priority_number": 2,
-          "right_of_residence": "12345",
-          "customer": {
-            "id": 2,
-            "primary_profile": {
-              "first_name": "Maija",
-              "last_name": "Meikäläinen",
-              "email": "maija.meikalainen@example.com"
-            }
+      "reservation_count": 2,
+      "winning_reservation": {
+        "id": 200,
+        "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
+        "lottery_position": null,
+        "queue_position": 1,
+        "priority_number": null,
+        "state": "reserved",
+        "offer": null,
+        "right_of_residence": null,
+        "has_children": null,
+        "has_hitas_ownership": null,
+        "is_age_over_55": null,
+        "is_right_of_occupancy_housing_changer": null,
+        "customer": {
+          "id": 41,
+          "primary_profile": {
+            "first_name": "Maija",
+            "last_name": "Meikäläinen",
+            "email": "maija.meikalainen@example.com"
           },
-          "state": "offered",
-          "cancellation_reason": null,
-          "cancellation_timestamp": null,
-          "offer": {
-            "id": 0,
-            "created_at": "2019-08-24T14:15:22Z",
-            "valid_until": "2019-08-24",
-            "state": "pending",
-            "concluded_at": "2019-08-24T14:15:22Z",
-            "comment": "string"
-          }
+          "secondary_profile": null
         },
-        {
-          "id": 2,
-          "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
-          "has_children": true,
-          "lottery_position": 1,
-          "queue_position": null,
-          "priority_number": 1,
-          "right_of_residence": "12345",
-          "customer": {
-            "id": 3,
-            "primary_profile": {
-              "first_name": "Testi",
-              "last_name": "Testinen",
-              "email": "testinen.testi@example.com"
-            },
-            "secondary_profile": {
-              "first_name": "Matti",
-              "last_name": "Meikäläinen",
-              "email": "matti.meikalainen@example.com"
-            }
-          },
-          "state": "canceled",
-          "cancellation_reason": "canceled",
-          "cancellation_timestamp": "2022-02-20",
-          "offer": null
-        }
-      ]
+        "cancellation_reason": null,
+        "cancellation_timestamp": null
+      }
     },
     {
       "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704b",
@@ -72,7 +42,8 @@
       "apartment_state": "free",
       "apartment_structure": "3h+kt+s",
       "living_area": 75,
-      "reservations": []
+      "reservation_count": 0,
+      "winning_reservation": null
     },
     {
       "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
@@ -80,112 +51,32 @@
       "apartment_state": "reserved",
       "apartment_structure": "2h+kt+s",
       "living_area": 50,
-      "reservations": [
-        {
-          "id": 1,
-          "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "has_children": true,
-          "lottery_position": 2,
-          "queue_position": null,
-          "priority_number": 3,
-          "right_of_residence": "2424",
-          "customer": {
-            "id": 1,
-            "secondary_profile": {
-              "first_name": "Testi",
-              "last_name": "Testinen",
-              "email": "test.testinen@example.com"
-            },
-            "primary_profile": {
-              "first_name": "Matti",
-              "last_name": "Meikäläinen",
-              "email": "matti.meikalainen@example.com"
-            }
+      "reservation_count": 4,
+      "winning_reservation": {
+        "id": 200,
+        "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
+        "lottery_position": 2,
+        "queue_position": 1,
+        "priority_number": null,
+        "state": "reserved",
+        "offer": null,
+        "right_of_residence": "2424",
+        "has_children": true,
+        "has_hitas_ownership": null,
+        "is_age_over_55": null,
+        "is_right_of_occupancy_housing_changer": null,
+        "customer": {
+          "id": 41,
+          "primary_profile": {
+            "first_name": "Testi",
+            "last_name": "Testinen",
+            "email": "test.testinen@example.com"
           },
-          "state": "canceled",
-          "cancellation_reason": "reservation_agreement_cancelled",
-          "cancellation_timestamp": "2022-1-30",
-          "offer": null
+          "secondary_profile": null
         },
-        {
-          "id": 2,
-          "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "customer": {
-            "id": 4,
-            "secondary_profile": {
-              "first_name": "Testi 2",
-              "last_name": "Testinen",
-              "email": "testi.2.testinen@secondary-example.com"
-            },
-            "primary_profile": {
-              "first_name": "Matti 2",
-              "last_name": "Meikäläinen",
-              "email": "matti.2.meikalainen@primary-example.com"
-            }
-          },
-          "has_children": false,
-          "lottery_position": 1,
-          "queue_position": null,
-          "priority_number": 1,
-          "right_of_residence": "12",
-          "state": "canceled",
-          "cancellation_reason": "reservation_agreement_cancelled",
-          "cancellation_timestamp": "2022-1-30",
-          "offer": null
-        },
-        {
-          "id": 3,
-          "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "customer": {
-            "id": 5,
-            "primary_profile": {
-              "first_name": "Testi 3",
-              "last_name": "Testinen",
-              "email": "testi3.testinen@example.com"
-            },
-            "secondary_profile": {
-              "first_name": "Matti 3",
-              "last_name": "Meikäläinen",
-              "email": "matti3@example.com"
-            }
-          },
-          "has_children": false,
-          "lottery_position": 4,
-          "queue_position": 2,
-          "priority_number": 2,
-          "right_of_residence": null,
-          "state": "submitted",
-          "cancellation_reason": null,
-          "cancellation_timestamp": null,
-          "offer": null
-        },
-        {
-          "id": 4,
-          "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704c",
-          "customer": {
-            "id": 6,
-            "primary_profile": {
-              "first_name": "Testi 4",
-              "last_name": "Testinen",
-              "email": "testi4.testinen@example.com"
-            },
-            "secondary_profile": {
-              "first_name": "Matti 4",
-              "last_name": "Meikäläinen",
-              "email": "matti4@example.com"
-            }
-          },
-          "has_children": true,
-          "lottery_position": 3,
-          "queue_position": 1,
-          "priority_number": 4,
-          "right_of_residence": "32456",
-          "state": "review",
-          "cancellation_reason": null,
-          "cancellation_timestamp": null,
-          "offer": null
-        }
-      ]
+        "cancellation_reason": null,
+        "cancellation_timestamp": null
+      }
     },
     {
       "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704b",
@@ -193,39 +84,19 @@
       "apartment_state": "reserved",
       "apartment_structure": "1h+kt+s",
       "living_area": 25,
-      "reservations": [
-        {
-          "id": 1,
-          "apartment_uuid": "c3145a4e-ef7d-40c5-ad93-f0a164b2704a",
-          "has_children": false,
-          "lottery_position": 1,
-          "queue_position": 1,
-          "priority_number": 1,
-          "right_of_residence": "12345",
-          "customer": {
-            "id": 1,
-            "primary_profile": {
-              "first_name": "Teppo",
-              "last_name": "Testaaja",
-              "email": "teppo.testaaja@example.com"
-            }
-          },
-          "state": "reserved",
-          "cancellation_reason": null,
-          "cancellation_timestamp": null,
-          "offer": null
-        }
-      ]
+      "reservation_count": 0,
+      "winning_reservation": null
     }
   ],
-  "archived": false,
+  "application_count": 0,
   "application_end_time": 1604153583,
   "application_start_time": null,
+  "archived": false,
   "attachment_urls": null,
   "barred_bank_account": null,
   "building_type": "Apartment house",
   "city": "Helsinki",
-  "construction_materials": null,
+  "construction_materials": [],
   "constructor": null,
   "coordinate_lat": null,
   "coordinate_lon": null,
@@ -239,7 +110,7 @@
   "estimated_completion_date": null,
   "has_elevator": false,
   "has_sauna": false,
-  "heating_options": null,
+  "heating_options": [],
   "holding_type": "Condominium",
   "housing_company": "Taloyhti\u00f6 30+",
   "housing_manager": null,

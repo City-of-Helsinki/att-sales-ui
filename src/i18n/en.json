@@ -15,9 +15,14 @@
   "components.apartment.ApartmentRow.btnCancel": "Cancel",
   "components.apartment.ApartmentRow.btnEdit": "Edit",
   "components.apartment.ApartmentRow.btnOffer": "Offer",
+  "components.apartment.ApartmentRow.canceled": "Canceled",
+  "components.apartment.ApartmentRow.errorWhileLoadingReservations": "Error while fetching reservations.",
+  "components.apartment.ApartmentRow.errorWhileLoadingReservationsLabel": "Error",
   "components.apartment.ApartmentRow.floor": "Floor",
   "components.apartment.ApartmentRow.hasMultipleWinningApartments": "Customer has more than one 1st places",
   "components.apartment.ApartmentRow.noApplicants": "No applicants",
+  "components.apartment.ApartmentRow.noReservations": "No reservations",
+  "components.apartment.ApartmentRow.tryToReload": "Try reloading",
   "components.apartment.ApartmentStateFilterSelect.allApartments": "All apartments",
   "components.apartment.ApartmentStateFilterSelect.show": "Show",
   "components.apartment.ApartmentTable.apartment": "Apartment",
@@ -35,6 +40,10 @@
   "components.apartment.ApartmentTable.noApartments": "No apartments",
   "components.apartment.ApartmentTable.priorityOrder": "Priority order",
   "components.apartment.ApartmentTable.withSelectedFilters": "with selected filters",
+  "components.auth.AuthSessionExpiringModal.continue": "Continue",
+  "components.auth.AuthSessionExpiringModal.continueUsingTheService": "Do you want to continue using the service?",
+  "components.auth.AuthSessionExpiringModal.inactivityMessage": "You have been inactive for <1>{{TIMEOUT_MINUTES}}</1> minutes. You will be logged out automatically in <3><Timer /></3> seconds.",
+  "components.auth.AuthSessionExpiringModal.logout": "Log out",
   "components.common.breadcrumbs.Breadcrumbs.ariaLabel": "Breadcrumbs",
   "components.common.loadingScreen.LoadingScreen.loading": "Loading",
   "components.common.navbar.Navbar.customers": "Customers",
@@ -422,10 +431,13 @@
       "RESERVATION_FEE": "Reservation fee",
       "RIGHT_OF_OCCUPANCY_PAYMENT": "Right of occupancy payment"
     },
-    "InstallmentPercentageSpecifiers": {
+    "HitasInstallmentPercentageSpecifiers": {
       "SALES_PRICE": "Sales price",
       "DEBT_FREE_SALES_PRICE": "Debt-free sales price",
       "SALES_PRICE_FLEXIBLE": "Sales price (flexible)"
+    },
+    "HasoInstallmentPercentageSpecifiers": {
+      "RIGHT_OF_OCCUPANCY_PAYMENT": "Right of occupancy payment"
     },
     "StateOfSale": {
       "FOR_SALE": "For sale",
@@ -462,7 +474,9 @@
       "RESERVATION_AGREEMENT_CANCELED": "Reservation agreement canceled",
       "TERMINATED": "Terminated",
       "TRANSFERRED": "Transferred",
-      "OTHER_APARTMENT_OFFERED": "Other apartment offered"
+      "OTHER_APARTMENT_OFFERED": "Other apartment offered",
+      "LOWER_PRIORITY": "Lower priority",
+      "OFFER_REJECTED": "Offer rejected"
     },
     "OfferState": {
       "ACCEPTED": "Offer accepted",

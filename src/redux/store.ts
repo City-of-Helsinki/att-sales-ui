@@ -8,6 +8,7 @@ import offerModalReducer from './features/offerModalSlice';
 import reservationAddModalReducer from './features/reservationAddModalSlice';
 import reservationCancelModalReducer from './features/reservationCancelModalSlice';
 import reservationEditModalReducer from './features/reservationEditModalSlice';
+import authSessionExpiringModalReducer from './features/authSessionExpiringModalSlice';
 import { api } from './services/api';
 import { rtkQueryErrorLogger } from './middleware/error';
 
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   reservationAddModal: reservationAddModalReducer,
   reservationCancelModal: reservationCancelModalReducer,
   reservationEditModal: reservationEditModalReducer,
+  authSessionExpiringModal: authSessionExpiringModalReducer,
   [api.reducerPath]: api.reducer,
 });
 

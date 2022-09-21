@@ -17,10 +17,15 @@ import {
   getTokenUri,
   createClientGetOrLoadUserFunction,
   ClientConfig,
+  JWTPayload,
 } from './index';
 import { AnyObject } from '../types';
 import createHttpPoller from './http-poller';
 import { toast } from '../components/common/toast/ToastManager';
+import { fetchTokenOptions } from '../api/useApiAccessTokens';
+import { getApiTokenByAudience } from '../utils/getApiTokenByAudience';
+import { store } from '../redux/store';
+import { apiTokenFetched } from '../redux/features/apiTokenSlice';
 
 let client: Client | null = null;
 
@@ -76,6 +81,7 @@ export function createOidcClient(): Client {
     scope: clientConfig.scope,
     silent_redirect_uri: getLocationBasedUri(clientConfig.silentAuthPath),
     post_logout_redirect_uri: getLocationBasedUri(clientConfig.logoutPath),
+    accessTokenExpiringNotificationTime: 90,
   };
   const manager = new UserManager(oidcConfig);
   const { eventTrigger, getStoredUser, setStoredUser, fetchApiToken, ...clientFunctions } = createClient();
@@ -178,6 +184,29 @@ export function createOidcClient(): Client {
     });
   };
 
+  const loginSilent: Client['loginSilent'] = () => {
+    const handleApiTokenRenewal = async () => {
+      const result = await getApiAccessToken(fetchTokenOptions);
+      if (result.error) {
+        return toast.show({ type: 'error' });
+      }
+      const apiToken = getApiTokenByAudience(result as JWTPayload);
+      store.dispatch(apiTokenFetched({ apiToken }));
+    };
+
+    manager
+      .signinSilent()
+      .then((user: Oidc.User | void) => {
+        const oidcUserAsClientUser = user ? oidcUserToClientUser(user) : undefined;
+        setStoredUser(oidcUserAsClientUser);
+        onAuthChange(!!user);
+        handleApiTokenRenewal();
+      })
+      .catch((e) => {
+        toast.show({ type: 'error', content: e.toString() });
+      });
+  };
+
   const logout: Client['logout'] = () => {
     eventTrigger(ClientEvent.LOGGING_OUT);
     setStoredUser(undefined);
@@ -260,6 +289,7 @@ export function createOidcClient(): Client {
   client = {
     init,
     login,
+    loginSilent,
     logout,
     loadUserProfile,
     getUserProfile,
@@ -305,12 +335,22 @@ export function createOidcClient(): Client {
       return { keepPolling: isAuthenticated() };
     },
   });
+
   clientFunctions.addListener(ClientEvent.AUTHORIZED, () => {
     userSessionValidityPoller.start();
   });
+
   clientFunctions.addListener(ClientEvent.UNAUTHORIZED, () => {
     userSessionValidityPoller.stop();
+    sessionStorage.clear(); // Clear session storage on logout
   });
+
+  clientFunctions.addListener(ClientEvent.TOKEN_EXPIRING, () => {
+    userSessionValidityPoller.stop();
+    loginSilent();
+    userSessionValidityPoller.start();
+  });
+
   return client;
 }
 

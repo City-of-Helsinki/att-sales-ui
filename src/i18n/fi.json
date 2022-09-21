@@ -15,9 +15,14 @@
   "components.apartment.ApartmentRow.btnCancel": "Peruuta",
   "components.apartment.ApartmentRow.btnEdit": "Muokkaa",
   "components.apartment.ApartmentRow.btnOffer": "Tarjous",
+  "components.apartment.ApartmentRow.canceled": "Peruttu",
+  "components.apartment.ApartmentRow.errorWhileLoadingReservations": "Virhe ladattaessa varauksia.",
+  "components.apartment.ApartmentRow.errorWhileLoadingReservationsLabel": "Latausvirhe",
   "components.apartment.ApartmentRow.floor": "Kerros",
   "components.apartment.ApartmentRow.hasMultipleWinningApartments": "Asiakkaalla useampi 1. sija",
   "components.apartment.ApartmentRow.noApplicants": "Ei hakijoita",
+  "components.apartment.ApartmentRow.noReservations": "Ei varauksia",
+  "components.apartment.ApartmentRow.tryToReload": "Lataa uudestaan",
   "components.apartment.ApartmentStateFilterSelect.allApartments": "Kaikki huoneistot",
   "components.apartment.ApartmentStateFilterSelect.show": "Näytä",
   "components.apartment.ApartmentTable.apartment": "Huoneisto",
@@ -35,6 +40,10 @@
   "components.apartment.ApartmentTable.noApartments": "Ei huoneistoja",
   "components.apartment.ApartmentTable.priorityOrder": "Ensisijaisuusjärjestys",
   "components.apartment.ApartmentTable.withSelectedFilters": "valituilla suodattimilla",
+  "components.auth.AuthSessionExpiringModal.continue": "Jatka käyttöä",
+  "components.auth.AuthSessionExpiringModal.continueUsingTheService": "Haluatko jatkaa palvelun käyttöä?",
+  "components.auth.AuthSessionExpiringModal.inactivityMessage": "Et ole käyttänyt palvelua <1>{{TIMEOUT_MINUTES}}</1> minuuttiin. Sinut kirjataan automaattisesti ulos <3><Timer /></3> sekunnin kuluttua.",
+  "components.auth.AuthSessionExpiringModal.logout": "Kirjaudu ulos",
   "components.common.breadcrumbs.Breadcrumbs.ariaLabel": "Murupolku",
   "components.common.loadingScreen.LoadingScreen.loading": "Ladataan",
   "components.common.navbar.Navbar.customers": "Asiakkaat",
@@ -422,10 +431,13 @@
       "RESERVATION_FEE": "Varausmaksu",
       "RIGHT_OF_OCCUPANCY_PAYMENT": "AO-maksu"
     },
-    "InstallmentPercentageSpecifiers": {
+    "HitasInstallmentPercentageSpecifiers": {
       "SALES_PRICE": "Myyntihinta",
       "DEBT_FREE_SALES_PRICE": "Velaton hinta",
       "SALES_PRICE_FLEXIBLE": "Myyntihinta (joustoerä)"
+    },
+    "HasoInstallmentPercentageSpecifiers": {
+      "RIGHT_OF_OCCUPANCY_PAYMENT": "AO-maksu"
     },
     "StateOfSale": {
       "FOR_SALE": "Myynnissä",
@@ -462,7 +474,9 @@
       "RESERVATION_AGREEMENT_CANCELED": "Varaussopimus peruttu",
       "TERMINATED": "Irtisanottu",
       "TRANSFERRED": "Siirretty",
-      "OTHER_APARTMENT_OFFERED": "Toinen huoneisto tarjottu"
+      "OTHER_APARTMENT_OFFERED": "Toinen huoneisto tarjottu",
+      "LOWER_PRIORITY": "Alempi prioriteetti",
+      "OFFER_REJECTED": "Tarjous hylätty"
     },
     "OfferState": {
       "ACCEPTED": "Tarjous hyväksytty",

@@ -2,22 +2,20 @@ import { screen } from '@testing-library/react';
 
 import ApartmentRow from './ApartmentRow';
 import mockProject from '../../mocks/project.json';
-import { Apartment } from '../../types';
+import { Apartment, Project } from '../../types';
 import { renderWithProviders } from '../../test/test-utils';
 
-const mockApartment: Apartment = mockProject.apartments[0];
+const apartment = mockProject.apartments[0] as Apartment;
+const partialProjectData = mockProject as unknown;
+const project = partialProjectData as Project;
 
 describe('ApartmentRow', () => {
-  it('renders ApartmentRow component', () => {
-    const { container } = renderWithProviders(<ApartmentRow apartment={mockApartment} />);
-    const element = container.firstChild;
-    expect(element).toBeDefined();
-  });
-
   it('renders apartment details', () => {
-    renderWithProviders(<ApartmentRow apartment={mockApartment} />);
+    renderWithProviders(
+      <ApartmentRow apartment={apartment} ownershipType="hitas" isLotteryCompleted project={project} />
+    );
 
-    expect(screen.queryByText('A1')).not.toBeNull(); // apartment_number
-    expect(screen.queryByText('4h+kt+s')).not.toBeNull(); // apartment_structure
+    expect(screen.getByText('A1')).not.toBeNull(); // apartment_number
+    expect(screen.getByText('4h+kt+s')).not.toBeNull(); // apartment_structure
   });
 });

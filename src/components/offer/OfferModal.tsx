@@ -38,6 +38,7 @@ const OfferModal = (): JSX.Element | null => {
   const project = offerModal.content?.project;
   const reservation = offerModal.content?.reservation;
   const offerId = reservation?.offer?.id || 0;
+  const apartmentId = offerModal.content?.apartment?.apartment_uuid || '';
 
   const {
     data: offer,
@@ -74,6 +75,7 @@ const OfferModal = (): JSX.Element | null => {
           reservationId: reservation.id,
           projectId: project.uuid,
           customerId: customer.id,
+          apartmentId: apartmentId,
         })
           .unwrap()
           .then(() => {
@@ -96,6 +98,7 @@ const OfferModal = (): JSX.Element | null => {
           reservationId: reservation.id,
           projectId: project.uuid,
           customerId: customer.id,
+          apartmentId: apartmentId,
         })
           .unwrap()
           .then(() => {

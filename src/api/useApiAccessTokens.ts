@@ -15,6 +15,12 @@ export type ApiAccessTokenActions = {
 
 export const ApiAccessTokenActionsContext = createContext<ApiAccessTokenActions | null>(null);
 
+export const fetchTokenOptions = {
+  audience: String(process.env.REACT_APP_API_AUDIENCE),
+  permission: String(process.env.REACT_APP_API_PERMISSION),
+  grantType: String(process.env.REACT_APP_API_GRANT_TYPE),
+};
+
 export function useApiAccessTokens(): ApiAccessTokenActions {
   const client = useClient();
   const tokens = client.isAuthenticated() ? client.getApiTokens() : undefined;
@@ -68,11 +74,7 @@ export function useApiAccessTokens(): ApiAccessTokenActions {
       if (currentStatus !== 'ready') {
         return;
       }
-      fetchTokens({
-        audience: String(process.env.REACT_APP_API_AUDIENCE),
-        permission: String(process.env.REACT_APP_API_PERMISSION),
-        grantType: String(process.env.REACT_APP_API_GRANT_TYPE),
-      });
+      fetchTokens(fetchTokenOptions);
     };
 
     autoFetch();

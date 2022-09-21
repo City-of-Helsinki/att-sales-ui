@@ -58,11 +58,12 @@ const ReservationAddModal = (): JSX.Element | null => {
     if (!postCreateReservationLoading) {
       setIsLoading(true);
 
-      // Project uuid is used to refetch project data (including reservations) after creating a new reservation
+      // Project uuid and Apartment uuid is used to invalidate cached data after adding a new reservation
       const projectId = project?.uuid || '';
+      const apartmentId = apartment?.apartment_uuid || '';
 
       try {
-        await createApartmentReservation({ formData: data, projectId: projectId })
+        await createApartmentReservation({ formData: data, projectId: projectId, apartmentId: apartmentId })
           .unwrap()
           .then(() => {
             toast.show({ type: 'success', content: t(`${T_PATH}.createdSuccessfully`) });

@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ApartmentReservationWithCustomer, Project } from '../../types';
+import { Apartment, ApartmentReservationWithCustomer, Project } from '../../types';
 
 interface ReservationEditModalContent {
+  apartmentId: Apartment['uuid'];
   reservation: ApartmentReservationWithCustomer;
   projectId: Project['uuid'];
 }

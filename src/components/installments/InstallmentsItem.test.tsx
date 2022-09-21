@@ -4,8 +4,9 @@ import { screen } from '@testing-library/react';
 import InstallmentsItem from './InstallmentsItem';
 import { renderWithProviders } from '../../test/test-utils';
 import { server } from '../../test/server';
+import { Apartment, Project } from '../../types';
 
-const apartment = {
+const partialApartment = {
   uuid: '48ba3236-464b-4f5d-8c2a-1bfb994a7571',
   apartment_number: 'B16',
   apartment_structure: '1h+k+s',
@@ -13,27 +14,32 @@ const apartment = {
   debt_free_sales_price: 10000000,
   right_of_occupancy_payment: null,
   sales_price: 7500000,
-};
+} as unknown;
+
+const apartment = partialApartment as Apartment;
+
 const HitasProject = {
   uuid: 'bdb19b55-5cb8-4f36-816a-000000000000',
   housing_company: 'Asunto Oy Tuleva S',
   ownership_type: 'Hitas',
   street_address: 'Pellervontie 24',
   district: 'Käpylä',
-};
+} as Project;
+
 const HasoProject = {
   uuid: 'bdb19b55-5cb8-4f36-816a-111111111111',
   housing_company: 'Haso Vanha Mylly',
   ownership_type: 'HASO',
   street_address: 'Yläkiventie 16',
   district: 'Myllypuro',
-};
+} as Project;
+
 const reservationId = 1;
 
 describe('InstallmentsItem', () => {
   it('handles good Hitas response', async () => {
     renderWithProviders(
-      <InstallmentsItem project={HitasProject} apartment={apartment} reservationId={reservationId} />
+      <InstallmentsItem project={HitasProject} apartment={apartment} reservationId={reservationId} isCanceled={false} />
     );
 
     screen.getByText('components.installments.InstallmentsItem.loading...');
@@ -47,7 +53,9 @@ describe('InstallmentsItem', () => {
   });
 
   it('handles good HASO response', async () => {
-    renderWithProviders(<InstallmentsItem project={HasoProject} apartment={apartment} reservationId={reservationId} />);
+    renderWithProviders(
+      <InstallmentsItem project={HasoProject} apartment={apartment} reservationId={reservationId} isCanceled={false} />
+    );
 
     screen.getByText('components.installments.InstallmentsItem.loading...');
 
@@ -60,7 +68,7 @@ describe('InstallmentsItem', () => {
 
   it('renders edit installments button when there is installments', async () => {
     renderWithProviders(
-      <InstallmentsItem project={HitasProject} apartment={apartment} reservationId={reservationId} />
+      <InstallmentsItem project={HitasProject} apartment={apartment} reservationId={reservationId} isCanceled={false} />
     );
 
     screen.getByText('components.installments.InstallmentsItem.loading...');
@@ -77,7 +85,7 @@ describe('InstallmentsItem', () => {
     );
 
     renderWithProviders(
-      <InstallmentsItem project={HitasProject} apartment={apartment} reservationId={reservationId} />
+      <InstallmentsItem project={HitasProject} apartment={apartment} reservationId={reservationId} isCanceled={false} />
     );
 
     screen.getByText('components.installments.InstallmentsItem.loading...');
@@ -93,7 +101,9 @@ describe('InstallmentsItem', () => {
       })
     );
 
-    renderWithProviders(<InstallmentsItem project={HitasProject} apartment={apartment} reservationId={0} />);
+    renderWithProviders(
+      <InstallmentsItem project={HitasProject} apartment={apartment} reservationId={0} isCanceled={false} />
+    );
 
     screen.getByText('components.installments.InstallmentsItem.loading...');
 
