@@ -260,6 +260,39 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
       );
     };
 
+    const renderSingleReservation = (reservation: ApartmentReservationWithCustomer) => {
+      const isFirstInQueue = reservation.queue_position === 1;
+
+      const hasMultipleWinningApartments = (): boolean => {
+        if (winning_reservation && isFirstInQueue) {
+          return winning_reservation.has_multiple_winning_apartments;
+        }
+        return false;
+      };
+
+      return (
+        <div
+          className={cx(
+            styles.singleReservation,
+            styles.resultReservation,
+            isCanceled(reservation) && styles.disabledRow,
+            isFetching && styles.isFetching
+          )}
+          key={reservation.id}
+        >
+          <div className={styles.singleReservationColumn}>
+            {renderApplicants(reservation, true, hasMultipleWinningApartments())}
+          </div>
+          <div className={styles.singleReservationColumn}>
+            <div className={cx(styles.rowActions, isRowOpen && styles.rowOpen)}>
+              <span>{renderHasoNumberOrFamilyIcon(reservation)}</span>
+              {renderActionButtons(reservation, ownershipType, isFirstInQueue)}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     return (
       <div className={cx(styles.cell, styles.buttonCell)}>
         <div className={cx(styles.firstResultRow, !isRowOpen && styles.closed)}>
@@ -290,26 +323,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
           )}
           {hasReservations ? (
             <>
-              {isSuccess &&
-                reservations?.map((reservation) => (
-                  <div
-                    className={cx(
-                      styles.singleReservation,
-                      styles.resultReservation,
-                      isCanceled(reservation) && styles.disabledRow,
-                      isFetching && styles.isFetching
-                    )}
-                    key={reservation.id}
-                  >
-                    <div className={styles.singleReservationColumn}>{renderApplicants(reservation, true)}</div>
-                    <div className={styles.singleReservationColumn}>
-                      <div className={cx(styles.rowActions, isRowOpen && styles.rowOpen)}>
-                        <span>{renderHasoNumberOrFamilyIcon(reservation)}</span>
-                        {renderActionButtons(reservation, ownershipType, reservation.queue_position === 1)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              {isSuccess && reservations?.map((reservation) => renderSingleReservation(reservation))}
               <div className={cx(styles.singleReservation, styles.resultReservation)}>{addReservation()}</div>
             </>
           ) : (
