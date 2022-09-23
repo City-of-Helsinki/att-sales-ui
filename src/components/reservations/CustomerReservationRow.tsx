@@ -109,12 +109,14 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
       return <div className={styles.cancelText}>{t(`${T_PATH}.canceled`)}</div>;
     }
 
+    const cancellationReasonText =
+      t(`ENUMS.ReservationCancelReasons.${latestCancelStateEvent.cancellation_reason?.toUpperCase()}`) || '';
+
     return (
       <>
         <div className={cx(styles.cancelText, styles.noWrap)}>
-          {latestCancelStateEvent.cancellation_reason
-            ? t(`ENUMS.ReservationCancelReasons.${latestCancelStateEvent.cancellation_reason.toUpperCase()}`)
-            : t(`${T_PATH}.canceled`)}
+          {t(`${T_PATH}.canceled`)}
+          {latestCancelStateEvent.cancellation_reason && ` (${cancellationReasonText})`}
           {' - '}
           {latestCancelStateEvent.timestamp && formatDateTime(latestCancelStateEvent.timestamp)}
         </div>
@@ -132,12 +134,28 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
             <td>
               {isCanceled
                 ? renderCancelDetails()
+                : !reservation.project_lottery_completed && reservation.state === ApartmentReservationStates.SUBMITTED
+                ? t(`${T_PATH}.waitingForLottery`)
                 : t(`ENUMS.ApartmentReservationStates.${reservation.state.toUpperCase()}`)}
             </td>
           </tr>
           <tr>
             <th>{t(`${T_PATH}.queuePosition`)}</th>
-            <td>{reservation.queue_position ? `${reservation.queue_position}.` : t(`${T_PATH}.isNotQueued`)}</td>
+            <td>
+              {reservation.project_lottery_completed && reservation.queue_position
+                ? `${reservation.queue_position}.`
+                : t(`${T_PATH}.noPositionNumber`)}
+            </td>
+          </tr>
+          <tr>
+            <th>{t(`${T_PATH}.lotteryCompleted`)}</th>
+            <td>{reservation.project_lottery_completed ? t(`${T_PATH}.yes`) : t(`${T_PATH}.no`)}</td>
+          </tr>
+          <tr>
+            <th>{t(`${T_PATH}.lotteryPosition`)}</th>
+            <td>
+              {reservation.lottery_position ? `${reservation.lottery_position}.` : t(`${T_PATH}.noPositionNumber`)}
+            </td>
           </tr>
           <tr>
             <th>
@@ -145,13 +163,6 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               <span className={styles.asterisk}>&nbsp;*</span>
             </th>
             <td>{reservation.priority_number ? reservation.priority_number : '-'}</td>
-          </tr>
-          <tr>
-            <th>
-              {t(`${T_PATH}.lotteryPosition`)}
-              <span className={styles.asterisk}>&nbsp;*</span>
-            </th>
-            <td>{reservation.lottery_position ? `${reservation.lottery_position}.` : '-'}</td>
           </tr>
           {reservation.project_ownership_type.toLowerCase() === 'haso' ? (
             <>
