@@ -26,12 +26,14 @@ const Installments = ({ customer }: IProps): JSX.Element => {
   // Filter reservations:
   // 1. All reservations that have saved installments
   // Or
-  // 2. Reservation's state is not in a state "REVIEW" and reservation's queue position is 1
+  // 2. Reservation's state is not in a state "REVIEW" AND lottery is completed AND reservation's queue position is 1
   const visibleReservations =
     customer.apartment_reservations?.filter(
       (reservation) =>
         !!reservation.apartment_installments?.length ||
-        (reservation.state !== ApartmentReservationStates.REVIEW && reservation.queue_position === 1)
+        (reservation.state !== ApartmentReservationStates.REVIEW &&
+          reservation.project_lottery_completed &&
+          reservation.queue_position === 1)
     ) || [];
 
   const reservationsByProject = groupReservationsByProject(visibleReservations);

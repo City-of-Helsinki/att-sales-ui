@@ -13,6 +13,7 @@ import { ApartmentReservationStates } from '../../enums';
 import { Customer, CustomerReservation, ReservationStateChangeUser } from '../../types';
 import { mapApartmentReservationCustomerData } from '../../utils/mapApartmentReservationCustomerData';
 import { getReservationApartmentData, getReservationProjectData } from '../../utils/mapReservationData';
+import { renderBooleanTextualValue } from '../../utils/renderBooleanTextualValue';
 import { showOfferModal } from '../../redux/features/offerModalSlice';
 import { showReservationCancelModal } from '../../redux/features/reservationCancelModalSlice';
 import { toast } from '../common/toast/ToastManager';
@@ -20,7 +21,6 @@ import { useDownloadFile } from '../../utils/useDownloadFile';
 import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 import styles from './CustomerReservationRow.module.scss';
-import { renderBooleanTextualValue } from '../../utils/renderBooleanTextualValue';
 
 const T_PATH = 'components.reservations.CustomerReservationRow';
 
@@ -37,9 +37,12 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
   const openDialogButtonRef = useRef(null);
   const apartment = getReservationApartmentData(reservation);
   const project = getReservationProjectData(reservation);
+  const isOwnershipTypeHaso = reservation.project_ownership_type.toLowerCase() === 'haso';
   const isCanceled = reservation.state === ApartmentReservationStates.CANCELED;
   const isInReview = reservation.state === ApartmentReservationStates.REVIEW;
-  const firstInQueue = reservation.queue_position === 1;
+  const isWinningReservation = reservation.project_lottery_completed && reservation.queue_position === 1;
+  const canCreateOffer = isWinningReservation;
+  const canCreateContract = isWinningReservation && !isInReview;
 
   const closeDialog = () => setIsDialogOpen(false);
 
@@ -56,7 +59,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
     const apartmentNumber = reservation.apartment_number.replace(/\s/g, '').toLocaleLowerCase();
     let prefix = '';
 
-    if (reservation.project_ownership_type.toLowerCase() === 'haso') {
+    if (isOwnershipTypeHaso) {
       prefix = 'sopimus';
     } else {
       prefix = 'kauppakirja';
@@ -125,19 +128,24 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
     );
   };
 
+  const renderApartmentReservationState = () => {
+    const stateText = t(`ENUMS.ApartmentReservationStates.${reservation.state.toUpperCase()}`);
+    const waitingForLotteryText = t(`${T_PATH}.waitingForLottery`);
+
+    if (!reservation.project_lottery_completed && reservation.state === ApartmentReservationStates.SUBMITTED) {
+      return `${stateText} (${waitingForLotteryText})`;
+    }
+
+    return stateText;
+  };
+
   const renderReservationDetailTable = () => {
     return (
       <table className={cx('hds-table hds-table--light', styles.reservationDetailTable)}>
         <tbody className="hds-table__content">
           <tr>
             <th>{t(`${T_PATH}.state`)}</th>
-            <td>
-              {isCanceled
-                ? renderCancelDetails()
-                : !reservation.project_lottery_completed && reservation.state === ApartmentReservationStates.SUBMITTED
-                ? t(`${T_PATH}.waitingForLottery`)
-                : t(`ENUMS.ApartmentReservationStates.${reservation.state.toUpperCase()}`)}
-            </td>
+            <td>{isCanceled ? renderCancelDetails() : renderApartmentReservationState()}</td>
           </tr>
           <tr>
             <th>{t(`${T_PATH}.queuePosition`)}</th>
@@ -164,7 +172,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
             </th>
             <td>{reservation.priority_number ? reservation.priority_number : '-'}</td>
           </tr>
-          {reservation.project_ownership_type.toLowerCase() === 'haso' ? (
+          {isOwnershipTypeHaso ? (
             <>
               <tr>
                 <th>
@@ -281,7 +289,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               <div>
                 {t(`${T_PATH}.priority`)}: {renderPriorityNumber()}
               </div>
-              {reservation.project_ownership_type.toLowerCase() === 'haso' && (
+              {isOwnershipTypeHaso && (
                 <div>
                   {t(`${T_PATH}.hasoNumber`)}: {reservation.right_of_residence}
                 </div>
@@ -314,37 +322,33 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
       {!isCanceled && (
         <div className={styles.buttons}>
           <div>
-            {firstInQueue && (
+            {canCreateOffer && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() =>
+                  dispatch(
+                    showOfferModal({
+                      apartment: apartment,
+                      customer: mapApartmentReservationCustomerData(customer),
+                      isNewOffer: !reservation.offer,
+                      project: project,
+                      reservation: reservation,
+                    })
+                  )
+                }
+              >
+                {t(`${T_PATH}.offer`)}
+              </Button>
+            )}
+            {canCreateContract && (
               <>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() =>
-                    dispatch(
-                      showOfferModal({
-                        apartment: apartment,
-                        customer: mapApartmentReservationCustomerData(customer),
-                        isNewOffer: !reservation.offer,
-                        project: project,
-                        reservation: reservation,
-                      })
-                    )
-                  }
-                >
-                  {t(`${T_PATH}.offer`)}
+                <Button variant="secondary" size="small" onClick={download} disabled={isLoadingContract}>
+                  {isOwnershipTypeHaso ? t(`${T_PATH}.createContract`) : t(`${T_PATH}.createDeedOfSale`)}
                 </Button>
-                {!isInReview && (
-                  <>
-                    <Button variant="secondary" size="small" onClick={download} disabled={isLoadingContract}>
-                      {reservation.project_ownership_type.toLowerCase() === 'haso'
-                        ? t(`${T_PATH}.createContract`)
-                        : t(`${T_PATH}.createDeedOfSale`)}
-                    </Button>
-                    <a href={fileUrl} download={fileName} className="hiddenFromScreen" ref={fileRef}>
-                      {t(`${T_PATH}.download`)}
-                    </a>
-                  </>
-                )}
+                <a href={fileUrl} download={fileName} className="hiddenFromScreen" ref={fileRef}>
+                  {t(`${T_PATH}.download`)}
+                </a>
               </>
             )}
           </div>
