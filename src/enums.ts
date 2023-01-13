@@ -87,3 +87,10 @@ export enum OfferState {
   PENDING = 'pending',
   REJECTED = 'rejected',
 }
+
+export enum ApartmentInstallmentPaymentStatus {
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+  OVERPAID = 'OVERPAID',
+  UNDERPAID = 'UNDERPAID',
+}

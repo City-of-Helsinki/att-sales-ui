@@ -1,4 +1,5 @@
 import {
+  ApartmentInstallmentPaymentStatus,
   ApartmentReservationStates,
   ApartmentState,
   HasoInstallmentPercentageSpecifiers,
@@ -176,6 +177,19 @@ export type ApartmentInstallment = {
   due_date: string | null;
   reference_number?: string | null;
   added_to_be_sent_to_sap_at?: string | null;
+  payment_state: ApartmentInstallmentPaymentState;
+  payments: ApartmentInstallmentPayment[];
+};
+
+export type ApartmentInstallmentPaymentState = {
+  overdue: boolean;
+  status: `${ApartmentInstallmentPaymentStatus}`;
+  amount: number;
+};
+
+export type ApartmentInstallmentPayment = {
+  amount: number;
+  payment_date: string;
 };
 
 export type ApartmentInstallmentCandidate = Omit<

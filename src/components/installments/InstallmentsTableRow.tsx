@@ -7,6 +7,7 @@ import formattedCurrency from '../../utils/formatCurrency';
 import { ApartmentInstallment, ApartmentReservation } from '../../types';
 import { useSendApartmentInstallmentsToSAPMutation } from '../../redux/services/api';
 import { toast } from '../common/toast/ToastManager';
+import InstallmentPaymentStateInfo from './InstallmentPaymentStateInfo';
 
 import styles from './InstallmentsTableRow.module.scss';
 
@@ -105,6 +106,15 @@ const InstallmentsTableRow = ({ installment, reservationId }: IProps) => {
       <td>{installment.due_date ? formatDateTime(installment.due_date, true) : '-'}</td>
       <td>{installment.account_number}</td>
       <td>{installment.reference_number}</td>
+      <td>
+        {
+          <InstallmentPaymentStateInfo
+            state={installment.payment_state}
+            payments={installment.payments}
+            sentToSap={!!installment.added_to_be_sent_to_sap_at}
+          />
+        }
+      </td>
       <td className={styles.buttonCell}>
         {!!installment.added_to_be_sent_to_sap_at ? (
           <>

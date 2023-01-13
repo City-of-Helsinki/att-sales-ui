@@ -161,6 +161,12 @@
   "components.customers.SelectCustomerDropdown.searchByName": "Hae nimellä",
   "components.customers.SelectCustomerDropdown.selectCustomer": "Valitse asiakas",
   "components.customers.SelectCustomerDropdown.toggleMenu": "Avaa/sulje valikko",
+  "components.installments.InstallmentPaymentStateInfo.paymentDetailsTitle": "Maksutapahtumat",
+  "components.installments.InstallmentPaymentStateInfo.amount": "Määrä",
+  "components.installments.InstallmentPaymentStateInfo.close": "Sulje",
+  "components.installments.InstallmentPaymentStateInfo.overdue": "myöhässä",
+  "components.installments.InstallmentPaymentStateInfo.payment_date": "Maksupäivä",
+  "components.installments.InstallmentPaymentStateInfo.unsent": "Lähettämättä",
   "components.installments.Installments.noReservations": "Ei tallennettuja maksuja eikä maksuihin oikeuttavia varauksia",
   "components.installments.InstallmentsForm.IbanAccountNumber": "IBAN-Tilinumero",
   "components.installments.InstallmentsForm.dueDate": "Eräpäivä",
@@ -203,6 +209,7 @@
   "components.installments.InstallmentsTable.installmentType": "Maksulaji",
   "components.installments.InstallmentsTable.printBankTransfers": "Tulosta tilisiirrot",
   "components.installments.InstallmentsTable.referenceNumber": "Viitenumero",
+  "components.installments.InstallmentsTable.status": "Tila",
   "components.installments.InstallmentsTable.sentToSAP": "Lähetetty SAP:iin",
   "components.installments.InstallmentsTable.sum": "Summa",
   "components.installments.InstallmentsTable.total": "Yhteensä",
@@ -487,6 +494,12 @@
       "REFUND": "Hyvitys",
       "RESERVATION_FEE": "Varausmaksu",
       "RIGHT_OF_OCCUPANCY_PAYMENT": "AO-maksu"
+    },
+    "InstallmentPaymentStatus": {
+      "PAID": "Maksettu",
+      "UNPAID": "Maksamatta",
+      "UNDERPAID": "Alisuoritus",
+      "OVERPAID": "Ylisuoritus"
     },
     "HitasInstallmentPercentageSpecifiers": {
       "SALES_PRICE": "Myyntihinta",

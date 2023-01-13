@@ -75,6 +75,7 @@ const InstallmentsTable = ({ apartment, installments, project, reservationId, ta
         <th>{t(`${T_PATH}.dueDate`)}</th>
         <th>{t(`${T_PATH}.IbanAccountNumber`)}</th>
         <th>{t(`${T_PATH}.referenceNumber`)}</th>
+        <th>{t(`${T_PATH}.status`)}</th>
         <th>{t(`${T_PATH}.sentToSAP`)}</th>
       </tr>
     </thead>

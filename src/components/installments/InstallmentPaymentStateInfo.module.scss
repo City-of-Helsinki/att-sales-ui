@@ -1,0 +1,52 @@
+.plainButton {
+  border: none;
+  background-color: transparent;
+  appearance: none;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  > .messages {
+    flex-grow: 1;
+
+    > div:not(:last-child)::after {
+      content: ","
+    }
+  }
+
+
+  > svg {
+    flex-shrink: 0;
+    flex-grow: 0;
+    justify-self: flex-end;
+  }
+}
+.status-success {
+  svg {
+    color: var(--color-success);
+  }
+}
+.status-important {
+  svg {
+    color: var(--color-alert);
+  }
+}
+.status-unimportant {
+  color: var(--color-black-60);
+}
+
+.status-critical {
+  color: var(--color-error);
+}
+
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
