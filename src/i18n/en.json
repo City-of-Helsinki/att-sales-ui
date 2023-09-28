@@ -429,6 +429,7 @@
   "pages.customers.AddEditCustomer.postalCode": "Postal code",
   "pages.customers.AddEditCustomer.required": "Required",
   "pages.customers.AddEditCustomer.rightOfResidence": "Aso number",
+  "pages.customers.AddEditCustomer.rightOfResidenceIsOldBatch": "Aso number issued on 31.8.2023 or before",
   "pages.customers.AddEditCustomer.save": "Save",
   "pages.customers.AddEditCustomer.saving": "Saving",
   "pages.customers.AddEditCustomer.secondaryCustomer": "Co-Applicant",

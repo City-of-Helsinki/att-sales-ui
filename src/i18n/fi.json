@@ -429,6 +429,7 @@
   "pages.customers.AddEditCustomer.postalCode": "Postinumero",
   "pages.customers.AddEditCustomer.required": "Vaadittu kenttä",
   "pages.customers.AddEditCustomer.rightOfResidence": "Aso-numero",
+  "pages.customers.AddEditCustomer.rightOfResidenceIsOldBatch": "Aso-numero myönnetty 31.8.2023 tai aiemmin",
   "pages.customers.AddEditCustomer.save": "Tallenna",
   "pages.customers.AddEditCustomer.saving": "Tallennetaan",
   "pages.customers.AddEditCustomer.secondaryCustomer": "Kanssahakija",
