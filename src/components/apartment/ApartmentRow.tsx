@@ -31,6 +31,7 @@ import { showReservationAddModal } from '../../redux/features/reservationAddModa
 import { showReservationCancelModal } from '../../redux/features/reservationCancelModalSlice';
 import { showReservationEditModal } from '../../redux/features/reservationEditModalSlice';
 import { useGetApartmentReservationsQuery } from '../../redux/services/api';
+import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 import styles from './ApartmentRow.module.scss';
 
@@ -126,7 +127,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
 
   const renderHasoNumberOrFamilyIcon = (reservation: ApartmentReservationWithCustomer) => {
     if (ownershipType === 'haso') {
-      return reservation.right_of_residence;
+      return getRightOfResidenceText(reservation);
     }
     if (reservation.has_children) {
       return <IconGroup />;

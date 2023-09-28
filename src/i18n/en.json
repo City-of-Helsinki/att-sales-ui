@@ -475,6 +475,7 @@
   "utils.getOfferText.expired": "Offer expired",
   "utils.getProjectState.archived": "Archived",
   "utils.getProjectState.unpublished": "Unpublished",
+  "utils.getRightOfResidenceText.old": "old",
   "utils.renderBooleanTextualValue.no": "No",
   "utils.renderBooleanTextualValue.unknown": "Unknown",
   "utils.renderBooleanTextualValue.yes": "Yes",

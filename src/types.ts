@@ -156,6 +156,7 @@ export type Customer = {
   last_contact_date?: string | null;
   primary_profile: CustomerProfile;
   right_of_residence?: number | null;
+  right_of_residence_is_old_batch?: boolean | null;
   secondary_profile?: CustomerProfile | null;
   apartment_reservations?: CustomerReservation[] | null;
 };
@@ -252,6 +253,7 @@ export type ApartmentReservationWithCustomer = ApartmentReservation & {
   customer: ApartmentReservationCustomer;
   has_children: Customer['has_children'];
   right_of_residence: Customer['right_of_residence'];
+  right_of_residence_is_old_batch: Customer['right_of_residence_is_old_batch'];
   has_hitas_ownership: Customer['has_hitas_ownership'];
   is_age_over_55: Customer['is_age_over_55'];
   is_right_of_occupancy_housing_changer: Customer['is_right_of_occupancy_housing_changer'];
@@ -306,6 +308,7 @@ export type CustomerReservation = {
   project_uuid: Project['uuid'];
   queue_position?: number | null;
   right_of_residence: Customer['right_of_residence'];
+  right_of_residence_is_old_batch: Customer['right_of_residence_is_old_batch'];
   state: `${ApartmentReservationStates}`;
   state_change_events?: ReservationStateChangeEvent[] | null;
 };
@@ -335,6 +338,7 @@ export type AddEditCustomerFormFields = {
   last_contact_date: string | null;
   primary_profile: Omit<CustomerProfile, 'id'>;
   right_of_residence: number | null;
+  right_of_residence_is_old_batch: boolean | null;
   secondary_profile: Omit<CustomerProfile, 'id'> | null;
 };
 
@@ -386,6 +390,7 @@ export type OfferModalReservationData = Pick<
   | 'id'
   | 'offer'
   | 'right_of_residence'
+  | 'right_of_residence_is_old_batch'
   | 'has_hitas_ownership'
   | 'is_age_over_55'
   | 'is_right_of_occupancy_housing_changer'

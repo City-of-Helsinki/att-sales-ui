@@ -18,6 +18,7 @@ import { toast } from '../common/toast/ToastManager';
 import { useCreateOfferMutation, useGetOfferByIdQuery, useUpdateOfferByIdMutation } from '../../redux/services/api';
 
 import styles from './OfferModal.module.scss';
+import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 const T_PATH = 'components.offer.OfferModal';
 
@@ -292,7 +293,7 @@ const OfferModal = (): JSX.Element | null => {
           </td>
           {project.ownership_type.toLowerCase() === 'haso' ? (
             <>
-              <td>{reservation.right_of_residence || '-'}</td>
+              <td>{getRightOfResidenceText(reservation)}</td>
               <td>{renderBooleanTextualValue(reservation.is_age_over_55)}</td>
               <td>{renderBooleanTextualValue(reservation.is_right_of_occupancy_housing_changer)}</td>
             </>

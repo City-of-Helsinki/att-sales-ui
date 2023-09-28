@@ -5,6 +5,7 @@ import { Checkbox, Notification } from 'hds-react';
 
 import formatDateTime from '../../utils/formatDateTime';
 import { Customer } from '../../types';
+import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 import styles from './CustomerInfo.module.scss';
 
@@ -131,9 +132,7 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
           </InfoItem>
         </div>
         <div className={styles.extraInfoRowItem}>
-          <InfoItem label={t(`${T_PATH}.hasoNumber`)}>
-            {customer.right_of_residence ? customer.right_of_residence.toString() : '-'}
-          </InfoItem>
+          <InfoItem label={t(`${T_PATH}.hasoNumber`)}>{getRightOfResidenceText(customer)}</InfoItem>
         </div>
       </div>
 

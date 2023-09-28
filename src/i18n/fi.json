@@ -475,6 +475,7 @@
   "utils.getOfferText.expired": "Tarjous vanhentunut",
   "utils.getProjectState.archived": "Arkistoitu",
   "utils.getProjectState.unpublished": "Julkaisematon",
+  "utils.getRightOfResidenceText.old": "vanha",
   "utils.renderBooleanTextualValue.no": "Ei",
   "utils.renderBooleanTextualValue.unknown": "Ei tiedossa",
   "utils.renderBooleanTextualValue.yes": "Kyllä",
