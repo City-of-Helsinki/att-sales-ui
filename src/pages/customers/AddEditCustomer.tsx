@@ -92,6 +92,7 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
         .number()
         .nullable()
         .transform((val, originalVal) => (originalVal === '' ? null : val)),
+      right_of_residence_is_old_batch: yup.boolean().nullable(),
       primary_profile: profileSchema().required(),
       secondary_profile: yup
         .object()
@@ -142,6 +143,10 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
     // Set secondary profile as null if 'has_secondary_profile' checkbox is unchecked
     if (!formData.has_secondary_profile) {
       formData.secondary_profile = null;
+    }
+
+    if (!formData.right_of_residence) {
+      formData.right_of_residence_is_old_batch = null;
     }
 
     const apiData = omit(formData, 'created_at', 'has_secondary_profile');
@@ -713,6 +718,22 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
                 errorText={errors.right_of_residence?.message}
                 style={{ width: '50%' }}
                 {...register('right_of_residence')}
+              />
+            </div>
+            <div>
+              <Controller
+                name="right_of_residence_is_old_batch"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    id="rightOfResidenceIsOldBatch"
+                    label={t(`${T_PATH}.rightOfResidenceIsOldBatch`)}
+                    checked={Boolean(field.value)}
+                    errorText={errors.right_of_residence_is_old_batch?.message}
+                    style={{ marginRight: 'var(--spacing-l)' }}
+                    {...register('right_of_residence_is_old_batch')}
+                  />
+                )}
               />
             </div>
           </div>
