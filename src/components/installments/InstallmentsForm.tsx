@@ -27,6 +27,7 @@ import {
   ApartmentReservation,
   SelectOption,
 } from '../../types';
+import parseApiErrors from '../../utils/parseApiErrors';
 import { toast } from '../common/toast/ToastManager';
 import { useSetApartmentInstallmentsMutation } from '../../redux/services/api';
 
@@ -53,7 +54,7 @@ const InstallmentsForm = ({
   const [formData, setFormData] = useState<ApartmentInstallment[]>([]); // Form data to be sent to the API
   const [inputFields, setInputFields] = useState<ApartmentInstallmentInputRow[]>([]); // Form input field values
   const [totalSum, setTotalSum] = useState(0);
-  const [errorMessages, setErrorMessages] = useState<any[]>([]);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const {
     isOpen: isAccordionOpen,
     buttonProps: accordionButtonProps,
@@ -79,25 +80,7 @@ const InstallmentsForm = ({
             handleFormCallback();
           });
       } catch (err: any) {
-        // Catch error data and display error messages from the API in an error toast
-        const errorCode = err.originalStatus;
-        const errorData = err.data;
-        let errors = [];
-        if (Array.isArray(errorData)) {
-          errorData.forEach((row, index: number) => {
-            Object.entries(row).forEach(([key, value]) => {
-              const val = value as any;
-              errors.push(`Row ${index + 1} - ${key}: ${val[0].message}`);
-            });
-          });
-        } else {
-          if (errorData.message) {
-            errors.push(errorData.message);
-          } else {
-            errors.push(`${errorCode} - Error`);
-          }
-        }
-        setErrorMessages(errors);
+        setErrorMessages(parseApiErrors(err));
       }
     }
   };

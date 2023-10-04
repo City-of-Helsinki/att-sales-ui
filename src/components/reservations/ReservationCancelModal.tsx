@@ -3,6 +3,8 @@ import { Button, Dialog, IconInfoCircle } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 
+import { ReservationCancelReasons } from '../../enums';
+import { showApartmentRevaluationModal } from '../../redux/features/apartmentRevaluationModalSlice';
 import ReservationCancelForm from './ReservationCancelForm';
 import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
@@ -63,6 +65,17 @@ const ReservationCancelModal = (): JSX.Element | null => {
             toast.show({ type: 'success', content: t(`${T_PATH}.cancelledSuccessfully`) });
             setIsLoading(false);
             closeDialog();
+
+            const isTerminated = formData.cancellation_reason === ReservationCancelReasons.TERMINATED;
+            if (isTerminated && ownershipType.toLowerCase() === 'haso') {
+              dispatch(
+                showApartmentRevaluationModal({
+                  apartmentId: apartmentId,
+                  reservationId: reservationId,
+                  customer: customer,
+                })
+              );
+            }
           });
       } catch (err: any) {
         toast.show({ type: 'error' });

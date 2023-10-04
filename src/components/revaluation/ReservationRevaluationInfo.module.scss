@@ -1,0 +1,19 @@
+.editButton {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 4px;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.revaluationInfoRow {
+  font-size: var(--fontsize-body-s);
+  button {
+    text-decoration: underline;
+    color: var(--color-black-40);
+    padding: 0;
+  }
+}

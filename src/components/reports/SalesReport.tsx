@@ -9,6 +9,7 @@ import { toast } from '../../components/common/toast/ToastManager';
 import { useDownloadFile } from '../../utils/useDownloadFile';
 import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
+import reportStyles from '../../pages/reports/Reports.module.scss';
 import styles from './SalesReport.module.scss';
 
 const T_PATH = 'components.reports.SalesReport';
@@ -71,7 +72,7 @@ const SalesReport = (): JSX.Element => {
   });
 
   return (
-    <Container wide className={styles.wrapper}>
+    <Container wide className={reportStyles.wrapper}>
       <h2>{t(`${T_PATH}.salesReport`)}</h2>
       <p>{t(`${T_PATH}.reportHelpText`)}</p>
       <div className={styles.formFields}>

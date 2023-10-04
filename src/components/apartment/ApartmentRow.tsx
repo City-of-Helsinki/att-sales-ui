@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import ApartmentBaseDetails from './ApartmentBaseDetails';
+import { ApartmentReservationStates, ReservationCancelReasons, ROUTES } from '../../enums';
 import formatDateTime from '../../utils/formatDateTime';
 import OfferStatusText from '../offer/OfferStatusText';
 import {
@@ -24,12 +25,13 @@ import {
   Project,
   WinningReservation,
 } from '../../types';
-import { ApartmentReservationStates, ROUTES } from '../../enums';
+import ReservationRevaluationInfo from '../revaluation/ReservationRevaluationInfo';
 import { showOfferModal } from '../../redux/features/offerModalSlice';
 import { showReservationAddModal } from '../../redux/features/reservationAddModalSlice';
 import { showReservationCancelModal } from '../../redux/features/reservationCancelModalSlice';
 import { showReservationEditModal } from '../../redux/features/reservationEditModalSlice';
 import { useGetApartmentReservationsQuery } from '../../redux/services/api';
+import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 import styles from './ApartmentRow.module.scss';
 
@@ -59,7 +61,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
     skip: (!isLotteryCompleted && !applicationRowOpen) || (isLotteryCompleted && !resultRowOpen),
   });
 
-  const hasReservations: boolean = reservation_count > 0;
+  const hasReservations: boolean = reservation_count > 0 || !!reservations?.length;
 
   const toggleApplicationRow = () => setApplicationRowOpen(!applicationRowOpen);
   const toggleResultRow = () => setResultRowOpen(!resultRowOpen);
@@ -125,7 +127,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
 
   const renderHasoNumberOrFamilyIcon = (reservation: ApartmentReservationWithCustomer) => {
     if (ownershipType === 'haso') {
-      return reservation.right_of_residence;
+      return getRightOfResidenceText(reservation);
     }
     if (reservation.has_children) {
       return <IconGroup />;
@@ -177,12 +179,18 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
     ) => (
       <div className={styles.actionButtons}>
         {isCanceled(reservation) ? (
-          <div className={styles.cancellationReason}>
-            {reservation.cancellation_reason
-              ? t(`ENUMS.ReservationCancelReasons.${reservation.cancellation_reason.toUpperCase()}`)
-              : t(`${T_PATH}.canceled`)}{' '}
-            {reservation.cancellation_timestamp && formatDateTime(reservation.cancellation_timestamp)}
-          </div>
+          <>
+            <div className={styles.cancellationReason}>
+              {reservation.cancellation_reason
+                ? t(`ENUMS.ReservationCancelReasons.${reservation.cancellation_reason.toUpperCase()}`)
+                : t(`${T_PATH}.canceled`)}{' '}
+              {reservation.cancellation_timestamp && formatDateTime(reservation.cancellation_timestamp)}
+            </div>
+            {projectOwnershipType.toLowerCase() === 'haso' &&
+              reservation.cancellation_reason === ReservationCancelReasons.TERMINATED && (
+                <ReservationRevaluationInfo reservationWithCustomer={reservation} />
+              )}
+          </>
         ) : (
           <>
             <Button

@@ -9,6 +9,7 @@ export enum ROUTES {
   NOT_FOUND = '404',
   PROJECTS = 'projects',
   REPORTS = 'reports',
+  COST_INDEX = 'reports/cost-index',
 }
 
 export enum StateOfSale {
@@ -85,4 +86,11 @@ export enum OfferState {
   ACCEPTED = 'accepted',
   PENDING = 'pending',
   REJECTED = 'rejected',
+}
+
+export enum ApartmentInstallmentPaymentStatus {
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+  OVERPAID = 'OVERPAID',
+  UNDERPAID = 'UNDERPAID',
 }

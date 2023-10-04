@@ -21,6 +21,7 @@ import { useDownloadFile } from '../../utils/useDownloadFile';
 import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 import styles from './CustomerReservationRow.module.scss';
+import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 const T_PATH = 'components.reservations.CustomerReservationRow';
 
@@ -179,7 +180,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
                   {t(`${T_PATH}.rightOfResidence`)}
                   <span className={styles.asterisk}>&nbsp;*</span>
                 </th>
-                <td>{reservation.right_of_residence ? reservation.right_of_residence : '-'}</td>
+                <td>{getRightOfResidenceText(customer)}</td>
               </tr>
               <tr>
                 <th>
@@ -291,7 +292,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               </div>
               {isOwnershipTypeHaso && (
                 <div>
-                  {t(`${T_PATH}.hasoNumber`)}: {reservation.right_of_residence}
+                  {t(`${T_PATH}.hasoNumber`)}:{' ' + getRightOfResidenceText(customer)}
                 </div>
               )}
             </>

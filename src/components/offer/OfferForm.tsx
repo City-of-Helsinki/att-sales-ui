@@ -173,6 +173,7 @@ const OfferForm = ({ formId, handleFormCallback, offer, ownershipType, reservati
                   render={({ field }) => (
                     <RadioButton
                       id="state_pending"
+                      name="state"
                       checked={field.value === OfferState.PENDING}
                       disabled={!!offer.concluded_at}
                       label={getRadioLabel(OfferState.PENDING)}
@@ -188,6 +189,7 @@ const OfferForm = ({ formId, handleFormCallback, offer, ownershipType, reservati
                   render={({ field }) => (
                     <RadioButton
                       id="state_accepted"
+                      name="state"
                       checked={field.value === OfferState.ACCEPTED}
                       disabled={!!offer.concluded_at}
                       label={getRadioLabel(OfferState.ACCEPTED)}
@@ -203,6 +205,7 @@ const OfferForm = ({ formId, handleFormCallback, offer, ownershipType, reservati
                   render={({ field }) => (
                     <RadioButton
                       id="state_rejected"
+                      name="state"
                       checked={field.value === OfferState.REJECTED}
                       disabled={!!offer.concluded_at}
                       label={getRadioLabel(OfferState.REJECTED)}

@@ -37,6 +37,7 @@
   display: block;
   padding-top: 0;
   padding-bottom: 0;
+  min-width: 0;
 }
 
 .smallToggleButton {
@@ -129,6 +130,7 @@
   flex-grow: 1;
   flex-shrink: 1;
   align-items: flex-start;
+  min-width: 0;
 
   &.open {
     display: none;
@@ -320,6 +322,7 @@
 }
 
 .actionButtons {
+  text-align: right;
   button + button {
     margin-left: var(--spacing-3-xs);
   }

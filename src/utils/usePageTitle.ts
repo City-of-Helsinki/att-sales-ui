@@ -1,15 +1,19 @@
 import { useEffect } from 'react';
 
 export function usePageTitle(title: string) {
-  const titlePostfix = '- Asuntomyynti';
+  const baseTitle = 'Asuntomyynti';
 
   useEffect(() => {
     const prevTitle = document.title;
 
-    document.title = `${title} ${titlePostfix}`;
+    if (title) {
+      document.title = `${title} - ${baseTitle}`;
+    } else {
+      document.title = baseTitle;
+    }
 
     return () => {
-      document.title = `${prevTitle} ${titlePostfix}`;
+      document.title = prevTitle ? prevTitle : baseTitle;
     };
   });
 }

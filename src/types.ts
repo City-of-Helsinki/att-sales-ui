@@ -1,4 +1,5 @@
 import {
+  ApartmentInstallmentPaymentStatus,
   ApartmentReservationStates,
   ApartmentState,
   HasoInstallmentPercentageSpecifiers,
@@ -155,6 +156,7 @@ export type Customer = {
   last_contact_date?: string | null;
   primary_profile: CustomerProfile;
   right_of_residence?: number | null;
+  right_of_residence_is_old_batch?: boolean | null;
   secondary_profile?: CustomerProfile | null;
   apartment_reservations?: CustomerReservation[] | null;
 };
@@ -176,6 +178,19 @@ export type ApartmentInstallment = {
   due_date: string | null;
   reference_number?: string | null;
   added_to_be_sent_to_sap_at?: string | null;
+  payment_state: ApartmentInstallmentPaymentState;
+  payments: ApartmentInstallmentPayment[];
+};
+
+export type ApartmentInstallmentPaymentState = {
+  overdue: boolean;
+  status: `${ApartmentInstallmentPaymentStatus}`;
+  amount: number;
+};
+
+export type ApartmentInstallmentPayment = {
+  amount: number;
+  payment_date: string;
 };
 
 export type ApartmentInstallmentCandidate = Omit<
@@ -231,12 +246,14 @@ export type ApartmentReservation = {
   priority_number?: number | null;
   queue_position?: number | null;
   state: `${ApartmentReservationStates}`;
+  revaluation: ApartmentRevaluationWithId | null;
 };
 
 export type ApartmentReservationWithCustomer = ApartmentReservation & {
   customer: ApartmentReservationCustomer;
   has_children: Customer['has_children'];
   right_of_residence: Customer['right_of_residence'];
+  right_of_residence_is_old_batch: Customer['right_of_residence_is_old_batch'];
   has_hitas_ownership: Customer['has_hitas_ownership'];
   is_age_over_55: Customer['is_age_over_55'];
   is_right_of_occupancy_housing_changer: Customer['is_right_of_occupancy_housing_changer'];
@@ -291,6 +308,7 @@ export type CustomerReservation = {
   project_uuid: Project['uuid'];
   queue_position?: number | null;
   right_of_residence: Customer['right_of_residence'];
+  right_of_residence_is_old_batch: Customer['right_of_residence_is_old_batch'];
   state: `${ApartmentReservationStates}`;
   state_change_events?: ReservationStateChangeEvent[] | null;
 };
@@ -320,6 +338,7 @@ export type AddEditCustomerFormFields = {
   last_contact_date: string | null;
   primary_profile: Omit<CustomerProfile, 'id'>;
   right_of_residence: number | null;
+  right_of_residence_is_old_batch: boolean | null;
   secondary_profile: Omit<CustomerProfile, 'id'> | null;
 };
 
@@ -328,10 +347,21 @@ export type ReservationEditFormData = {
   comment: string;
 };
 
+export type RevaluationFormData = {
+  start_date: string;
+  start_cost_index_value: string;
+  start_right_of_occupancy_payment: string;
+  alteration_cost: string;
+  end_date: string;
+  end_cost_index_value: string;
+  end_right_of_occupancy_payment: string;
+};
+
 export type ReservationCancelFormData = {
   cancellation_reason: string;
   comment: string;
   new_customer_id?: string;
+  revaluation?: RevaluationFormData;
 };
 
 export type ReservationAddFormData = {
@@ -360,6 +390,7 @@ export type OfferModalReservationData = Pick<
   | 'id'
   | 'offer'
   | 'right_of_residence'
+  | 'right_of_residence_is_old_batch'
   | 'has_hitas_ownership'
   | 'is_age_over_55'
   | 'is_right_of_occupancy_housing_changer'
@@ -381,4 +412,35 @@ export type OfferMessage = {
   subject: string;
   body: string;
   recipients: OfferMessageRecipient[];
+};
+
+export type CostIndex = {
+  id: number;
+  valid_from: string;
+  value: string;
+};
+
+export type AddEditCostIndex = {
+  valid_from: string;
+  value: string;
+};
+
+export type ApartmentRevaluation = {
+  start_date: string;
+  start_cost_index_value: string;
+  end_date: string;
+  end_cost_index_value: string;
+  alteration_work: string;
+  start_right_of_occupancy_payment: string;
+  end_right_of_occupancy_payment: string;
+};
+
+export type ApartmentRevaluationWithId = ApartmentRevaluation & {
+  id: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ApartmentHASOPayment = {
+  right_of_occupancy_payment: string;
 };

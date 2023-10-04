@@ -2,6 +2,7 @@ import { configureStore, combineReducers, ThunkAction, Action } from '@reduxjs/t
 import { setupListeners } from '@reduxjs/toolkit/query';
 import type { PreloadedState } from '@reduxjs/toolkit';
 
+import apartmentRevaluationModalReducer from './features/apartmentRevaluationModalSlice';
 import authReducer from './features/authSlice';
 import apiTokenReducer from './features/apiTokenSlice';
 import offerModalReducer from './features/offerModalSlice';
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
   reservationAddModal: reservationAddModalReducer,
   reservationCancelModal: reservationCancelModalReducer,
   reservationEditModal: reservationEditModalReducer,
+  apartmentRevaluationModal: apartmentRevaluationModalReducer,
   authSessionExpiringModal: authSessionExpiringModalReducer,
   [api.reducerPath]: api.reducer,
 });

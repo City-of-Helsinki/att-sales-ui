@@ -2,11 +2,13 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import getApiBaseUrl from '../../utils/getApiBaseUrl';
 import {
+  AddEditCostIndex,
   AddEditCustomerFormFields,
   Apartment,
   ApartmentInstallment,
   ApartmentReservationWithCustomer,
   ApartmentReservationWithInstallments,
+  CostIndex,
   Customer,
   CustomerListItem,
   Project,
@@ -19,6 +21,8 @@ import {
   OfferFormData,
   Offer,
   OfferMessage,
+  ApartmentHASOPayment,
+  ApartmentRevaluation,
 } from '../../types';
 import type { RootState } from '../store';
 import { InstallmentTypes } from '../../enums';
@@ -46,6 +50,9 @@ export const api = createApi({
   }),
   tagTypes: [
     'ApartmentReservations',
+    'ApartmentHASOPayment',
+    'ApartmentRevaluation',
+    'CostIndex',
     'Customer',
     'Offer',
     'OfferMessage',
@@ -77,6 +84,64 @@ export const api = createApi({
         method: 'POST',
         body: params,
       }),
+    }),
+
+    // GET: List CostIndexTable values
+    getCostIndexes: builder.query<CostIndex[], void>({
+      query: () => 'cost_indexes/',
+      providesTags: [{ type: 'CostIndex', id: 'LIST' }],
+    }),
+
+    // POST: Add CostIndexTable
+    addCostIndex: builder.mutation<any, { formData: AddEditCostIndex }>({
+      query: (params) => {
+        return {
+          url: 'cost_indexes/',
+          method: 'POST',
+          body: params.formData,
+        };
+      },
+      invalidatesTags: (result, error, arg) => [{ type: 'CostIndex', id: 'LIST' }],
+    }),
+
+    // GET: Fetch apartment HASO payment
+    getApartmentHASOPayment: builder.query<ApartmentHASOPayment, string>({
+      query: (apartment_uuid) => `apartment/${apartment_uuid}/haso_payment/`,
+      providesTags: (result, error, arg) => [{ type: 'ApartmentHASOPayment', id: arg }],
+    }),
+
+    // POST: Create HASO apartment revaluation
+    addApartmentRevaluation: builder.mutation<any, { formData: ApartmentRevaluation; apartmentId: string }>({
+      query: (params) => {
+        return {
+          url: 'apartment/revaluations/',
+          method: 'POST',
+          body: params.formData,
+        };
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: 'ApartmentRevaluation', id: 'LIST' },
+        { type: 'ApartmentReservations', id: arg.apartmentId },
+        { type: 'ApartmentHASOPayment', id: arg.apartmentId },
+      ],
+    }),
+
+    updateApartmentRevaluation: builder.mutation<
+      any,
+      { formData: ApartmentRevaluation; id: number; apartmentId: string }
+    >({
+      query: (params) => {
+        return {
+          url: `apartment/revaluations/${params.id}/`,
+          method: 'PUT',
+          body: params.formData,
+        };
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: 'ApartmentRevaluation', id: arg.id },
+        { type: 'ApartmentReservations', id: arg.apartmentId },
+        { type: 'ApartmentHASOPayment', id: arg.apartmentId },
+      ],
     }),
 
     // GET: Search for customers with search params
@@ -337,4 +402,9 @@ export const {
   useCreateOfferMutation,
   useUpdateOfferByIdMutation,
   useGetOfferMessageQuery,
+  useGetCostIndexesQuery,
+  useAddCostIndexMutation,
+  useGetApartmentHASOPaymentQuery,
+  useAddApartmentRevaluationMutation,
+  useUpdateApartmentRevaluationMutation,
 } = api;
