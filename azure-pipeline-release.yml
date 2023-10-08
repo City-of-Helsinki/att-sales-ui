@@ -2,9 +2,9 @@
 # an update to the specified branches or you push specified tags.
 trigger:
   batch: true
-  branches:
+  tags:
     include:
-    - develop
+    - release-*
   paths:
     exclude:
     - README.md
@@ -40,9 +40,8 @@ resources:
 
 extends:
   # Filename in Azure DevOps Repository (note possible -ui or -api)
-  # Django example: azure-pipelines-PROJECTNAME-api-master.yml
-  # Drupal example: azure-pipelines-drupal-master.yml
-  template: azure-pipelines-asuntotuotanto-sales-ui-devtest.yml@asuntotuotanto-pipelines
-  # Image tag name for Fuse projects
+  # Django example: azure-pipelines-PROJECTNAME-api-release.yml
+  # Drupal example: azure-pipelines-drupal-release.yml
+  template: azure-pipeline-att-sales-ui-release.yml@asuntotuotanto-pipelines
   #parameters:
     #imagetag: ${{ parameters.imagetag }}
