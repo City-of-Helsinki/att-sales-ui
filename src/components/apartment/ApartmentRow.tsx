@@ -375,12 +375,14 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
 
         <div className={cx(styles.toggleContent, isRowOpen && styles.open)} id={`apartment-row-${apartment_uuid}`}>
           {hasReservations ? (
-            reservations?.map((reservation) => (
-              <div className={styles.singleReservation} key={reservation.id}>
-                <div className={styles.singleReservationColumn}>{renderApplicants(reservation, false)}</div>
-                <div className={styles.singleReservationColumn}>{renderHasoNumberOrFamilyIcon(reservation)}</div>
-              </div>
-            ))
+            reservations
+              ?.filter((reservation) => !isCanceled(reservation))
+              .map((reservation) => (
+                <div className={styles.singleReservation} key={reservation.id}>
+                  <div className={styles.singleReservationColumn}>{renderApplicants(reservation, false)}</div>
+                  <div className={styles.singleReservationColumn}>{renderHasoNumberOrFamilyIcon(reservation)}</div>
+                </div>
+              ))
           ) : (
             <div className={styles.singleReservation}>
               <span className={styles.textMuted}>{t(`${T_PATH}.noApplicants`)}</span>
