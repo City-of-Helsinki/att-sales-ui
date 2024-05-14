@@ -6,6 +6,7 @@ import { useGetCustomerByIdQuery } from '../../redux/services/api';
 import { ApartmentReservation, Customer } from '../../types';
 import { useDownloadFile } from '../../utils/useDownloadFile';
 import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
+import { slugify } from '../../utils/slugifyString';
 import { toast } from '../common/toast/ToastManager';
 
 const T_PATH = 'components.reservations.ReservationReleasePDF';
@@ -40,8 +41,8 @@ const ReservationReleasePDF = ({ reservationId, customerId, disabled = false }: 
 
     const projectName = reservation?.project_housing_company.replace(/\s/g, '-').toLocaleLowerCase();
     const apartmentNumber = reservation?.apartment_number.replace(/\s/g, '').toLocaleLowerCase();
-    const identifier = projectName && apartmentNumber ? JSON.stringify(projectName + '_' + apartmentNumber) : '';
-
+    let  identifier = projectName && apartmentNumber ? JSON.stringify(projectName + '_' + apartmentNumber) : '';
+    identifier = slugify(identifier);
     // Example output: "luovutushintalaskelma_as-oy-project-x_a01_2022-01-01.pdf" (on Chrome)
     // Example output: "luovutushintalaskelma as-oy-project-x a01_2022-01-01.pdf" (on FF :-)
     return `luovutushintalaskelma${identifier}${new Date().toJSON().slice(0, 10)}.pdf`;

@@ -16,6 +16,7 @@ import { getReservationApartmentData, getReservationProjectData } from '../../ut
 import { renderBooleanTextualValue } from '../../utils/renderBooleanTextualValue';
 import { showOfferModal } from '../../redux/features/offerModalSlice';
 import { showReservationCancelModal } from '../../redux/features/reservationCancelModalSlice';
+import { slugify } from '../../utils/slugifyString';
 import { toast } from '../common/toast/ToastManager';
 import { useDownloadFile } from '../../utils/useDownloadFile';
 import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
@@ -58,17 +59,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
   const getContractFileName = (): string => {
     const projectName = reservation.project_housing_company;
     const apartmentNumber = reservation.apartment_number;
-    let prefix = '';
-
-    const slugify = (text: string): string => {
-      return text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9 ]/g, '')
-        .replace(/\s+/g, '-');
-    };
+    let prefix = ''; 
   
     if (isOwnershipTypeHaso) {
       prefix = 'sopimus';
@@ -77,8 +68,8 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
     }
 
     // Example output: "kauppakirja_as-oy-project-x_a01_2022-01-01.pdf"
-     
-    return `${prefix}${slugify(projectName + ' ' + apartmentNumber)}-${new Date().toJSON().slice(0, 10)}.pdf`;
+  
+    return `${prefix}-${slugify(projectName + ' ' + apartmentNumber)}-${new Date().toJSON().slice(0, 10)}.pdf`;
   };
 
   const contractApiUrl = `/apartment_reservations/${reservation.id}/contract/`;
