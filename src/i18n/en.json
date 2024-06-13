@@ -341,6 +341,7 @@
   "components.reservations.CustomerReservationRow.showChangeHistory": "Show change history",
   "components.reservations.CustomerReservationRow.showReservationInfo": "Show reservation info",
   "components.reservations.CustomerReservationRow.state": "Reservation state",
+  "components.reservations.CustomerReservationRow.submittedLate": "Submitted late",
   "components.reservations.CustomerReservationRow.tableHelpText": "Data at the time when the reservation was created",
   "components.reservations.CustomerReservationRow.timestamp": "Timestamp",
   "components.reservations.CustomerReservationRow.user": "User",
