@@ -168,6 +168,10 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
             </td>
           </tr>
           <tr>
+            <th>{t(`${T_PATH}.submittedLate`)}</th>
+            <td>{reservation.submitted_late &&  t(`${T_PATH}.yes`)}</td>
+          </tr>
+          <tr>
             <th>{t(`${T_PATH}.lotteryCompleted`)}</th>
             <td>{reservation.project_lottery_completed ? t(`${T_PATH}.yes`) : t(`${T_PATH}.no`)}</td>
           </tr>
@@ -303,7 +307,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               </div>
               {isOwnershipTypeHaso && (
                 <div>
-                  {t(`${T_PATH}.hasoNumber`)}:{' ' + getRightOfResidenceText(customer)}
+                  {t(`${T_PATH}.hasoNumber`)}:{' ' + getRightOfResidenceText(customer)} {reservation.submitted_late && "*"}
                 </div>
               )}
             </>

@@ -102,7 +102,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
           <Link to={`/${ROUTES.CUSTOMERS}/${reservation.customer.id}`} className={styles.customerLink}>
             <div className={styles.user}>
               {isLotteryResult && <span className={styles.queueNumberSpacer}>{renderPositionNumber()}</span>}
-              {renderCustomerProfile(reservation.customer.primary_profile)}
+              {renderCustomerProfile(reservation.customer.primary_profile)}   {reservation.submitted_late && "*"}
             </div>
             {reservation.customer.secondary_profile && (
               <div className={styles.user}>

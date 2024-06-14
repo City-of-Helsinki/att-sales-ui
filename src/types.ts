@@ -247,6 +247,7 @@ export type ApartmentReservation = {
   queue_position?: number | null;
   state: `${ApartmentReservationStates}`;
   revaluation: ApartmentRevaluationWithId | null;
+  submitted_late: boolean;
 };
 
 export type ApartmentReservationWithCustomer = ApartmentReservation & {
@@ -311,6 +312,7 @@ export type CustomerReservation = {
   right_of_residence_is_old_batch: Customer['right_of_residence_is_old_batch'];
   state: `${ApartmentReservationStates}`;
   state_change_events?: ReservationStateChangeEvent[] | null;
+  submitted_late: boolean;
 };
 
 export type SelectOption = {
