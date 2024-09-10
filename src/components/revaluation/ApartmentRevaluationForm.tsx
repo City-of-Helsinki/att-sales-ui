@@ -37,8 +37,8 @@ function stringDecimalToNumber(decimal: string) {
   return parseFloat(decimal.replace(',', '.'));
 }
 
-function numberFlooredToTwoDecimals(value: number) {
-  return Math.floor(value * 100) / 100;
+function numberCeiledToTwoDecimals(value: number) {
+  return Math.ceil(value * 100) / 100;
 }
 
 function determineAdjustedCost(
@@ -51,7 +51,7 @@ function determineAdjustedCost(
     (stringDecimalToNumber(originalRightOfOccupancyPayment) / stringDecimalToNumber(startIndex)) *
       stringDecimalToNumber(endIndex) +
     (alterationWork ? stringDecimalToNumber(alterationWork) : 0);
-  return numberFlooredToTwoDecimals(adjustedCost);
+  return numberCeiledToTwoDecimals(adjustedCost);
 }
 
 function getDefaults(revaluation?: ApartmentRevaluation, newDefaults?: NewDefaults) {
