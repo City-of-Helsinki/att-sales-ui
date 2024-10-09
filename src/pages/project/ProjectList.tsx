@@ -218,7 +218,7 @@ const ProjectList = (): JSX.Element => {
           <h1>{t(`${T_PATH}.pageTitle`)}</h1>
         </Container>
       </header>
-      <Koros type="pulse" flipHorizontal style={{ fill: 'var(--color-engel)' }} />
+      <Koros type="pulse" flipVertical style={{ fill: 'var(--color-engel)' }} />
       {renderToolbar()}
       {renderContent()}
     </>
