@@ -20,7 +20,7 @@
     "axios": "^0.26.1",
     "big.js": "^6.1.1",
     "classnames": "^2.3.1",
-    "hds-react": "^2.3.0",
+    "hds-react": "^3.10.1",
     "history": "^5.2.0",
     "http-status-typed": "^1.0.1",
     "i18next": "^21.3.2",
