@@ -11,7 +11,7 @@ import Installments from '../../components/installments/Installments';
 import CustomerReservations from '../../components/reservations/CustomerReservations';
 import Spinner from '../../components/common/spinner/Spinner';
 import { ROUTES } from '../../enums';
-import { useGetCustomerByIdQuery } from '../../redux/services/api';
+import { useGetCustomerByIdQuery, useGetCustomerLatestApplicantInfoQuery } from '../../redux/services/api';
 import { Customer } from '../../types';
 import { usePageTitle } from '../../utils/usePageTitle';
 
@@ -23,6 +23,7 @@ const CustomerDetail = (): JSX.Element | null => {
   const { t } = useTranslation();
   const { customerId } = useParams();
   const { data: customer, isLoading, isFetching, isError, isSuccess } = useGetCustomerByIdQuery(customerId || '0');
+  const { data: applicant } = useGetCustomerLatestApplicantInfoQuery(customerId || '0');
 
   usePageTitle(customer?.id ? `${t('PAGES.customers')} - ${customer.id}` : t('PAGES.customers'));
 
@@ -103,7 +104,7 @@ const CustomerDetail = (): JSX.Element | null => {
             </a>
           </div>
         </div>
-        <CustomerInfo customer={customer} />
+        <CustomerInfo customer={customer} applicant={applicant} />
         <div className={styles.tabsWrapper}>
           <Tabs>
             <TabList className={styles.tabs}>

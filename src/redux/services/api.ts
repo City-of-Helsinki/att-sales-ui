@@ -23,6 +23,7 @@ import {
   OfferMessage,
   ApartmentHASOPayment,
   ApartmentRevaluation,
+  Applicant,
 } from '../../types';
 import type { RootState } from '../store';
 import { InstallmentTypes } from '../../enums';
@@ -52,6 +53,7 @@ export const api = createApi({
     'ApartmentReservations',
     'ApartmentHASOPayment',
     'ApartmentRevaluation',
+    'Applicant',
     'CostIndex',
     'Customer',
     'Offer',
@@ -154,6 +156,12 @@ export const api = createApi({
     getCustomerById: builder.query<Customer, string>({
       query: (id) => `customers/${id}/`,
       providesTags: (result, error, arg) => [{ type: 'Customer', id: arg }],
+    }),
+
+    // GET: Fetch user latest applicant's details
+    getCustomerLatestApplicantInfo: builder.query<Applicant, string>({
+      query: (id) => `applicant/latest/${id}/`,
+      providesTags: (result, error, arg) => [{ type: 'Applicant', id: arg }],
     }),
 
     // POST: Create a new customer
@@ -389,6 +397,7 @@ export const {
   usePartialUpdateProjectExtraDataMutation,
   useGetCustomersQuery,
   useGetCustomerByIdQuery,
+  useGetCustomerLatestApplicantInfoQuery,
   useCreateCustomerMutation,
   useUpdateCustomerByIdMutation,
   useCreateApartmentReservationMutation,

@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { Checkbox, Notification } from 'hds-react';
+import { Checkbox, Notification, Tabs, TabList, Tab, TabPanel } from 'hds-react';
 
 import formatDateTime from '../../utils/formatDateTime';
-import { Customer } from '../../types';
+import { Customer, Applicant } from '../../types';
 import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 import styles from './CustomerInfo.module.scss';
@@ -13,16 +13,17 @@ const T_PATH = 'components.customers.CustomerInfo';
 
 interface IProps {
   customer?: Customer;
+  applicant?: Applicant;
 }
 
 interface InfoItemProps {
   label: string;
   largeFont?: boolean;
-  children?: string | React.ReactNode;
 }
 
-const CustomerInfo = ({ customer }: IProps): JSX.Element => {
+const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   if (!customer) {
     return (
@@ -32,7 +33,7 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
     );
   }
 
-  const InfoItem = ({ label, largeFont, children }: InfoItemProps): JSX.Element => (
+  const InfoItem: React.FC<InfoItemProps> = ({ label, largeFont, children }) => (
     <div className={styles.singleInfoItem}>
       <div className={styles.singleInfoItemLabel}>{label}</div>
       <div className={cx(styles.singleInfoItemContent, largeFont && styles.largeFont)}>{children}</div>
@@ -42,7 +43,7 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
   const renderProfileInfo = (customer: Customer, isPrimary: boolean) => {
     const profile = isPrimary ? customer.primary_profile : customer.secondary_profile;
 
-    if (!profile) return;
+    if (!profile) return null;
 
     return (
       <>
@@ -84,65 +85,92 @@ const CustomerInfo = ({ customer }: IProps): JSX.Element => {
     );
   };
 
-  return (
-    <>
-      <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, true)}</div>
+  const renderApplicantInfo = (applicant: Applicant | undefined) => {
+    if (!applicant) return null;
 
-      <div className={styles.extraInfoRow}>
-        <div className={styles.extraInfoRowItem}>
-          <InfoItem label={t(`${T_PATH}.hitas`)}>
-            <div className={styles.checkBoxRow}>
-              <Checkbox
-                id="customerHasHitasOwnership"
-                label={t(`${T_PATH}.customerHasHitasOwnership`)}
-                checked={Boolean(customer.has_hitas_ownership)}
-                readOnly
-                disabled
-                style={{ marginRight: 'var(--spacing-l)' }}
-              />
-              <Checkbox
-                id="customerHasChildren"
-                label={t(`${T_PATH}.familyWithChildren`)}
-                checked={Boolean(customer.has_children)}
-                readOnly
-                disabled
-              />
-            </div>
-          </InfoItem>
-        </div>
-        <div className={styles.extraInfoRowItem}>
-          <InfoItem label={t(`${T_PATH}.haso`)}>
-            <div className={styles.checkBoxRow}>
-              <Checkbox
-                id="customerIsOver55"
-                label={t(`${T_PATH}.customerIsOver55`)}
-                checked={Boolean(customer.is_age_over_55)}
-                readOnly
-                disabled
-                style={{ marginRight: 'var(--spacing-l)' }}
-              />
-              <Checkbox
-                id="customerHasHitasOwnership"
-                label={t(`${T_PATH}.customerHasHasoOwnership`)}
-                checked={Boolean(customer.is_right_of_occupancy_housing_changer)}
-                readOnly
-                disabled
-              />
-            </div>
-          </InfoItem>
-        </div>
-        <div className={styles.extraInfoRowItem}>
-          <InfoItem label={t(`${T_PATH}.hasoNumber`)}>{getRightOfResidenceText(customer)}</InfoItem>
-        </div>
+    return (
+      <div className={styles.customerInfoColumn}>
+        <InfoItem label={t(`${T_PATH}.name`)} largeFont>
+          {applicant.last_name}, {applicant.first_name}
+        </InfoItem>
+        <InfoItem label={t(`${T_PATH}.email`)}>{applicant.email || '-'}</InfoItem>
+        <InfoItem label={t(`${T_PATH}.phoneNumber`)}>{applicant.phone_number || '-'}</InfoItem>
+        <InfoItem label={t(`${T_PATH}.streetAddress`)}>{applicant.street_address || '-'}</InfoItem>
+        <InfoItem label={t(`${T_PATH}.city`)}>{applicant.city || '-'}</InfoItem>
+        <InfoItem label={t(`${T_PATH}.postalCode`)}>{applicant.postal_code || '-'}</InfoItem>
       </div>
+    );
+  };
 
-      {customer.secondary_profile && (
-        <>
-          <h2 className={styles.coApplcantTitle}>{t(`${T_PATH}.coApplicant`)}</h2>
-          <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, false)}</div>
-        </>
-      )}
-    </>
+  return (
+    <Tabs initiallyActiveTab={activeTab}>
+      <TabList>
+        <Tab onClick={() => setActiveTab(0)}>{t(`${T_PATH}.customerDetailsTab`)}</Tab>
+        <Tab onClick={() => setActiveTab(1)}>{t(`${T_PATH}.latestApplicantTab`)}</Tab>
+      </TabList>
+
+      <TabPanel>
+        <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, true)}</div>
+
+        <div className={styles.extraInfoRow}>
+          <div className={styles.extraInfoRowItem}>
+            <InfoItem label={t(`${T_PATH}.hitas`)}>
+              <div className={styles.checkBoxRow}>
+                <Checkbox
+                  id="customerHasHitasOwnership"
+                  label={t(`${T_PATH}.customerHasHitasOwnership`)}
+                  checked={Boolean(customer.has_hitas_ownership)}
+                  readOnly
+                  disabled
+                  style={{ marginRight: 'var(--spacing-l)' }}
+                />
+                <Checkbox
+                  id="customerHasChildren"
+                  label={t(`${T_PATH}.familyWithChildren`)}
+                  checked={Boolean(customer.has_children)}
+                  readOnly
+                  disabled
+                />
+              </div>
+            </InfoItem>
+          </div>
+          <div className={styles.extraInfoRowItem}>
+            <InfoItem label={t(`${T_PATH}.haso`)}>
+              <div className={styles.checkBoxRow}>
+                <Checkbox
+                  id="customerIsOver55"
+                  label={t(`${T_PATH}.customerIsOver55`)}
+                  checked={Boolean(customer.is_age_over_55)}
+                  readOnly
+                  disabled
+                />
+                <Checkbox
+                  id="customerHasHasoOwnership"
+                  label={t(`${T_PATH}.customerHasHasoOwnership`)}
+                  checked={Boolean(customer.is_right_of_occupancy_housing_changer)}
+                  readOnly
+                  disabled
+                />
+              </div>
+            </InfoItem>
+          </div>
+          <div className={styles.extraInfoRowItem}>
+            <InfoItem label={t(`${T_PATH}.hasoNumber`)}>{getRightOfResidenceText(customer)}</InfoItem>
+          </div>
+        </div>
+
+        {customer.secondary_profile && (
+          <>
+            <h2 className={styles.coApplicantTitle}>{t(`${T_PATH}.coApplicant`)}</h2>
+            <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, false)}</div>
+          </>
+        )}
+      </TabPanel>
+
+      <TabPanel>
+        <div className={styles.customerInfoWrapper}>{renderApplicantInfo(applicant)}</div>
+      </TabPanel>
+    </Tabs>
   );
 };
 

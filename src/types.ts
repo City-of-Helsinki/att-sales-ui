@@ -171,6 +171,20 @@ export type CustomerListItem = {
   secondary_last_name?: string | null;
 };
 
+export type Applicant = {
+    age: number;
+    city: string;
+    date_of_birth: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_primary_applicant: boolean;
+    phone_number: string;
+    postal_code: string;
+    ssn_suffix: string;
+    street_address: string;
+  }
+
 export type ApartmentInstallment = {
   type: `${InstallmentTypes}`;
   amount: number;
