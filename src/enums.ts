@@ -10,6 +10,7 @@ export enum ROUTES {
   PROJECTS = 'projects',
   REPORTS = 'reports',
   COST_INDEX = 'reports/cost-index',
+  CALLBACK = '/callback',
 }
 
 export enum StateOfSale {

@@ -3,12 +3,11 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
-import HandleCallback from './components/auth/HandleCallback';
 import reportWebVitals from './reportWebVitals';
-import StoreProvider from './redux/StoreProvider';
 import ScrollToTop from './utils/scrollToTop';
-import { ClientProvider } from './components/auth/ClientProvider';
 import { ApiAccessTokenProvider } from './components/api/ApiAccessTokenProvider';
+import HDSLoginProvider from './components/auth/LoginProvider';
+import StoreProvider from './redux/StoreProvider';
 
 import './i18n/i18n';
 
@@ -17,16 +16,14 @@ import './assets/styles/main.scss';
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <StoreProvider>
-        <HandleCallback>
-          <ClientProvider>
-            <ApiAccessTokenProvider>
-              <ScrollToTop />
-              <App />
-            </ApiAccessTokenProvider>
-          </ClientProvider>
-        </HandleCallback>
-      </StoreProvider>
+      <HDSLoginProvider>
+        <ApiAccessTokenProvider>
+          <StoreProvider>
+            <ScrollToTop />
+            <App />
+          </StoreProvider>
+        </ApiAccessTokenProvider>
+      </HDSLoginProvider>
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')

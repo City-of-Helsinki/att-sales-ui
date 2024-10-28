@@ -1,15 +1,13 @@
 import React from 'react';
-import { Header, Logo, logoFi, LanguageOption, IconSignin, IconSignout } from 'hds-react';
+import { Header, Logo, logoFi, LanguageOption, WithAuthentication } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
-import { useClient } from '../../../auth/hooks';
+import Login from '../auth/Login';
+import Logout from '../auth/Logout';
 
 const T_PATH = 'components.common.navbar.Navbar';
 
 const NavBar = (): JSX.Element => {
-  const client = useClient();
-  const authenticated = client.isAuthenticated();
-  const initialized = client.isInitialized();
   const { t, i18n } = useTranslation();
 
   const languages: LanguageOption[] = [
@@ -33,18 +31,7 @@ const NavBar = (): JSX.Element => {
       >
         <Header.SimpleLanguageOptions languages={[languages[0], languages[1]]} />
 
-        {initialized && !authenticated && (
-          <Header.ActionBarButton fixedRightPosition icon={<IconSignin />} onClick={(): void => client?.login()} />
-        )}
-
-        {initialized && authenticated && (
-          <Header.ActionBarButton
-            label={t(`${T_PATH}.logout`)}
-            fixedRightPosition
-            icon={<IconSignout />}
-            onClick={(): void => client?.logout()}
-          />
-        )}
+        <WithAuthentication AuthorisedComponent={Logout} UnauthorisedComponent={Login} />
       </Header.ActionBar>
     </Header>
   );

@@ -13,10 +13,9 @@ import NotFound from './pages/NotFound';
 import ProjectDetail from './pages/project/ProjectDetail';
 import ProjectList from './pages/project/ProjectList';
 import Reports from './pages/reports/Reports';
-import Spinner from './components/common/spinner/Spinner';
-import WithAuth from './components/auth/WithAuth';
-
 import { ROUTES } from './enums';
+import { useApiTokensClient, WithAuthentication } from 'hds-react';
+import HandleCallback from './components/auth/HandleCallback';
 
 const Authenticated = (): JSX.Element => (
   <Routes>
@@ -33,6 +32,7 @@ const Authenticated = (): JSX.Element => (
       <Route path={ROUTES.LOGIN} element={<Navigate to={ROUTES.INDEX} />} />
       <Route path={ROUTES.LOGOUT} element={<Navigate to={ROUTES.INDEX} />} />
       <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
+      <Route path={ROUTES.CALLBACK} element={<HandleCallback />} />
       <Route path="*" element={<NotFound />} />
     </Route>
   </Routes>
@@ -46,10 +46,14 @@ const Unauthenticated = (): JSX.Element => (
       <Route path={ROUTES.AUTH_ERROR} element={<AuthError />} />
       <Route path="/" element={<Navigate to={ROUTES.LOGIN} />} />
       <Route path="*" element={<Navigate to={ROUTES.LOGIN} />} />
+      <Route path={ROUTES.CALLBACK} element={<HandleCallback />} />
     </Route>
   </Routes>
 );
 
-const App = (): React.ReactElement => WithAuth(Authenticated, Unauthenticated, Spinner);
+const App = (): React.ReactElement => {
+  useApiTokensClient();
+  return <WithAuthentication AuthorisedComponent={Authenticated} UnauthorisedComponent={Unauthenticated} />;
+};
 
 export default App;

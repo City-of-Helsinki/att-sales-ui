@@ -2,17 +2,17 @@ import React, { FC } from 'react';
 import { IdleTimerProvider } from 'react-idle-timer';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { getClient } from '../../auth/oidc-react';
 import {
   hideAuthSessionExpiringModal,
   showAuthSessionExpiringModal,
 } from '../../redux/features/authSessionExpiringModalSlice';
 import { RootState } from '../../redux/store';
+import { useOidcClient } from 'hds-react';
 
 export const TIMEOUT_MINUTES = process.env.REACT_APP_IDLE_TIMEOUT_MINUTES || '15';
 
 const IdleTimer: FC<unknown> = ({ children }) => {
-  const client = getClient();
+  const { logout } = useOidcClient();
   const dispatch = useDispatch();
   const isModalOpen = useSelector((state: RootState) => state.authSessionExpiringModal.isOpened);
 
@@ -22,7 +22,7 @@ const IdleTimer: FC<unknown> = ({ children }) => {
 
   const onIdle = (): void => {
     dispatch(hideAuthSessionExpiringModal());
-    client.logout();
+    logout();
   };
 
   const onActive = (): void => {
