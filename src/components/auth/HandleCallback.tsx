@@ -1,20 +1,39 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import OidcCallback from './OidcCallback';
 import { isCallbackUrl } from '../../auth/index';
-import { getClient } from '../../auth/oidc-react';
 import { ROUTES } from '../../enums';
+import { LoginCallbackHandler, OidcClientError, useApiTokensClient, useOidcClient, User } from 'hds-react';
 
 const HandleCallback = (props: React.PropsWithChildren<unknown>): React.ReactElement => {
   const { children } = props;
   const location = useLocation();
-  const client = getClient();
-  const authenticated = client.isAuthenticated();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useOidcClient();
   const isCallBack = isCallbackUrl(location.pathname);
+  const { fetch } = useApiTokensClient();
 
-  if (!authenticated && isCallBack) {
-    return <OidcCallback successRedirect={ROUTES.INDEX} failureRedirect={ROUTES.AUTH_ERROR} />;
+  const onSuccess = (user: User) => {
+    // Following makes sure api tokens are available
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const tokens = fetch(user);
+    navigate(ROUTES.INDEX, { replace: true });
+  };
+
+  const onError = (error: OidcClientError | undefined) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    if (!error) return;
+
+    navigate(ROUTES.AUTH_ERROR, { replace: true });
+  };
+
+  if (!isAuthenticated() && isCallBack) {
+    return (
+      <LoginCallbackHandler onSuccess={onSuccess} onError={onError}>
+        <div>Logging in...</div>
+      </LoginCallbackHandler>
+    );
   }
 
   return <>{children}</>;

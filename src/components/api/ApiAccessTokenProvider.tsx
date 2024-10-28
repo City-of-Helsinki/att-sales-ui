@@ -1,13 +1,25 @@
-import React, { FC } from 'react';
-import { useApiAccessTokens, ApiAccessTokenActions } from '../../api/useApiAccessTokens';
+import React, { FC, useEffect } from 'react';
+import { useIsAuthorizationReady } from '../../redux/useIsAuthReady';
+import { getApiTokensFromStorage, LoadingSpinner } from 'hds-react';
 
-export interface ApiAccessTokenContextProps {
-  readonly actions: ApiAccessTokenActions;
+export const ApiAccessTokenContext = React.createContext<null>(null);
+
+interface Props {
+  children: React.ReactNode;
 }
 
-export const ApiAccessTokenContext = React.createContext<ApiAccessTokenActions | null>(null);
+export const ApiAccessTokenProvider: FC<Props> = ({ children }) => {
+  const [isReady, loading] = useIsAuthorizationReady();
 
-export const ApiAccessTokenProvider: FC<unknown> = ({ children }) => {
-  const actions = useApiAccessTokens();
-  return <ApiAccessTokenContext.Provider value={actions}>{children}</ApiAccessTokenContext.Provider>;
+  useEffect(() => {
+    // Make sure api tokens are available
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const tokens = getApiTokensFromStorage();
+  }, [isReady, loading]);
+
+  if (!isReady && loading) {
+    return <LoadingSpinner />;
+  }
+
+  return <>{children}</>;
 };

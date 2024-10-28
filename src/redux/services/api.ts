@@ -24,8 +24,8 @@ import {
   ApartmentHASOPayment,
   ApartmentRevaluation,
 } from '../../types';
-import type { RootState } from '../store';
 import { InstallmentTypes } from '../../enums';
+import { waitForApiToken } from './common';
 
 const InstallmentTypeKeys = Object.keys(InstallmentTypes);
 
@@ -34,17 +34,10 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: getApiBaseUrl(),
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: async (headers, { getState }) => {
       headers.set('Content-Type', 'application/json');
-
-      const apiToken = (getState() as RootState).tokens.apiToken;
-
-      if (apiToken) {
-        headers.append('authorization', `Bearer ${apiToken}`);
-      } else {
-        throw new Error('No API token');
-      }
-
+      const apiToken = await waitForApiToken();
+      headers.append('authorization', `Bearer ${apiToken}`);
       return headers;
     },
   }),
