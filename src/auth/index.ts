@@ -33,6 +33,11 @@ const HDSLoginConfig: LoginProviderProps = {
   },
   apiTokensClientSettings: {
     url: configTokenExchangeUrl,
+    queryProps: {
+      grantType: String(process.env[`REACT_APP_API_GRANT_TYPE`]),
+      permission: '#access',
+    },
+    audiences: [String(process.env.REACT_APP_API_AUDIENCE)],
     maxRetries: 10,
     retryInterval: 1000,
   },
