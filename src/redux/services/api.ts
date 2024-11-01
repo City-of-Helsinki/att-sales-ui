@@ -25,8 +25,8 @@ import {
   ApartmentRevaluation,
   Applicant,
 } from '../../types';
-import type { RootState } from '../store';
 import { InstallmentTypes } from '../../enums';
+import { getApiTokensFromStorage } from 'hds-react';
 
 const InstallmentTypeKeys = Object.keys(InstallmentTypes);
 
@@ -35,12 +35,14 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: getApiBaseUrl(),
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: async (headers, { getState }) => {
       headers.set('Content-Type', 'application/json');
 
-      const apiToken = (getState() as RootState).tokens.apiToken;
+      const tokens = getApiTokensFromStorage();
+      const audience = String(process.env[`REACT_APP_API_AUDIENCE`]);
 
-      if (apiToken) {
+      if (tokens) {
+        const apiToken = tokens[audience];
         headers.append('authorization', `Bearer ${apiToken}`);
       } else {
         throw new Error('No API token');

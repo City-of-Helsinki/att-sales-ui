@@ -2,8 +2,6 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 
 import ApartmentRevaluationModal from '../../revaluation/ApartmentRevaluationModal';
-import AuthSessionExpiringModal from '../../auth/AuthSessionExpiringModal';
-import ErrorPrompt from '../../auth/ErrorPrompt';
 import NavBar from '../navbar/NavBar';
 import OfferModal from '../../offer/OfferModal';
 import ReservationAddModal from '../../reservations/ReservationAddModal';
@@ -22,7 +20,6 @@ const MainLayout = ({ authenticated }: IProps): JSX.Element => (
     <main id="mainContent" className={styles['app-main']} tabIndex={-1}>
       <Outlet />
     </main>
-    <ErrorPrompt />
     {authenticated && (
       <>
         <OfferModal />
@@ -30,7 +27,6 @@ const MainLayout = ({ authenticated }: IProps): JSX.Element => (
         <ReservationAddModal />
         <ReservationCancelModal />
         <ReservationEditModal />
-        <AuthSessionExpiringModal />
       </>
     )}
   </>

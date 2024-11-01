@@ -13,10 +13,8 @@ import NotFound from './pages/NotFound';
 import ProjectDetail from './pages/project/ProjectDetail';
 import ProjectList from './pages/project/ProjectList';
 import Reports from './pages/reports/Reports';
-import Spinner from './components/common/spinner/Spinner';
-import WithAuth from './components/auth/WithAuth';
-
 import { ROUTES } from './enums';
+import { WithAuthentication } from 'hds-react';
 
 const Authenticated = (): JSX.Element => (
   <Routes>
@@ -50,6 +48,8 @@ const Unauthenticated = (): JSX.Element => (
   </Routes>
 );
 
-const App = (): React.ReactElement => WithAuth(Authenticated, Unauthenticated, Spinner);
+const App = (): React.ReactElement => {
+  return <WithAuthentication AuthorisedComponent={Authenticated} UnauthorisedComponent={Unauthenticated} />;
+};
 
 export default App;
