@@ -1,12 +1,11 @@
 import axios from 'axios';
-import { useSelector } from 'react-redux';
 
 import getApiBaseUrl from './getApiBaseUrl';
-import { RootState } from '../redux/store';
+import { waitForApiToken } from '../redux/services/common';
 
-export const useFileDownloadApi = (url: string) => {
+export const useFileDownloadApi = async (url: string) => {
   const apiBaseUrl = getApiBaseUrl();
-  const apiToken = useSelector((state: RootState) => state.tokens.apiToken);
+  const apiToken = await waitForApiToken();
 
   if (apiToken) {
     return () =>
