@@ -1,5 +1,5 @@
 # ===============================================
-FROM node:16-slim as appbase
+FROM public.ecr.aws/docker/library/node:16-slim as appbase
 # ===============================================
 
 WORKDIR /app
