@@ -8,7 +8,7 @@ const wait = (waitForMs: number) =>
     setTimeout(() => resolve(), waitForMs);
   });
 
-const getApiToken = () => {
+export const getApiToken = () => {
   const tokens = getApiTokensFromStorage();
   return tokens ? tokens[String(process.env[`REACT_APP_API_AUDIENCE`])] : undefined;
 };
