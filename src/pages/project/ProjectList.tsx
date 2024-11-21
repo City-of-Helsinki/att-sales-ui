@@ -12,8 +12,8 @@ import {
   TabList,
   Tab,
   TabPanel,
+  useOidcClient,
 } from 'hds-react';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import Container from '../../components/common/container/Container';
@@ -22,7 +22,6 @@ import Spinner from '../../components/common/spinner/Spinner';
 import StatusText from '../../components/common/statusText/StatusText';
 import useLocalStorage from '../../utils/useLocalStorage';
 import { filterProjectsByEstateAgent } from '../../utils/filterProjectsByEstateAgent';
-import { RootState } from '../../redux/store';
 import { useGetProjectsQuery } from '../../redux/services/api';
 import { Project } from '../../types';
 import { StateOfSale } from '../../enums';
@@ -36,8 +35,9 @@ const ProjectList = (): JSX.Element => {
   const { t } = useTranslation();
   const [showMyProjects, setShowMyProjects] = useLocalStorage({ defaultValue: true, key: `showMyProjects` });
   const { data: projects, isLoading, isError, isSuccess } = useGetProjectsQuery();
-  const user = useSelector((state: RootState) => state.auth.user);
-  const userFullName = user ? (user.name as string) : '';
+  const { getUser } = useOidcClient();
+  const user = getUser();
+  const userFullName = user ? (user.profile.name as string) : '';
   const [searchTerm, setSearchTerm] = useState('');
 
   usePageTitle(t('PAGES.homepage'));
