@@ -75,7 +75,7 @@ const DownloadApplicantsListButton = ({
       >
         {t(`${T_PATH}.downloadApplicantList`)}
       </Button>
-      <a href={fileUrl} download={fileName} className="hiddenFromScreen" ref={fileRef}>
+      <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
         {t(`${T_PATH}.download`)}
       </a>
     </>
@@ -132,7 +132,7 @@ const DownloadLotteryResultsButton = ({
       >
         {t(`${T_PATH}.downloadLotteryResults`)}
       </Button>
-      <a href={fileUrl} download={fileName} className="hiddenFromScreen" ref={fileRef}>
+      <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
         {t(`${T_PATH}.download`)}
       </a>
     </>

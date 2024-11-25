@@ -67,7 +67,7 @@ export const ReservationsByProject = ({ customer, reservations }: ReservationsBy
           onClick={toggleProject}
           iconLeft={projectOpen ? <IconAngleDown /> : <IconAngleRight />}
         >
-          <span className="hiddenFromScreen">{projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}</span>
+          <span className="visually-hidden">{projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}</span>
         </Button>
       </div>
       {projectOpen &&

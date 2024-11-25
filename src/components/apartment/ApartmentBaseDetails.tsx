@@ -25,11 +25,11 @@ const ApartmentBaseDetails = ({ apartment, isLotteryResult, showState }: IProps)
     <div className={styles.details}>
       {isLotteryResult && <ApartmentStateIndicator state={apartment.state} />}
       <strong className={styles.apartmentNumber}>
-        <span className="hiddenFromScreen">{t(`${T_PATH}.apartment`)}: </span>
+        <span className="visually-hidden">{t(`${T_PATH}.apartment`)}: </span>
         {apartment_number}
       </strong>
       <span className={styles.apartmentExtra}>
-        <span className="hiddenFromScreen">{t(`${T_PATH}.ariaApartmentStructure`)}: </span>
+        <span className="visually-hidden">{t(`${T_PATH}.ariaApartmentStructure`)}: </span>
         {apartment_structure}{' '}
         {living_area && <span className={styles.apartmentLivingArea}>({formattedLivingArea(living_area)})</span>}
       </span>

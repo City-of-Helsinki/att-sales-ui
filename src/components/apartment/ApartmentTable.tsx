@@ -67,7 +67,7 @@ const ApartmentTable = ({
         onClick={() => requestSort(sortKey, sortAsAlphaNumeric)}
         className={apartmentSortClasses(sortKey)}
       >
-        <span className="hiddenFromScreen">
+        <span className="visually-hidden">
           {isCurrentlyActiveSort(sortKey) ? t(`${T_PATH}.ariaIsActiveSort`) : t(`${T_PATH}.ariaSetSort`)},&nbsp;
         </span>
         <span>{buttonLabel}</span>
