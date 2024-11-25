@@ -70,7 +70,7 @@ const ReservationReleasePDF = ({ reservationId, customerId, disabled = false }: 
       >
         {t('download')}
       </Button>
-      <a href={fileUrl} download={fileName} className="hiddenFromScreen" ref={fileRef}>
+      <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
         {t('download')}
       </a>
     </>

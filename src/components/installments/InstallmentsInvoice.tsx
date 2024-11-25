@@ -144,7 +144,7 @@ const InstallmentsInvoice = ({
         </tbody>
       </table>
       <div className={styles.printButton}>
-        <a href={fileUrl} download={fileName} className="hiddenFromScreen" ref={fileRef}>
+        <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
           {t(`${T_PATH}.download`)}
         </a>
         <Button

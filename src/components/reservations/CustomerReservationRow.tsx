@@ -69,7 +69,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
         .replace(/[^a-z0-9 ]/g, '')
         .replace(/\s+/g, '-');
     };
-  
+
     if (isOwnershipTypeHaso) {
       prefix = 'sopimus';
     } else {
@@ -77,7 +77,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
     }
 
     // Example output: "kauppakirja_as-oy-project-x_a01_2022-01-01.pdf"
-     
+
     return `${prefix}${slugify(projectName + ' ' + apartmentNumber)}-${new Date().toJSON().slice(0, 10)}.pdf`;
   };
 
@@ -169,7 +169,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
           </tr>
           <tr>
             <th>{t(`${T_PATH}.submittedLate`)}</th>
-            <td>{reservation.submitted_late &&  t(`${T_PATH}.yes`)}</td>
+            <td>{reservation.submitted_late && t(`${T_PATH}.yes`)}</td>
           </tr>
           <tr>
             <th>{t(`${T_PATH}.lotteryCompleted`)}</th>
@@ -307,7 +307,8 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               </div>
               {isOwnershipTypeHaso && (
                 <div>
-                  {t(`${T_PATH}.hasoNumber`)}:{' ' + getRightOfResidenceText(customer)} {reservation.submitted_late && "*"}
+                  {t(`${T_PATH}.hasoNumber`)}:{' ' + getRightOfResidenceText(customer)}{' '}
+                  {reservation.submitted_late && '*'}
                 </div>
               )}
             </>
@@ -330,7 +331,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               onClick={() => setIsDialogOpen(true)}
               ref={openDialogButtonRef}
             >
-              <span className="hiddenFromScreen">{t(`${T_PATH}.showReservationInfo`)}</span>
+              <span className="visually-hidden">{t(`${T_PATH}.showReservationInfo`)}</span>
             </Button>
           </div>
         </div>
@@ -362,7 +363,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
                 <Button variant="secondary" size="small" onClick={download} disabled={isLoadingContract}>
                   {isOwnershipTypeHaso ? t(`${T_PATH}.createContract`) : t(`${T_PATH}.createDeedOfSale`)}
                 </Button>
-                <a href={fileUrl} download={fileName} className="hiddenFromScreen" ref={fileRef}>
+                <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
                   {t(`${T_PATH}.download`)}
                 </a>
               </>

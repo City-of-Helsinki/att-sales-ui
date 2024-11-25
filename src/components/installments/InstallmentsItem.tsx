@@ -95,7 +95,7 @@ const InstallmentsItem = ({ apartment, project, reservationId, isCanceled }: IPr
   if (isLoading || isFetching) {
     return (
       <div className={styles.apartmentRow}>
-        <span className="hiddenFromScreen">{t(`${T_PATH}.loading`)}...</span>
+        <span className="visually-hidden">{t(`${T_PATH}.loading`)}...</span>
         <div className={styles.loadingPlaceholder}>
           <span className={styles.item} />
           <span className={styles.item} />
@@ -156,7 +156,7 @@ const InstallmentsItem = ({ apartment, project, reservationId, isCanceled }: IPr
             {...accordionButtonProps}
           >
             <span className={cx(styles.toggleButtonLabel, 'hds-button__label')}>
-              <span className="hiddenFromScreen">
+              <span className="visually-hidden">
                 {isAccordionOpen ? t(`${T_PATH}.closeAccordion`) : t(`${T_PATH}.openAccordion`)}
               </span>
               {accordionIcon}
