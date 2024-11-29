@@ -14,18 +14,16 @@ import './i18n/i18n';
 import './assets/styles/main.scss';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <HDSLoginProvider>
-        <ApiAccessTokenProvider>
-          <StoreProvider>
-            <ScrollToTop />
-            <App />
-          </StoreProvider>
-        </ApiAccessTokenProvider>
-      </HDSLoginProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
+  <BrowserRouter>
+    <HDSLoginProvider>
+      <ApiAccessTokenProvider>
+        <StoreProvider>
+          <ScrollToTop />
+          <App />
+        </StoreProvider>
+      </ApiAccessTokenProvider>
+    </HDSLoginProvider>
+  </BrowserRouter>,
   document.getElementById('root')
 );
 

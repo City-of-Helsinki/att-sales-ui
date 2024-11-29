@@ -1,4 +1,3 @@
-import envValueToBoolean from '../utils/envValueToBoolean';
 import { LoginProviderProps } from 'hds-react';
 
 export type User = Record<string, string | number | boolean>;
@@ -27,7 +26,7 @@ const HDSLoginConfig: LoginProviderProps = {
     scope: process.env[`REACT_APP_OIDC_SCOPE`],
     redirect_uri: getLocationBasedUri(String(process.env[`REACT_APP_OIDC_CALLBACK_PATH`])),
     silent_redirect_uri: getLocationBasedUri(process.env[`REACT_APP_OIDC_SILENT_AUTH_PATH`]),
-    automaticSilentRenew: envValueToBoolean(process.env[`REACT_APP_OIDC_AUTO_SILENT_RENEW`], true),
+    automaticSilentRenew: true,
     response_type: process.env[`REACT_APP_OIDC_RESPONSE_TYPE`],
     post_logout_redirect_uri: getLocationBasedUri(process.env[`REACT_APP_OIDC_LOGOUT_PATH`] || '/'),
   },

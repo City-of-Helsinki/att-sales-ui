@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const ApiAccessTokenProvider: FC<Props> = ({ children }) => {
-  const [isReady, loading] = useIsAuthorizationReady();
+  const [isReady, loading, , gotTokensOnce] = useIsAuthorizationReady();
 
   useEffect(() => {
     // Make sure api tokens are available
@@ -17,7 +17,7 @@ export const ApiAccessTokenProvider: FC<Props> = ({ children }) => {
     const tokens = getApiTokensFromStorage();
   }, [isReady, loading]);
 
-  if (!isReady && loading) {
+  if (!isReady && loading && !gotTokensOnce) {
     return <LoadingSpinner />;
   }
 

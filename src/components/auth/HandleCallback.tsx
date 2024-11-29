@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { isCallbackUrl } from '../../auth/index';
 import { ROUTES } from '../../enums';
-import { LoginCallbackHandler, OidcClientError, useApiTokensClient, useOidcClient, User } from 'hds-react';
+import { LoginCallbackHandler, OidcClientError, useOidcClient } from 'hds-react';
 
 const HandleCallback = (props: React.PropsWithChildren<unknown>): React.ReactElement => {
   const { children } = props;
@@ -11,12 +11,8 @@ const HandleCallback = (props: React.PropsWithChildren<unknown>): React.ReactEle
   const navigate = useNavigate();
   const { isAuthenticated } = useOidcClient();
   const isCallBack = isCallbackUrl(location.pathname);
-  const { fetch } = useApiTokensClient();
 
-  const onSuccess = (user: User) => {
-    // Following makes sure api tokens are available
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const tokens = fetch(user);
+  const onSuccess = () => {
     navigate(ROUTES.INDEX, { replace: true });
   };
 
