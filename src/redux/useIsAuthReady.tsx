@@ -1,9 +1,11 @@
 import { useApiTokensClient, useApiTokensClientTracking, useOidcClient } from 'hds-react';
+import { useRef } from 'react';
 
 // eslint-disable-next-line import/prefer-default-export
-export function useIsAuthorizationReady(): [boolean, boolean] {
+export function useIsAuthorizationReady(): [boolean, boolean, boolean, boolean] {
   const { isAuthenticated, isRenewing: isRenewingSession } = useOidcClient();
   const { getTokens, isRenewing: isRenewingApiToken } = useApiTokensClient();
+  const hasFetchedTokensOnce = useRef<boolean>(false);
 
   // The isRenewing* -properties are not updating the hook!
   // All the signals needs to be tracked,
@@ -16,5 +18,9 @@ export function useIsAuthorizationReady(): [boolean, boolean] {
   const loading = isRenewingSession() || isRenewingApiToken();
   const isReady = isLoggedIn && hasTokens;
 
-  return [isReady, loading];
+  if (!hasFetchedTokensOnce.current && hasTokens) {
+    hasFetchedTokensOnce.current = true;
+  }
+
+  return [isReady, loading, isLoggedIn, hasFetchedTokensOnce.current];
 }
