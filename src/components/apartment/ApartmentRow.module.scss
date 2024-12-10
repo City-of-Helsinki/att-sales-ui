@@ -199,8 +199,9 @@
   }
 }
 
-.singleReservationColumn {
-  flex-basis: 50%;
+.singleReservationColumn,
+.singleReservationColumnSecond {
+  flex-basis: 45%;
   overflow: hidden;
 
   & + .singleReservationColumn {
@@ -211,6 +212,10 @@
     padding-left: 0;
     flex-basis: auto;
   }
+}
+.singleReservationColumnSecond {
+  flex-basis: 55%;
+  overflow: hidden;
 }
 
 .queueNumberSpacer {
@@ -347,6 +352,9 @@
 
 .cancellationReason {
   font-size: var(--fontsize-body-s);
+}
+.cancellationReason button {
+  display: contents;
 }
 
 .offer {

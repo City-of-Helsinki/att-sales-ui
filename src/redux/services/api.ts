@@ -275,6 +275,31 @@ export const api = createApi({
       ],
     }),
 
+    // Post return resarvation from cancelation
+    setApartmentReservationToOffered: builder.mutation<
+      any,
+      { reservationId: number; projectId: string; apartmentId: string; queuePosition: number }
+    >({
+      query: (params) => {
+        return {
+          url: `apartment_reservations/${params.reservationId}/set_state/`,
+          method: 'POST',
+          body: {
+            timestamp: new Date().toISOString(),
+            state: 'reserved',
+            queue_position: params.queuePosition,
+            comment: '',
+            cancellation_reason: null,
+          },
+        };
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: 'ApartmentReservations', id: arg.apartmentId },
+        { type: 'Project', id: arg.projectId },
+        { type: 'Reservation', id: arg.reservationId },
+      ],
+    }),
+
     // POST: Cancel apartment reservation
     cancelApartmentReservation: builder.mutation<
       any,
@@ -404,6 +429,7 @@ export const {
   useGetApartmentReservationsQuery,
   useGetApartmentReservationByIdQuery,
   useSetApartmentReservationStateMutation,
+  useSetApartmentReservationToOfferedMutation,
   useCancelApartmentReservationMutation,
   useSetApartmentInstallmentsMutation,
   useSendApartmentInstallmentsToSAPMutation,
