@@ -45,7 +45,7 @@
   "components.apartment.ApartmentRow.btnCancel": "Peruuta",
   "components.apartment.ApartmentRow.btnEdit": "Muokkaa",
   "components.apartment.ApartmentRow.btnOffer": "Tarjous",
-  "components.apartment.ApartmentRow.btnReturn": "Palauttaa",
+  "components.apartment.ApartmentRow.btnReturn": "Palauta",
   "components.apartment.ApartmentRow.canceled": "Peruttu",
   "components.apartment.ApartmentRow.errorWhileLoadingReservations": "Virhe ladattaessa varauksia.",
   "components.apartment.ApartmentRow.errorWhileLoadingReservationsLabel": "Latausvirhe",
