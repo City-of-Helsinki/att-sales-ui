@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import {
@@ -30,7 +30,10 @@ import { showOfferModal } from '../../redux/features/offerModalSlice';
 import { showReservationAddModal } from '../../redux/features/reservationAddModalSlice';
 import { showReservationCancelModal } from '../../redux/features/reservationCancelModalSlice';
 import { showReservationEditModal } from '../../redux/features/reservationEditModalSlice';
-import { useGetApartmentReservationsQuery } from '../../redux/services/api';
+import {
+  useGetApartmentReservationsQuery,
+  useSetApartmentReservationToOfferedMutation,
+} from '../../redux/services/api';
 import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 import styles from './ApartmentRow.module.scss';
@@ -69,6 +72,42 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
   const isCanceled = (reservation: ApartmentReservationWithCustomer): boolean => {
     return reservation.state === ApartmentReservationStates.CANCELED;
   };
+  const [maxQueuePosition, setMaxQueuePosition] = useState<number | null>(null);
+  const { data: reservationsQueue } = useGetApartmentReservationsQuery(apartment.apartment_uuid);
+  const [setApartmentReservationToOffered] = useSetApartmentReservationToOfferedMutation();
+  const [sortedReservations, setSortedReservations] = useState<ApartmentReservationWithCustomer[]>([]);
+
+  useEffect(() => {
+    if (reservationsQueue) {
+      const maxPosition = Math.max(...reservationsQueue.map((res) => res.queue_position || 0));
+      setMaxQueuePosition(maxPosition + 1);
+    }
+  }, [reservationsQueue]);
+
+  const handleRestore = async (reservationId: number, projectId: string, apartmentId: string) => {
+    if (maxQueuePosition === null) {
+      console.error('Failed to calculate queue position.');
+      return;
+    }
+    try {
+      await setApartmentReservationToOffered({
+        reservationId,
+        projectId,
+        apartmentId,
+        queuePosition: maxQueuePosition,
+      }).unwrap();
+      await refetch();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (reservations) {
+      const sorted = [...reservations].sort((a, b) => (a.queue_position || 0) - (b.queue_position || 0));
+      setSortedReservations(sorted);
+    }
+  }, [reservations]);
 
   const renderApplicants = (
     reservation: ApartmentReservationWithCustomer | WinningReservation,
@@ -102,7 +141,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
           <Link to={`/${ROUTES.CUSTOMERS}/${reservation.customer.id}`} className={styles.customerLink}>
             <div className={styles.user}>
               {isLotteryResult && <span className={styles.queueNumberSpacer}>{renderPositionNumber()}</span>}
-              {renderCustomerProfile(reservation.customer.primary_profile)}   {reservation.submitted_late && "*"}
+              {renderCustomerProfile(reservation.customer.primary_profile)} {reservation.submitted_late && '*'}
             </div>
             {reservation.customer.secondary_profile && (
               <div className={styles.user}>
@@ -185,6 +224,15 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                 ? t(`ENUMS.ReservationCancelReasons.${reservation.cancellation_reason.toUpperCase()}`)
                 : t(`${T_PATH}.canceled`)}{' '}
               {reservation.cancellation_timestamp && formatDateTime(reservation.cancellation_timestamp)}
+              <Button
+                variant="supplementary"
+                size="small"
+                iconLeft={''}
+                disabled={maxQueuePosition === null}
+                onClick={() => handleRestore(reservation.id, project.uuid, apartment.apartment_uuid)}
+              >
+                {t(`${T_PATH}.btnReturn`)}
+              </Button>
             </div>
             {projectOwnershipType.toLowerCase() === 'haso' &&
               reservation.cancellation_reason === ReservationCancelReasons.TERMINATED && (
@@ -291,7 +339,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
           <div className={styles.singleReservationColumn}>
             {renderApplicants(reservation, true, hasMultipleWinningApartments())}
           </div>
-          <div className={styles.singleReservationColumn}>
+          <div className={styles.singleReservationColumnSecond}>
             <div className={cx(styles.rowActions, isRowOpen && styles.rowOpen)}>
               <span>{renderHasoNumberOrFamilyIcon(reservation)}</span>
               {renderActionButtons(reservation, ownershipType, isFirstInQueue)}
@@ -331,7 +379,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
           )}
           {hasReservations ? (
             <>
-              {isSuccess && reservations?.map((reservation) => renderSingleReservation(reservation))}
+              {isSuccess && sortedReservations?.map((reservation) => renderSingleReservation(reservation))}
               <div className={cx(styles.singleReservation, styles.resultReservation)}>{addReservation()}</div>
             </>
           ) : (
