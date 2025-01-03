@@ -72,29 +72,31 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
   const isCanceled = (reservation: ApartmentReservationWithCustomer): boolean => {
     return reservation.state === ApartmentReservationStates.CANCELED;
   };
-  const [maxQueuePosition, setMaxQueuePosition] = useState<number | null>(null);
   const { data: reservationsQueue } = useGetApartmentReservationsQuery(apartment.apartment_uuid);
   const [setApartmentReservationToOffered] = useSetApartmentReservationToOfferedMutation();
   const [sortedReservations, setSortedReservations] = useState<ApartmentReservationWithCustomer[]>([]);
 
-  useEffect(() => {
-    if (reservationsQueue) {
-      const maxPosition = Math.max(...reservationsQueue.map((res) => res.queue_position || 0));
-      setMaxQueuePosition(maxPosition + 1);
-    }
-  }, [reservationsQueue]);
-
   const handleRestore = async (reservationId: number, projectId: string, apartmentId: string) => {
-    if (maxQueuePosition === null) {
-      console.error('Failed to calculate queue position.');
+    const reservation = reservationsQueue?.find((res) => res.id === reservationId);
+
+    if (!reservation) {
+      console.error('Failed to find reservation.');
       return;
     }
+
+    const lotteryPosition = reservation.lottery_position;
+
+    if (!lotteryPosition) {
+      console.error('Lottery position is not available.');
+      return;
+    }
+
     try {
       await setApartmentReservationToOffered({
         reservationId,
         projectId,
         apartmentId,
-        queuePosition: maxQueuePosition,
+        queuePosition: lotteryPosition,
       }).unwrap();
       await refetch();
     } catch (error) {
@@ -103,11 +105,11 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
   };
 
   useEffect(() => {
-    if (reservations) {
-      const sorted = [...reservations].sort((a, b) => (a.queue_position || 0) - (b.queue_position || 0));
+    if (reservationsQueue) {
+      const sorted = [...reservationsQueue].sort((a, b) => (a.queue_position || 0) - (b.queue_position || 0));
       setSortedReservations(sorted);
     }
-  }, [reservations]);
+  }, [reservationsQueue]);
 
   const renderApplicants = (
     reservation: ApartmentReservationWithCustomer | WinningReservation,
@@ -228,7 +230,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                 variant="supplementary"
                 size="small"
                 iconLeft={''}
-                disabled={maxQueuePosition === null}
+                disabled={!reservation.lottery_position}
                 onClick={() => handleRestore(reservation.id, project.uuid, apartment.apartment_uuid)}
               >
                 {t(`${T_PATH}.btnReturn`)}
