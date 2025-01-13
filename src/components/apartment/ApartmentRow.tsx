@@ -77,6 +77,10 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
   const [sortedReservations, setSortedReservations] = useState<ApartmentReservationWithCustomer[]>([]);
 
   const handleRestore = async (reservationId: number, projectId: string, apartmentId: string) => {
+    if (!reservationsQueue) {
+      console.error('Reservations queue is not available.');
+      return;
+    }
     const reservation = reservationsQueue?.find((res) => res.id === reservationId);
 
     if (!reservation) {
@@ -84,11 +88,18 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
       return;
     }
 
-    const lotteryPosition = reservation.lottery_position;
+    let queuePosition;
 
-    if (!lotteryPosition) {
-      console.error('Lottery position is not available.');
-      return;
+    if (reservation.lottery_position) {
+      // use lottery_position, if exist
+      queuePosition = reservation.lottery_position;
+    } else if (reservation.queue_position) {
+      // if lottery_position = null, but queue_position exist
+      queuePosition = reservation.queue_position;
+    } else {
+      // if each other null, add to end of queue
+      const maxQueuePosition = Math.max(...reservationsQueue.map((res) => res.queue_position || 0));
+      queuePosition = maxQueuePosition + 1;
     }
 
     try {
@@ -96,7 +107,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
         reservationId,
         projectId,
         apartmentId,
-        queuePosition: lotteryPosition,
+        queuePosition,
       }).unwrap();
       await refetch();
     } catch (error) {
@@ -230,7 +241,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                 variant="supplementary"
                 size="small"
                 iconLeft={''}
-                disabled={!reservation.lottery_position}
+                disabled={false}
                 onClick={() => handleRestore(reservation.id, project.uuid, apartment.apartment_uuid)}
               >
                 {t(`${T_PATH}.btnReturn`)}
