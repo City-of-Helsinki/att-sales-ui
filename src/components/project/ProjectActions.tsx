@@ -13,11 +13,18 @@ const T_PATH = 'components.project.ProjectActions';
 
 interface ProjectActionsProps {
   project: Project;
+  handleOpenMailingListDialog: () => void;
 }
 
 interface DownloadApplicantsListButtonProps {
   housingCompany: Project['housing_company'];
   projectUuid: Project['uuid'];
+}
+
+interface OpenApplicantsMailingListDialogButtonProps {
+  housingCompany: Project['housing_company'];
+  projectUuid: Project['uuid'];
+  handleOpenMailingListDialog: () => void;
 }
 
 interface DownloadLotteryResultsButtonProps {
@@ -74,6 +81,64 @@ const DownloadApplicantsListButton = ({
         disabled={isLoadingApplicantsList}
       >
         {t(`${T_PATH}.downloadApplicantList`)}
+      </Button>
+      <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
+        {t(`${T_PATH}.download`)}
+      </a>
+    </>
+  );
+};
+
+const OpenApplicantsMailingListDialogButton = ({
+  housingCompany,
+  projectUuid,
+  handleOpenMailingListDialog,
+}: OpenApplicantsMailingListDialogButtonProps): JSX.Element => {
+  const { t } = useTranslation();
+  const [isLoadingApplicantsList, setIsLoadingApplicantsList] = useState<boolean>(false);
+
+  const preApplicantListDownloading = () => setIsLoadingApplicantsList(true);
+  const postApplicantListDownloading = () => setIsLoadingApplicantsList(false);
+
+  const onApplicantListLoadError = () => {
+    setIsLoadingApplicantsList(false);
+    toast.show({ type: 'error' });
+  };
+
+  const getApplicantListFileName = (): string => {
+    const projectName = housingCompany.replace(/\s/g, '-').toLocaleLowerCase();
+    const prefix = 'hakijalista';
+    const fileFormat = 'csv';
+
+    // Example output: "hakijalista_as-oy-project-x_2022-01-01.pdf"
+    return `${prefix}${JSON.stringify(projectName)}${new Date().toJSON().slice(0, 10)}.${fileFormat}`;
+  };
+  const export_type = 'reserved';
+  const applicantExportApiUrl = `/projects/${projectUuid}/export_applicants_mailing_list/${export_type}`;
+  // console.log('downloading from', applicantExportApiUrl);
+  const {
+    download,
+    ref: fileRef,
+    url: fileUrl,
+    name: fileName,
+  } = useDownloadFile({
+    apiDefinition: useFileDownloadApi(applicantExportApiUrl),
+    getFileName: getApplicantListFileName,
+    onError: onApplicantListLoadError,
+    postDownloading: postApplicantListDownloading,
+    preDownloading: preApplicantListDownloading,
+  });
+
+  return (
+    <>
+      <Button
+        variant="secondary"
+        iconRight={<IconDownload />}
+        theme="black"
+        onClick={handleOpenMailingListDialog}
+        disabled={isLoadingApplicantsList}
+      >
+        {t(`${T_PATH}.downloadApplicantMailingList`)}
       </Button>
       <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
         {t(`${T_PATH}.download`)}
@@ -139,10 +204,17 @@ const DownloadLotteryResultsButton = ({
   );
 };
 
-const ProjectActions = ({ project }: ProjectActionsProps): JSX.Element => (
+const ProjectActions = ({ project, handleOpenMailingListDialog }: ProjectActionsProps): JSX.Element => (
   <div>
     <span className={styles.action}>
       <DownloadApplicantsListButton housingCompany={project.housing_company} projectUuid={project.uuid} />
+    </span>
+    <span className={styles.action}>
+      <OpenApplicantsMailingListDialogButton
+        housingCompany={project.housing_company}
+        projectUuid={project.uuid}
+        handleOpenMailingListDialog={handleOpenMailingListDialog}
+      />
     </span>
     {!!project.lottery_completed_at && (
       <span className={styles.action}>

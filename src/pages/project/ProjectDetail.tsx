@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Notification, Tabs } from 'hds-react';
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  IconQuestionCircle,
+  Notification,
+  RadioButton,
+  SelectionGroup,
+  Tabs,
+} from 'hds-react';
 
 import ApartmentStateFilterSelect from '../../components/apartment/ApartmentStateFilterSelect';
 import ApartmentTable from '../../components/apartment/ApartmentTable';
@@ -18,9 +27,11 @@ import { Project } from '../../types';
 import { toast } from '../../components/common/toast/ToastManager';
 import { useGetProjectByIdQuery, useStartLotteryForProjectMutation } from '../../redux/services/api';
 import { usePageTitle } from '../../utils/usePageTitle';
-import { ROUTES } from '../../enums';
+import { ApartmentReservationStates, ApplicantMailingListExportType, ROUTES } from '../../enums';
 
 import styles from './ProjectDetail.module.scss';
+import { useDownloadFile } from '../../utils/useDownloadFile';
+import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 const T_PATH = 'pages.project.ProjectDetail';
 
@@ -41,6 +52,41 @@ const ProjectDetail = (): JSX.Element | null => {
     key: `apartmentStateFilter-${projectId || project?.id}`,
   });
   const hasActiveFilters = apartmentStateFilter !== '';
+
+  const [isMailingListDialogOpen, setIsMailingListDialogOpen] = useState(false);
+  const [mailingListReservationType, setMailingListReservationType] = useState(ApplicantMailingListExportType.RESERVED);
+
+  const [isLoadingApplicantsList, setIsLoadingApplicantsList] = useState(false);
+
+  const getApplicantListFileName = (): string => {
+    const projectName = project?.housing_company.replace(/\s/g, '-').toLocaleLowerCase();
+    const prefix = 'hakijalista';
+    const fileFormat = 'csv';
+
+    // Example output: "hakijalista_as-oy-project-x_2022-01-01.pdf"
+    return `${prefix}${JSON.stringify(projectName)}${new Date().toJSON().slice(0, 10)}.${fileFormat}`;
+  };
+
+  const preApplicantListDownloading = () => setIsLoadingApplicantsList(true);
+  const postApplicantListDownloading = () => setIsLoadingApplicantsList(false);
+
+  const onApplicantListLoadError = () => {
+    setIsLoadingApplicantsList(false);
+    toast.show({ type: 'error' });
+  };
+  const applicantExportApiUrl = `/projects/${project?.uuid}/export_applicants_mailing_list/${mailingListReservationType}`;
+  const {
+    download,
+    ref: fileRef,
+    url: fileUrl,
+    name: fileName,
+  } = useDownloadFile({
+    apiDefinition: useFileDownloadApi(applicantExportApiUrl),
+    getFileName: getApplicantListFileName,
+    onError: onApplicantListLoadError,
+    postDownloading: postApplicantListDownloading,
+    preDownloading: preApplicantListDownloading,
+  });
 
   usePageTitle(project?.housing_company ? project.housing_company : t('PAGES.projects'));
 
@@ -95,6 +141,16 @@ const ProjectDetail = (): JSX.Element | null => {
     return project.apartments;
   };
 
+  const downloadApplicantMailingList = () => {
+    console.log('downloading from', applicantExportApiUrl);
+    const onApplicantListLoadError = () => {
+      // setIsLoadingApplicantsList(false);
+      toast.show({ type: 'error' });
+    };
+
+    download();
+  };
+
   return (
     <>
       <Container>
@@ -131,7 +187,10 @@ const ProjectDetail = (): JSX.Element | null => {
                     />
                   )}
                 </div>
-                <ProjectActions project={project} />
+                <ProjectActions
+                  project={project}
+                  handleOpenMailingListDialog={() => setIsMailingListDialogOpen(true)}
+                />
               </div>
               <ApartmentTable
                 apartments={getFilteredProjects()}
@@ -160,6 +219,59 @@ const ProjectDetail = (): JSX.Element | null => {
           </Tabs.TabPanel>
         </Tabs>
       </Container>
+
+      <Dialog
+        id="mailing-list-dialog"
+        aria-labelledby="mailing-list-dialog-title"
+        aria-describedby="mailing-list-dialog-info"
+        isOpen={isMailingListDialogOpen}
+      >
+        <Dialog.Header
+          id="mailing-list-dialog-title"
+          title={t(`${T_PATH}.createApplicantMailingListTitle`)}
+          iconLeft={<IconQuestionCircle aria-hidden="true" />}
+        />
+        <Dialog.Content>
+          <div className={styles.checkBoxRow}>
+            <SelectionGroup label={t(`${T_PATH}.createApplicantMailingListType`)} required>
+              <RadioButton
+                id="mailingListReserved"
+                label={t(`${T_PATH}.mailingListReserved`)}
+                onChange={() => setMailingListReservationType(ApplicantMailingListExportType.RESERVED)}
+                checked={mailingListReservationType === ApplicantMailingListExportType.RESERVED}
+              />
+              <RadioButton
+                id="mailingListFirstInQueue"
+                label={t(`${T_PATH}.mailingListReservedFirstInQueue`)}
+                onChange={() => setMailingListReservationType(ApplicantMailingListExportType.FIRST_IN_QUEUE)}
+                checked={mailingListReservationType === ApplicantMailingListExportType.FIRST_IN_QUEUE}
+              />
+              <RadioButton
+                id="mailingListSold"
+                label={t(`${T_PATH}.mailingListSold`)}
+                onChange={() => setMailingListReservationType(ApplicantMailingListExportType.SOLD)}
+                checked={mailingListReservationType === ApplicantMailingListExportType.SOLD}
+              />
+            </SelectionGroup>
+          </div>
+        </Dialog.Content>
+        <Dialog.ActionButtons>
+          <Button onClick={downloadApplicantMailingList} disabled={isLoadingApplicantsList}>
+            {t(`${T_PATH}.createApplicantMailingListDownload`)}
+          </Button>
+          <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
+            {t(`${T_PATH}.download`)}
+          </a>
+          <Button
+            onClick={() => {
+              setIsMailingListDialogOpen(false);
+            }}
+            variant="secondary"
+          >
+            {t(`${T_PATH}.createApplicantMailingListCancel`)}
+          </Button>
+        </Dialog.ActionButtons>
+      </Dialog>
     </>
   );
 };

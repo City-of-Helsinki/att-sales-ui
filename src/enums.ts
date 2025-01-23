@@ -95,3 +95,9 @@ export enum ApartmentInstallmentPaymentStatus {
   OVERPAID = 'OVERPAID',
   UNDERPAID = 'UNDERPAID',
 }
+
+export enum ApplicantMailingListExportType {
+  RESERVED = 'reserved',
+  FIRST_IN_QUEUE = 'first_in_queue',
+  SOLD = 'sold',
+}
