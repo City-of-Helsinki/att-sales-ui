@@ -10,17 +10,24 @@ const project = partialProjectData as Project;
 
 describe('ProjectActions', () => {
   it('renders download lottery results button when lottery is completed', () => {
-    renderWithProviders(<ProjectActions project={{ ...project, lottery_completed_at: '01-01-2000' }} />);
+    renderWithProviders(
+      <ProjectActions
+        project={{ ...project, lottery_completed_at: '01-01-2000' }}
+        handleOpenMailingListDialog={() => {}}
+      />
+    );
     expect(screen.getByText('components.project.ProjectActions.downloadLotteryResults')).toBeDefined();
   });
 
   it('does not render download lottery results button when lottery is not yet completed', () => {
-    renderWithProviders(<ProjectActions project={{ ...project, lottery_completed_at: null }} />);
+    renderWithProviders(
+      <ProjectActions project={{ ...project, lottery_completed_at: null }} handleOpenMailingListDialog={() => {}} />
+    );
     expect(screen.queryByText('components.project.ProjectActions.downloadLotteryResults')).toBeNull();
   });
 
   it('renders download applicant list button', () => {
-    renderWithProviders(<ProjectActions project={project} />);
+    renderWithProviders(<ProjectActions project={project} handleOpenMailingListDialog={() => {}} />);
     expect(screen.getByText('components.project.ProjectActions.downloadApplicantList')).toBeDefined();
   });
 });
