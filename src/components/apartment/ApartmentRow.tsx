@@ -90,14 +90,13 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
 
     let queuePosition;
 
-    if (reservation.lottery_position) {
-      // use lottery_position, if exist
+    if (reservation.queue_position_before_cancelation) {
+      queuePosition = reservation.queue_position_before_cancelation;
+    } else if (reservation.lottery_position) {
       queuePosition = reservation.lottery_position;
     } else if (reservation.queue_position) {
-      // if lottery_position = null, but queue_position exist
       queuePosition = reservation.queue_position;
     } else {
-      // if each other null, add to end of queue
       const maxQueuePosition = Math.max(...reservationsQueue.map((res) => res.queue_position || 0));
       queuePosition = maxQueuePosition + 1;
     }

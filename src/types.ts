@@ -172,18 +172,18 @@ export type CustomerListItem = {
 };
 
 export type Applicant = {
-    age: number;
-    city: string;
-    date_of_birth: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-    is_primary_applicant: boolean;
-    phone_number: string;
-    postal_code: string;
-    ssn_suffix: string;
-    street_address: string;
-  }
+  age: number;
+  city: string;
+  date_of_birth: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_primary_applicant: boolean;
+  phone_number: string;
+  postal_code: string;
+  ssn_suffix: string;
+  street_address: string;
+};
 
 export type ApartmentInstallment = {
   type: `${InstallmentTypes}`;
@@ -259,6 +259,7 @@ export type ApartmentReservation = {
   offer?: ApartmentReservationOffer | null;
   priority_number?: number | null;
   queue_position?: number | null;
+  queue_position_before_cancelation?: number | null;
   state: `${ApartmentReservationStates}`;
   revaluation: ApartmentRevaluationWithId | null;
   submitted_late: boolean;
