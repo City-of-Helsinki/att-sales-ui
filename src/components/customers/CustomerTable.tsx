@@ -72,6 +72,7 @@ const CustomerTable = ({ customers, hasSearchQuery, isLoading }: IProps): JSX.El
         <th className={styles.customerTableHeaderCell}>{t(`${T_PATH}.email`)}</th>
         <th className={styles.customerTableHeaderCell}>{t(`${T_PATH}.phone`)}</th>
         <th className={styles.customerTableHeaderCell}>{t(`${T_PATH}.coApplicant`)}</th>
+        <th className={styles.customerTableHeaderCell}>{t(`${T_PATH}.rightOfResidence`)}</th>
       </tr>
     </thead>
   );
