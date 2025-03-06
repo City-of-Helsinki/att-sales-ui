@@ -41,6 +41,14 @@ const CustomerTableRow = ({ customer }: IProps): JSX.Element => {
           </>
         )}
       </td>
+      <td className={styles.customerTableCell}>
+        {customer?.secondary_last_name && customer?.secondary_first_name && (
+          <>
+            <span className="visually-hidden">{t(`${T_PATH}.rightOfResidence`)}:</span>
+            {customer.right_of_residence}
+          </>
+        )}
+      </td>
     </tr>
   );
 };
