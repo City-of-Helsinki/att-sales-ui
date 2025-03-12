@@ -48,11 +48,16 @@ function determineAdjustedCost(
   endIndex: string,
   alterationWork: string | undefined = undefined
 ) {
+  // don't adjust the cost downwards if the index has gone down
+  if (stringDecimalToNumber(endIndex) < stringDecimalToNumber(startIndex)) {
+    endIndex = startIndex;
+  }
+
   const adjustedCost =
     (stringDecimalToNumber(originalRightOfOccupancyPayment) / stringDecimalToNumber(startIndex)) *
       stringDecimalToNumber(endIndex) +
     (alterationWork ? stringDecimalToNumber(alterationWork) : 0);
-    return roundHalfUp(adjustedCost,2);
+  return roundHalfUp(adjustedCost, 2);
 }
 
 function getDefaults(revaluation?: ApartmentRevaluation, newDefaults?: NewDefaults) {
