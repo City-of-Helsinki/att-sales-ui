@@ -169,7 +169,7 @@ export type CustomerListItem = {
   primary_phone_number: string;
   secondary_first_name?: string | null;
   secondary_last_name?: string | null;
-  right_of_residence?: string | null;
+  right_of_residence?: number | null;
 };
 
 export type Applicant = {

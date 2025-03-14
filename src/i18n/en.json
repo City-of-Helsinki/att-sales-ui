@@ -517,9 +517,13 @@
       "PAYMENT_5": "Payment 5",
       "PAYMENT_6": "Payment 6",
       "PAYMENT_7": "Payment 7",
-      "REFUND": "Refund",
+      "REFUND_1": "Refund 1",
+      "REFUND_2": "Refund 2",
+      "REFUND_3": "Refund 3",
       "RESERVATION_FEE": "Reservation fee",
-      "RIGHT_OF_OCCUPANCY_PAYMENT": "Right of occupancy payment"
+      "RIGHT_OF_OCCUPANCY_PAYMENT_1": "Right of occupancy payment 1",
+      "RIGHT_OF_OCCUPANCY_PAYMENT_2": "Right of occupancy payment 2",
+      "RIGHT_OF_OCCUPANCY_PAYMENT_3": "Right of occupancy payment 3"
     },
     "HitasInstallmentPercentageSpecifiers": {
       "SALES_PRICE": "Sales price",
