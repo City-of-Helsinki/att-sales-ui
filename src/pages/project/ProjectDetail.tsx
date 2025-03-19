@@ -1,37 +1,28 @@
-import React, { useState } from 'react';
 import cx from 'classnames';
-import { useParams } from 'react-router-dom';
+import { Button, Dialog, IconQuestionCircle, Notification, RadioButton, SelectionGroup, Tabs } from 'hds-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Checkbox,
-  Dialog,
-  IconQuestionCircle,
-  Notification,
-  RadioButton,
-  SelectionGroup,
-  Tabs,
-} from 'hds-react';
+import { useParams } from 'react-router-dom';
 
 import ApartmentStateFilterSelect from '../../components/apartment/ApartmentStateFilterSelect';
 import ApartmentTable from '../../components/apartment/ApartmentTable';
 import Breadcrumbs, { BreadcrumbItem } from '../../components/common/breadcrumbs/Breadcrumbs';
 import Container from '../../components/common/container/Container';
-import ProjectActions from '../../components/project/ProjectActions';
-import ProjectCard from '../../components/project/ProjectCard';
+import Spinner from '../../components/common/spinner/Spinner';
+import { toast } from '../../components/common/toast/ToastManager';
 import ProjectInstallments from '../../components/installments/ProjectInstallments';
 import ProjectOfferMessageForm from '../../components/offer/ProjectOfferMessageForm';
-import Spinner from '../../components/common/spinner/Spinner';
-import useSessionStorage from '../../utils/useSessionStorage';
-import { Project } from '../../types';
-import { toast } from '../../components/common/toast/ToastManager';
+import ProjectActions from '../../components/project/ProjectActions';
+import ProjectCard from '../../components/project/ProjectCard';
+import { ApplicantMailingListExportType, ROUTES } from '../../enums';
 import { useGetProjectByIdQuery, useStartLotteryForProjectMutation } from '../../redux/services/api';
+import { Project } from '../../types';
 import { usePageTitle } from '../../utils/usePageTitle';
-import { ApartmentReservationStates, ApplicantMailingListExportType, ROUTES } from '../../enums';
+import useSessionStorage from '../../utils/useSessionStorage';
 
-import styles from './ProjectDetail.module.scss';
 import { useDownloadFile } from '../../utils/useDownloadFile';
 import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
+import styles from './ProjectDetail.module.scss';
 
 const T_PATH = 'pages.project.ProjectDetail';
 
@@ -205,6 +196,7 @@ const ProjectDetail = (): JSX.Element | null => {
           <Tabs.TabPanel>
             <div className={styles.installmentsWrapper}>
               <ProjectInstallments
+                apartments={getFilteredProjects()}
                 uuid={project.uuid}
                 ownershipType={project.ownership_type.toLowerCase()}
                 barred_bank_account={project.barred_bank_account}
