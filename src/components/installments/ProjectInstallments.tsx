@@ -180,7 +180,6 @@ const ProjectInstallments = ({
   const [allReservations, setAllReservations] = useState<Record<string, any[]>>({});
 
   const handleReservationsLoaded = (apartmentUuid: string, reservations: any[]) => {
-    console.log(`Loaded reservations for ${apartmentUuid}:`, reservations);
     setAllReservations((prev) => ({
       ...prev,
       [apartmentUuid]: reservations,
@@ -548,10 +547,6 @@ const ProjectInstallments = ({
               </Button>
               {isEra6Or7Filled() && filteredReservations.length > 0 && (
                 <>
-                  {console.log('🟢 Кнопка SAP появилась! Готовимся к отправке данных.')}
-                  {console.log('Reservation IDs:', filteredReservations.map(Number))}
-                  {console.log('Отправляемые типы платежей:', ['erä6', 'erä7'])}
-
                   <Button
                     type="button"
                     variant="secondary"
