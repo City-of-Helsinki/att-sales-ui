@@ -1,26 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import cx from 'classnames';
-import moment from 'moment';
 import Big from 'big.js';
-import { Button, Notification, Select, TextInput } from 'hds-react';
+import cx from 'classnames';
+import { Button, Dialog, Notification, Select, TextInput } from 'hds-react';
+import _ from 'lodash';
+import moment from 'moment';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import StatusText from '../common/statusText/StatusText';
-import { Project, ProjectInstallment, ProjectInstallmentInputRow, SelectOption } from '../../types';
 import {
-  InstallmentTypes,
   HasoInstallmentPercentageSpecifiers,
   HitasInstallmentPercentageSpecifiers,
+  InstallmentTypes,
 } from '../../enums';
-import { useGetProjectInstallmentsQuery, useSetProjectInstallmentsMutation } from '../../redux/services/api';
+import {
+  useGetProjectByIdQuery,
+  useGetProjectInstallmentsQuery,
+  useSendApartmentInstallmentsToSAPMutation,
+  useSetProjectInstallmentsMutation,
+} from '../../redux/services/api';
+import { Apartment, Project, ProjectInstallment, ProjectInstallmentInputRow, SelectOption } from '../../types';
 import parseApiErrors from '../../utils/parseApiErrors';
+import StatusText from '../common/statusText/StatusText';
 import { toast } from '../common/toast/ToastManager';
 
+import InstallmentsLoader from './InstallmentsLoader';
 import styles from './ProjectInstallments.module.scss';
+import ReservationsLoader from './ReservationsLoader';
 
 const T_PATH = 'components.installments.ProjectInstallments';
 
 interface IProps {
+  apartments: Apartment[] | undefined;
   uuid: Project['uuid'];
   ownershipType: Project['ownership_type'];
   barred_bank_account?: Project['barred_bank_account'];
@@ -33,6 +42,7 @@ const unitOptions = {
 } as const;
 
 const ProjectInstallments = ({
+  apartments = [],
   uuid,
   ownershipType,
   barred_bank_account,
@@ -48,9 +58,13 @@ const ProjectInstallments = ({
     refetch,
   } = useGetProjectInstallmentsQuery(uuid);
   const [setProjectInstallments, { isLoading: postInstallmentsLoading }] = useSetProjectInstallmentsMutation();
+  const [sendApartmentInstallmentsToSAP, { isLoading: isSendingToSAP }] = useSendApartmentInstallmentsToSAPMutation();
   const [formData, setFormData] = useState<ProjectInstallment[]>([]); // Form data to be sent to the API
   const [inputFields, setInputFields] = useState<ProjectInstallmentInputRow[]>([]); // Form input field values
+  const [installmentsData, setInstallmentsData] = useState<Record<number, any[]>>({});
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [reservationIds, setReservationIds] = useState<string[]>([]);
 
   // Render saved installment data into inputFields
   useEffect(() => {
@@ -162,6 +176,64 @@ const ProjectInstallments = ({
     // Set formatted apiData to formData
     setFormData(apiData);
   }, [inputFields]);
+
+  const [allReservations, setAllReservations] = useState<Record<string, any[]>>({});
+
+  const handleReservationsLoaded = (apartmentUuid: string, reservations: any[]) => {
+    setAllReservations((prev) => ({
+      ...prev,
+      [apartmentUuid]: reservations,
+    }));
+  };
+
+  const { data: project } = useGetProjectByIdQuery(uuid);
+
+  const handleInstallmentsLoaded = (reservationId: number, installments: any[]) => {
+    setInstallmentsData((prev) => ({ ...prev, [reservationId]: installments }));
+  };
+
+  const [filteredReservations, setFilteredReservations] = useState<string[]>([]);
+
+  const isAllReservationsLoaded = useMemo(() => {
+    return Object.keys(allReservations).length > 0;
+  }, [allReservations]);
+
+  // Update `reservationIds`, when all `reservations` are loaded
+  useEffect(() => {
+    if (!isAllReservationsLoaded) {
+      return;
+    }
+
+    const newReservationIds = Object.values(allReservations)
+      .flat()
+      .filter((reservation) => reservation.id) // use only reservations with `id`
+      .map((reservation) => String(reservation.id));
+
+    if (!_.isEqual(newReservationIds, reservationIds)) {
+      setReservationIds(newReservationIds);
+    }
+  }, [reservationIds, isAllReservationsLoaded, allReservations]); // ✅ `reservationIds` update first
+
+  // filtered after load
+  useEffect(() => {
+    if (!isAllReservationsLoaded || !reservationIds.length) {
+      return;
+    }
+
+    if (!project?.lottery_completed_at) {
+      return;
+    }
+
+    const newFilteredReservations = reservationIds.filter((reservationId) => {
+      const numericId = Number(reservationId);
+      const hasInstallments = installmentsData[numericId]?.length > 0;
+      return hasInstallments;
+    });
+
+    if (!_.isEqual(newFilteredReservations, filteredReservations)) {
+      setFilteredReservations(newFilteredReservations);
+    }
+  }, [filteredReservations, reservationIds, installmentsData, isAllReservationsLoaded, project?.lottery_completed_at]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // prevent page reloads
@@ -382,8 +454,58 @@ const ProjectInstallments = ({
     );
   }
 
+  const isEra6Or7Filled = () => {
+    if (
+      !inputFields.some(
+        (row, index) =>
+          (index === 5 || index === 6) &&
+          row.due_date.trim() !== '' &&
+          row.account_number.trim() !== '' &&
+          row.sum.trim() !== '' &&
+          row.type.trim() !== ''
+      )
+    ) {
+      return false;
+    }
+
+    return reservationIds.length > 0;
+  };
+
+  const handleConfirmSend = async () => {
+    setIsConfirmDialogOpen(false);
+    const numericIds = filteredReservations.map(Number);
+
+    const selectedTypes: string[] = [];
+    if (inputFields[5]?.due_date?.trim() !== '') selectedTypes.push('PAYMENT_6');
+    if (inputFields[6]?.due_date?.trim() !== '') selectedTypes.push('PAYMENT_7');
+
+    try {
+      await Promise.all(numericIds.map((id) => sendApartmentInstallmentsToSAP({ types: selectedTypes, id }).unwrap()));
+      toast.show({ type: 'success', content: t('installments.sentSuccessfully') });
+    } catch (err) {
+      toast.show({ type: 'error', content: t('installments.sendError') });
+    }
+  };
+
   return (
     <>
+      {apartments.length > 0 &&
+        apartments.map((apartment) => (
+          <ReservationsLoader
+            key={apartment.apartment_uuid}
+            apartmentUuid={apartment.apartment_uuid}
+            allReservations={allReservations}
+            onReservationsLoaded={handleReservationsLoaded}
+          />
+        ))}
+      {reservationIds.map((reservationId) => (
+        <InstallmentsLoader
+          key={reservationId}
+          reservationId={Number(reservationId)}
+          onInstallmentsLoaded={handleInstallmentsLoaded}
+          allInstallments={installmentsData}
+        />
+      ))}
       <table className={styles.bankAccounts}>
         <tbody>
           <tr>
@@ -423,10 +545,43 @@ const ProjectInstallments = ({
               >
                 {t(`${T_PATH}.save`)}
               </Button>
+              {isEra6Or7Filled() && filteredReservations.length > 0 && (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    style={{ marginLeft: '10px' }}
+                    onClick={() => setIsConfirmDialogOpen(true)}
+                    isLoading={isSendingToSAP}
+                  >
+                    {t(`${T_PATH}.SAP`)}
+                  </Button>
+                </>
+              )}
             </div>
           </>
         )}
       </form>
+      <Dialog
+        id="confirm-send-dialog"
+        aria-labelledby="confirm-send-dialog-title"
+        isOpen={isConfirmDialogOpen}
+        close={() => setIsConfirmDialogOpen(false)}
+        closeButtonLabelText={t(`${T_PATH}.closeDialog`) || ''}
+      >
+        <Dialog.Header id="confirm-send-dialog-title" title={t(`${T_PATH}.sendToSAP`)} />
+        <Dialog.Content>
+          <p>{t(`${T_PATH}.sendToSAPMessage`)}</p>
+        </Dialog.Content>
+        <Dialog.ActionButtons>
+          <Button onClick={handleConfirmSend} disabled={isSendingToSAP}>
+            {t(`${T_PATH}.sendToSAPButtonYes`)}
+          </Button>
+          <Button onClick={() => setIsConfirmDialogOpen(false)} variant="secondary">
+            {t(`${T_PATH}.sendToSAPButtonNo`)}
+          </Button>
+        </Dialog.ActionButtons>
+      </Dialog>
     </>
   );
 };
