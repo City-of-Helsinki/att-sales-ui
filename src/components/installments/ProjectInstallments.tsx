@@ -194,9 +194,11 @@ const ProjectInstallments = ({
 
   const [filteredReservations, setFilteredReservations] = useState<string[]>([]);
 
+  const isLotteryCompleted = useMemo(() => Boolean(project?.lottery_completed_at), [project]);
+
   const isAllReservationsLoaded = useMemo(() => {
-    return Object.keys(allReservations).length > 0;
-  }, [allReservations]);
+    return isLotteryCompleted && Object.keys(allReservations).length > 0;
+  }, [allReservations, isLotteryCompleted]);
 
   // Update `reservationIds`, when all `reservations` are loaded
   useEffect(() => {
@@ -216,11 +218,7 @@ const ProjectInstallments = ({
 
   // filtered after load
   useEffect(() => {
-    if (!isAllReservationsLoaded || !reservationIds.length) {
-      return;
-    }
-
-    if (!project?.lottery_completed_at) {
+    if (!isAllReservationsLoaded || !reservationIds.length || !isLotteryCompleted) {
       return;
     }
 
@@ -233,7 +231,7 @@ const ProjectInstallments = ({
     if (!_.isEqual(newFilteredReservations, filteredReservations)) {
       setFilteredReservations(newFilteredReservations);
     }
-  }, [filteredReservations, reservationIds, installmentsData, isAllReservationsLoaded, project?.lottery_completed_at]);
+  }, [filteredReservations, reservationIds, installmentsData, isAllReservationsLoaded, isLotteryCompleted]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // prevent page reloads
