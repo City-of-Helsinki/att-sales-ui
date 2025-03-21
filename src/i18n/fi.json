@@ -523,9 +523,13 @@
       "PAYMENT_5": "Erä 5",
       "PAYMENT_6": "Erä 6",
       "PAYMENT_7": "Erä 7",
-      "REFUND": "Hyvitys",
+      "REFUND_1": "Hyvitys 1",
+      "REFUND_2": "Hyvitys 2",
+      "REFUND_3": "Hyvitys 3",
       "RESERVATION_FEE": "Varausmaksu",
-      "RIGHT_OF_OCCUPANCY_PAYMENT": "AO-maksu"
+      "RIGHT_OF_OCCUPANCY_PAYMENT_1": "AO-maksu 1",
+      "RIGHT_OF_OCCUPANCY_PAYMENT_2": "AO-maksu 2",
+      "RIGHT_OF_OCCUPANCY_PAYMENT_3": "AO-maksu 3"
     },
     "InstallmentPaymentStatus": {
       "PAID": "Maksettu",
