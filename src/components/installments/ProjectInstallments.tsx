@@ -222,16 +222,32 @@ const ProjectInstallments = ({
       return;
     }
 
+    const reservationMap = new Map<number, any>();
+    for (const list of Object.values(allReservations)) {
+      for (const res of list) {
+        reservationMap.set(res.id, res);
+      }
+    }
+
     const newFilteredReservations = reservationIds.filter((reservationId) => {
       const numericId = Number(reservationId);
+      const reservation = reservationMap.get(numericId);
       const hasInstallments = installmentsData[numericId]?.length > 0;
-      return hasInstallments;
+      const isSold = reservation?.state === 'sold';
+      return hasInstallments && isSold;
     });
 
     if (!_.isEqual(newFilteredReservations, filteredReservations)) {
       setFilteredReservations(newFilteredReservations);
     }
-  }, [filteredReservations, reservationIds, installmentsData, isAllReservationsLoaded, isLotteryCompleted]);
+  }, [
+    filteredReservations,
+    reservationIds,
+    installmentsData,
+    isAllReservationsLoaded,
+    isLotteryCompleted,
+    allReservations,
+  ]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // prevent page reloads
