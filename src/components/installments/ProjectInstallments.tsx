@@ -559,7 +559,7 @@ const ProjectInstallments = ({
               >
                 {t(`${T_PATH}.save`)}
               </Button>
-              {isEra6Or7Filled() && filteredReservations.length > 0 && (
+              {false && isEra6Or7Filled() && filteredReservations.length > 0 && (
                 <>
                   <Button
                     type="button"
