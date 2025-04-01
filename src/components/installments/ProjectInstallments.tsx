@@ -501,6 +501,8 @@ const ProjectInstallments = ({
     }
   };
 
+  const isSAPButtonEnabled = false;
+
   return (
     <>
       {apartments.length > 0 &&
@@ -510,7 +512,7 @@ const ProjectInstallments = ({
             apartmentUuid={apartment.apartment_uuid}
             allReservations={allReservations}
             onReservationsLoaded={handleReservationsLoaded}
-            delayMs={index * 150}
+            delayMs={index * 100}
           />
         ))}
       {reservationIds.map((reservationId, index) => (
@@ -519,7 +521,7 @@ const ProjectInstallments = ({
           reservationId={Number(reservationId)}
           onInstallmentsLoaded={handleInstallmentsLoaded}
           allInstallments={installmentsData}
-          delayMs={index * 150}
+          delayMs={index * 100}
         />
       ))}
       <table className={styles.bankAccounts}>
@@ -561,7 +563,7 @@ const ProjectInstallments = ({
               >
                 {t(`${T_PATH}.save`)}
               </Button>
-              {isEra6Or7Filled() && filteredReservations.length > 0 && (
+              {isSAPButtonEnabled && isEra6Or7Filled() && filteredReservations.length > 0 && (
                 <>
                   <Button
                     type="button"
