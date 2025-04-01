@@ -501,8 +501,6 @@ const ProjectInstallments = ({
     }
   };
 
-  const isSAPButtonEnabled = false;
-
   return (
     <>
       {apartments.length > 0 &&
@@ -561,7 +559,7 @@ const ProjectInstallments = ({
               >
                 {t(`${T_PATH}.save`)}
               </Button>
-              {isSAPButtonEnabled && isEra6Or7Filled() && filteredReservations.length > 0 && (
+              {isEra6Or7Filled() && filteredReservations.length > 0 && (
                 <>
                   <Button
                     type="button"
