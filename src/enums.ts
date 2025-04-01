@@ -29,7 +29,7 @@ export enum InstallmentTypes {
   Payment5 = 'PAYMENT_5',
   Payment6 = 'PAYMENT_6',
   Payment7 = 'PAYMENT_7',
-  Refund1 = 'REFUND_1',
+  Refund = 'REFUND',
   Refund2 = 'REFUND_2',
   Refund3 = 'REFUND_3',
   DownPayment = 'DOWN_PAYMENT',
