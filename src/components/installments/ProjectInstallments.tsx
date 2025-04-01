@@ -504,20 +504,22 @@ const ProjectInstallments = ({
   return (
     <>
       {apartments.length > 0 &&
-        apartments.map((apartment) => (
+        apartments.map((apartment, index) => (
           <ReservationsLoader
             key={apartment.apartment_uuid}
             apartmentUuid={apartment.apartment_uuid}
             allReservations={allReservations}
             onReservationsLoaded={handleReservationsLoaded}
+            delayMs={index * 150}
           />
         ))}
-      {reservationIds.map((reservationId) => (
+      {reservationIds.map((reservationId, index) => (
         <InstallmentsLoader
           key={reservationId}
           reservationId={Number(reservationId)}
           onInstallmentsLoaded={handleInstallmentsLoaded}
           allInstallments={installmentsData}
+          delayMs={index * 150}
         />
       ))}
       <table className={styles.bankAccounts}>
