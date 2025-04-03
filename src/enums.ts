@@ -34,7 +34,7 @@ export enum InstallmentTypes {
   Refund3 = 'REFUND_3',
   DownPayment = 'DOWN_PAYMENT',
   LatePaymentInterest = 'LATE_PAYMENT_INTEREST',
-  RightOfOccupancyPayment1 = 'RIGHT_OF_OCCUPANCY_PAYMENT_1',
+  RightOfOccupancyPayment = 'RIGHT_OF_OCCUPANCY_PAYMENT',
   RightOfOccupancyPayment2 = 'RIGHT_OF_OCCUPANCY_PAYMENT_2',
   RightOfOccupancyPayment3 = 'RIGHT_OF_OCCUPANCY_PAYMENT_3',
   ForInvoicing = 'FOR_INVOICING',
