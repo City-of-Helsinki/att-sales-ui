@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import moment from 'moment';
-import { Button, DateInput, IconDownload } from 'hds-react';
+import { Button, Combobox, DateInput, IconDownload, Select } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import Container from '../common/container/Container';
@@ -11,6 +11,8 @@ import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 import reportStyles from '../../pages/reports/Reports.module.scss';
 import styles from './SalesReport.module.scss';
+import { SelectOption, Project } from '../../types';
+import { useGetProjectsQuery, useGetSelectedProjectsQuery } from '../../redux/services/api';
 
 const T_PATH = 'components.reports.SalesReport';
 
@@ -20,6 +22,13 @@ const SalesReport = (): JSX.Element => {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [params, setParams] = useState<URLSearchParams>();
+
+  const { data: projects, isLoading, isError, isSuccess } = useGetProjectsQuery();
+  const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
+
+  const [selectedProjects, setSelectedProjects] = useState<SelectOption[]>([]);
+  const [selectedProject, setSelectedProject] = useState<SelectOption>();
+  const [searchValue, setSearchValue] = useState<string>('');
 
   const isValidDate = (date: string): boolean => moment(date, 'D.M.YYYY', true).isValid();
 
@@ -34,11 +43,13 @@ const SalesReport = (): JSX.Element => {
     const dateObject = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
+      project_uuids: selectedProjects.map((x) => x.selectValue).join(','),
     };
 
     // Set new search params
     setParams(new URLSearchParams(dateObject));
-  }, [formattedDate, startDate, endDate, setParams]);
+    console.log('params', dateObject);
+  }, [formattedDate, startDate, endDate, selectedProjects, setParams]);
 
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
   const postSalesReportDownloading = () => setIsLoadingSalesReport(false);
@@ -48,9 +59,40 @@ const SalesReport = (): JSX.Element => {
     toast.show({ type: 'error' });
   };
 
+  const getDefaultValues = (selectedProjects?: Project[]): SelectOption[] => {
+    if (!selectedProjects) return [];
+    const selectedProjectUuids = selectedProjects?.map((project) => project.uuid);
+    return selectOptions().filter((option: SelectOption) => selectedProjectUuids?.includes(option.selectValue));
+  };
+
+  const selectOptions = (): SelectOption[] => {
+    let options: SelectOption[] = [];
+
+    projects?.forEach((project: Project) => {
+      let label = project.street_address;
+      const index = options.findIndex((x) => x.label === project.street_address);
+
+      // ComboBox doesn't like duplicate labels
+      // these should only appear in the case there are duplicates
+      if (index > 0) {
+        label = `${project.street_address} #${project.id}`;
+      }
+
+      options.push({
+        label: label,
+        name: 'projectOption',
+        selectValue: project.uuid,
+      });
+    });
+
+    options.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
+
+    return options;
+  };
+
   const getSalesReportFileName = (): string => {
     const prefix = 'myyntiraportti';
-    const fileFormat = 'csv';
+    const fileFormat = 'xlsx';
     const dateRange = `_${formattedDate(startDate)}_${formattedDate(endDate)}`;
 
     return `${prefix}${dateRange}.${fileFormat}`;
@@ -70,6 +112,18 @@ const SalesReport = (): JSX.Element => {
     postDownloading: postSalesReportDownloading,
     preDownloading: preSalesReportDownloading,
   });
+
+  function handleSelectChange(selected: SelectOption[]): void {
+    // console.log('Selected', selected);
+    setSelectedProjects(selected);
+  }
+
+  function handleSearch(options: SelectOption[], search: string): SelectOption[] {
+    const filtered = options.filter((option) => option.label.toLowerCase().includes(search.toLowerCase()));
+
+    // filtered.forEach(x => console.log(x))
+    return filtered;
+  }
 
   return (
     <Container wide className={reportStyles.wrapper}>
@@ -112,15 +166,37 @@ const SalesReport = (): JSX.Element => {
             isLoading={isLoadingSalesReport}
             loadingText={t(`${T_PATH}.downloadReport`)}
             className={styles.downloadButton}
-            disabled={!isValidDate(startDate) || !isValidDate(endDate)}
+            disabled={!isValidDate(startDate) || !isValidDate(endDate) || selectedProjects.length === 0}
           >
             {t(`${T_PATH}.downloadReport`)}
           </Button>
         </span>
-        <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
-          {t(`${T_PATH}.download`)}
-        </a>
       </div>
+      <div className={styles.formFields}>
+        <span>
+          {
+            // defaultValue prop is only checked once, ensure its filled with data
+            userSelectedProjects !== undefined && projects !== undefined && (
+              <Combobox
+                multiselect
+                required
+                label={t(`${T_PATH}.projects`)}
+                placeholder="Hae projekteja"
+                options={selectOptions()}
+                clearButtonAriaLabel="Clear all selections"
+                selectedItemRemoveButtonAriaLabel="Remove ${value}"
+                onChange={handleSelectChange}
+                toggleButtonAriaLabel="Toggle menu"
+                filter={handleSearch}
+                defaultValue={getDefaultValues(projects)}
+              />
+            )
+          }
+        </span>
+      </div>
+      <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
+        {t(`${T_PATH}.download`)}
+      </a>
     </Container>
   );
 };

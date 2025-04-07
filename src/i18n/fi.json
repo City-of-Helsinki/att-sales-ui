@@ -331,6 +331,7 @@
   "components.reports.SalesReport.dateFormatHelper": "Käytä muotoa P.K.VVVV",
   "components.reports.SalesReport.startDate": "Alkupvm",
   "components.reports.SalesReport.endDate": "Loppupvm",
+  "components.reports.SalesReport.projects": "Valitut projektit",
   "components.reports.SalesReport.reportHelpText": "Valitse sekä alku- että loppupvm.",
   "components.reservations.CustomerReservationRow.btnCancel": "Peruuta",
   "components.reservations.CustomerReservationRow.canceled": "Peruttu",

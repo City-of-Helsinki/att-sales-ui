@@ -329,6 +329,7 @@
   "components.reports.SalesReport.dateFormatHelper": "Use format D.M.YYYY",
   "components.reports.SalesReport.startDate": "Start date",
   "components.reports.SalesReport.endDate": "End date",
+  "components.reports.SalesReport.projects": "Selected projects",
   "components.reports.SalesReport.reportHelpText": "Choose both start and end date",
   "components.reservations.CustomerReservationRow.btnCancel": "Cancel",
   "components.reservations.CustomerReservationRow.canceled": "Canceled",
