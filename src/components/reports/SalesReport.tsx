@@ -23,12 +23,10 @@ const SalesReport = (): JSX.Element => {
   const [endDate, setEndDate] = useState<string>('');
   const [params, setParams] = useState<URLSearchParams>();
 
-  const { data: projects, isLoading, isError, isSuccess } = useGetProjectsQuery();
+  const { data: projects } = useGetProjectsQuery();
   const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
 
   const [selectedProjects, setSelectedProjects] = useState<SelectOption[]>([]);
-  const [selectedProject, setSelectedProject] = useState<SelectOption>();
-  const [searchValue, setSearchValue] = useState<string>('');
 
   const isValidDate = (date: string): boolean => moment(date, 'D.M.YYYY', true).isValid();
 
@@ -48,7 +46,6 @@ const SalesReport = (): JSX.Element => {
 
     // Set new search params
     setParams(new URLSearchParams(dateObject));
-    console.log('params', dateObject);
   }, [formattedDate, startDate, endDate, selectedProjects, setParams]);
 
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
@@ -59,23 +56,27 @@ const SalesReport = (): JSX.Element => {
     toast.show({ type: 'error' });
   };
 
-  const getDefaultValues = (selectedProjects?: Project[]): SelectOption[] => {
-    if (!selectedProjects) return [];
-    const selectedProjectUuids = selectedProjects?.map((project) => project.uuid);
-    return selectOptions().filter((option: SelectOption) => selectedProjectUuids?.includes(option.selectValue));
+  const getDefaultValues = (): SelectOption[] => {
+    if (!userSelectedProjects) return [];
+    const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
+    const defaultOptions = selectOptions().filter((option: SelectOption) =>
+      selectedProjectUuids?.includes(option.selectValue)
+    );
+    defaultOptions.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
+    return defaultOptions;
   };
 
   const selectOptions = (): SelectOption[] => {
     let options: SelectOption[] = [];
 
     projects?.forEach((project: Project) => {
-      let label = project.street_address;
-      const index = options.findIndex((x) => x.label === project.street_address);
+      let label = `${project.housing_company} - ${project.street_address}`;
+      const index = options.findIndex((x) => x.label === label);
 
       // ComboBox doesn't like duplicate labels
       // these should only appear in the case there are duplicates
       if (index > 0) {
-        label = `${project.street_address} #${project.id}`;
+        label = `${label} #${project.id}`;
       }
 
       options.push({
@@ -114,14 +115,11 @@ const SalesReport = (): JSX.Element => {
   });
 
   function handleSelectChange(selected: SelectOption[]): void {
-    // console.log('Selected', selected);
     setSelectedProjects(selected);
   }
 
   function handleSearch(options: SelectOption[], search: string): SelectOption[] {
     const filtered = options.filter((option) => option.label.toLowerCase().includes(search.toLowerCase()));
-
-    // filtered.forEach(x => console.log(x))
     return filtered;
   }
 
@@ -166,7 +164,7 @@ const SalesReport = (): JSX.Element => {
             isLoading={isLoadingSalesReport}
             loadingText={t(`${T_PATH}.downloadReport`)}
             className={styles.downloadButton}
-            disabled={!isValidDate(startDate) || !isValidDate(endDate) || selectedProjects.length === 0}
+            disabled={!isValidDate(startDate) || !isValidDate(endDate)}
           >
             {t(`${T_PATH}.downloadReport`)}
           </Button>
@@ -181,14 +179,14 @@ const SalesReport = (): JSX.Element => {
                 multiselect
                 required
                 label={t(`${T_PATH}.projects`)}
-                placeholder="Hae projekteja"
+                placeholder={t(`${T_PATH}.searchProjectsPlaceHolder`)}
                 options={selectOptions()}
-                clearButtonAriaLabel="Clear all selections"
-                selectedItemRemoveButtonAriaLabel="Remove ${value}"
+                clearButtonAriaLabel={t(`${T_PATH}.clearButtonAriaLabel`)}
+                selectedItemRemoveButtonAriaLabel={t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`)}
                 onChange={handleSelectChange}
-                toggleButtonAriaLabel="Toggle menu"
+                toggleButtonAriaLabel={t(`${T_PATH}.toggleButtonAriaLabel`)}
                 filter={handleSearch}
-                defaultValue={getDefaultValues(projects)}
+                defaultValue={getDefaultValues()}
               />
             )
           }
