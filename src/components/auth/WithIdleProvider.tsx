@@ -9,7 +9,7 @@ import {
 } from '../../redux/features/authSessionExpiringModalSlice';
 import { RootState } from '../../redux/store';
 
-export const TIMEOUT_MINUTES = '1';
+export const TIMEOUT_MINUTES = '15';
 
 const IdleTimer: FC<unknown> = ({ children }) => {
   const { logout } = useOidcClient();
@@ -17,18 +17,15 @@ const IdleTimer: FC<unknown> = ({ children }) => {
   const isModalOpen = useSelector((state: RootState) => state.authSessionExpiringModal.isOpened);
 
   const onPrompt = (): void => {
-    console.log('[IdleTimer] onPrompt triggered');
     dispatch(showAuthSessionExpiringModal());
   };
 
   const onIdle = (): void => {
-    console.log('[IdleTimer] onIdle triggered');
     dispatch(hideAuthSessionExpiringModal());
     logout();
   };
 
   const onActive = (): void => {
-    console.log('[IdleTimer] onActive triggered');
     if (isModalOpen) {
       dispatch(hideAuthSessionExpiringModal());
     }

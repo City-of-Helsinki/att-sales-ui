@@ -49,12 +49,7 @@ const AuthSessionExpiringModal = () => {
     closeDialog();
   };
 
-  if (!isDialogOpen) {
-    console.log('[AuthModal] Not open');
-    return null;
-  }
-
-  console.log('[AuthModal] Mounted and showing modal');
+  if (!isDialogOpen) return null;
 
   return (
     <>
