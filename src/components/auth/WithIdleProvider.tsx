@@ -1,13 +1,13 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { IdleTimerProvider } from 'react-idle-timer';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { useOidcClient } from 'hds-react';
 import {
   hideAuthSessionExpiringModal,
   showAuthSessionExpiringModal,
 } from '../../redux/features/authSessionExpiringModalSlice';
 import { RootState } from '../../redux/store';
-import { useOidcClient } from 'hds-react';
 
 export const TIMEOUT_MINUTES = process.env.REACT_APP_IDLE_TIMEOUT_MINUTES || '15';
 

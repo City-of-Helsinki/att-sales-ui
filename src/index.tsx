@@ -1,17 +1,17 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
-import reportWebVitals from './reportWebVitals';
-import ScrollToTop from './utils/scrollToTop';
 import { ApiAccessTokenProvider } from './components/api/ApiAccessTokenProvider';
 import HDSLoginProvider from './components/auth/LoginProvider';
 import StoreProvider from './redux/StoreProvider';
+import reportWebVitals from './reportWebVitals';
+import ScrollToTop from './utils/scrollToTop';
 
 import './i18n/i18n';
 
 import './assets/styles/main.scss';
+import WithIdleProvider from './components/auth/WithIdleProvider';
 
 ReactDOM.render(
   <BrowserRouter>
@@ -19,7 +19,9 @@ ReactDOM.render(
       <ApiAccessTokenProvider>
         <StoreProvider>
           <ScrollToTop />
-          <App />
+          <WithIdleProvider>
+            <App />
+          </WithIdleProvider>
         </StoreProvider>
       </ApiAccessTokenProvider>
     </HDSLoginProvider>
