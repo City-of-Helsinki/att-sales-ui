@@ -4,6 +4,7 @@ import moment from 'moment';
 import Big from 'big.js';
 import {
   Button,
+  ButtonPresetTheme,
   ButtonSize,
   ButtonVariant,
   Card,
@@ -431,7 +432,7 @@ const InstallmentsForm = ({
         <Button
           size={ButtonSize.Small}
           variant={ButtonVariant.Secondary}
-          theme="black"
+          theme={ButtonPresetTheme.Black}
           iconStart={accordionIcon}
           className={styles.toggleButton}
           {...accordionButtonProps}
