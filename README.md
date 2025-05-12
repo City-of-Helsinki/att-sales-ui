@@ -8,10 +8,11 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Development
 
-Make a local `.env` copy:
+Make a local `.env` copy and `.env.test.local` copy (for tests):
 
 ```bash
 $ cp .env.example .env.development.local
+$ cp .env.test.local.example .env.test.local
 ```
 
 ## Available Scripts
