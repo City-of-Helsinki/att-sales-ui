@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Dialog, IconQuestionCircle } from 'hds-react';
+import { Button, ButtonSize, ButtonVariant, Dialog, IconQuestionCircle } from 'hds-react';
 
 import formatDateTime from '../../utils/formatDateTime';
 import formattedCurrency from '../../utils/formatCurrency';
@@ -54,7 +54,7 @@ const InstallmentsTableRow = ({ installment, reservationId }: IProps) => {
       <Dialog.Header
         id="confirmation-dialog-title"
         title={t(`${T_PATH}.areYouSure`)}
-        iconLeft={<IconQuestionCircle aria-hidden="true" />}
+        iconStart={<IconQuestionCircle aria-hidden="true" />}
       />
       <Dialog.Content>
         <p>{t(`${T_PATH}.infoTextSendingToSAP`)}</p>
@@ -92,7 +92,7 @@ const InstallmentsTableRow = ({ installment, reservationId }: IProps) => {
         >
           {t(`${T_PATH}.sendToSAP`)}
         </Button>
-        <Button onClick={closeConfirmation} variant="secondary">
+        <Button onClick={closeConfirmation} variant={ButtonVariant.Secondary}>
           {t(`${T_PATH}.cancel`)}
         </Button>
       </Dialog.ActionButtons>
@@ -122,8 +122,8 @@ const InstallmentsTableRow = ({ installment, reservationId }: IProps) => {
           </>
         ) : (
           <Button
-            variant="secondary"
-            size="small"
+            variant={ButtonVariant.Secondary}
+            size={ButtonSize.Small}
             ref={openConfirmationDialogButtonRef}
             onClick={() => setIsConfirmationOpen(true)}
             disabled={!installment.due_date || isLoadingSendToSAP}

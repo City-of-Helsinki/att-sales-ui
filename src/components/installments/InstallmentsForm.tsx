@@ -4,6 +4,8 @@ import moment from 'moment';
 import Big from 'big.js';
 import {
   Button,
+  ButtonSize,
+  ButtonVariant,
   Card,
   IconAlertCircleFill,
   IconAngleDown,
@@ -427,10 +429,10 @@ const InstallmentsForm = ({
     <>
       <div className={styles.installmentCandidatesWrapper}>
         <Button
-          size="small"
-          variant="secondary"
+          size={ButtonSize.Small}
+          variant={ButtonVariant.Secondary}
           theme="black"
-          iconLeft={accordionIcon}
+          iconStart={accordionIcon}
           className={styles.toggleButton}
           {...accordionButtonProps}
         >

@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import cx from 'classnames';
-import { Button, Dialog, Notification, Select, TextInput } from 'hds-react';
+import { Button, ButtonVariant, Dialog, Notification, NotificationSize, Select, TextInput } from 'hds-react';
 import _ from 'lodash';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -462,7 +462,7 @@ const ProjectInstallments = ({
 
   if (isError) {
     return (
-      <Notification type="error" size="small" style={{ marginTop: 15 }}>
+      <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
         {t(`${T_PATH}.errorLoadingInstallments`)}
       </Notification>
     );
@@ -555,7 +555,7 @@ const ProjectInstallments = ({
             <div className={styles.buttons}>
               <Button
                 type="submit"
-                variant="primary"
+                variant={ButtonVariant.Primary}
                 isLoading={postInstallmentsLoading}
                 loadingText={t(`${T_PATH}.save`)}
               >
@@ -565,7 +565,7 @@ const ProjectInstallments = ({
                 <>
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant={ButtonVariant.Secondary}
                     style={{ marginLeft: '10px' }}
                     onClick={() => setIsConfirmDialogOpen(true)}
                     isLoading={isSendingToSAP}
@@ -593,7 +593,7 @@ const ProjectInstallments = ({
           <Button onClick={handleConfirmSend} disabled={isSendingToSAP}>
             {t(`${T_PATH}.sendToSAPButtonYes`)}
           </Button>
-          <Button onClick={() => setIsConfirmDialogOpen(false)} variant="secondary">
+          <Button onClick={() => setIsConfirmDialogOpen(false)} variant={ButtonVariant.Secondary}>
             {t(`${T_PATH}.sendToSAPButtonNo`)}
           </Button>
         </Dialog.ActionButtons>

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Button, Dialog, IconInfoCircle, Notification } from 'hds-react';
+import { Button, ButtonVariant, Dialog, IconInfoCircle, Notification } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -98,7 +98,7 @@ const ApartmentRevaluationModal = (): JSX.Element | null => {
       <Dialog.Header
         id="apartment-revaluation-dialog-header"
         title={t('title')}
-        iconLeft={<IconInfoCircle aria-hidden />}
+        iconStart={<IconInfoCircle aria-hidden />}
       />
       {!!errorMessages.length && (
         <Notification type="error" style={{ margin: '15px 0' }}>
@@ -112,7 +112,7 @@ const ApartmentRevaluationModal = (): JSX.Element | null => {
 
       <Dialog.ActionButtons>
         <ReservationReleasePDF reservationId={reservationId} customerId={customer.id} disabled={editing} />
-        <Button variant="secondary" onClick={dispatchStartEditing} disabled={editing}>
+        <Button variant={ButtonVariant.Secondary} onClick={dispatchStartEditing} disabled={editing}>
           {t('edit')}
         </Button>
       </Dialog.ActionButtons>

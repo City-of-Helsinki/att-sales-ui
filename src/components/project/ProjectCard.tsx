@@ -1,5 +1,13 @@
 import React from 'react';
-import { Button, Dialog, IconArrowRight, IconCogwheel, IconLinkExternal, IconQuestionCircle } from 'hds-react';
+import {
+  Button,
+  ButtonVariant,
+  Dialog,
+  IconArrowRight,
+  IconCogwheel,
+  IconLinkExternal,
+  IconQuestionCircle,
+} from 'hds-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -101,7 +109,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
           {showActions && !lottery_completed_at && (
             <div className={styles.lotteryBtnWrap}>
               <Button
-                variant="primary"
+                variant={ButtonVariant.Primary}
                 ref={openLotteryConfirmDialogButtonRef}
                 disabled={!applicationPeriodHasEnded || lotteryLoading}
                 onClick={() => setIsLotteryConfirmOpen(true)}
@@ -151,7 +159,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
           <Dialog.Header
             id="lottery-confirm-dialog-title"
             title={t(`${T_PATH}.startLotteryConfirmTitle`)}
-            iconLeft={<IconQuestionCircle aria-hidden="true" />}
+            iconStart={<IconQuestionCircle aria-hidden="true" />}
           />
           <Dialog.Content>
             <p id="lottery-confirm-dialog-info" className="text-body">
@@ -164,7 +172,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
                 ? t(`${T_PATH}.startHasoLottery`)
                 : t(`${T_PATH}.startHitasLottery`)}
             </Button>
-            <Button onClick={closeLotteryConfirm} variant="secondary">
+            <Button onClick={closeLotteryConfirm} variant={ButtonVariant.Secondary}>
               {t(`${T_PATH}.startLotteryCancel`)}
             </Button>
           </Dialog.ActionButtons>

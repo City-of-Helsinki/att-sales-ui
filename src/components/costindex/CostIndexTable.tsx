@@ -2,7 +2,18 @@ import React, { useState } from 'react';
 import moment from 'moment/moment';
 import { get, SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Button, DateInput, Dialog, IconPlus, IconQuestionCircle, Notification, Table, TextInput } from 'hds-react';
+import {
+  Button,
+  ButtonVariant,
+  DateInput,
+  Dialog,
+  IconPlus,
+  IconQuestionCircle,
+  Notification,
+  NotificationSize,
+  Table,
+  TextInput,
+} from 'hds-react';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup/dist/yup';
 
@@ -64,7 +75,7 @@ const CostIndexTable = (): JSX.Element => {
   } else if (isError || !data) {
     return (
       <Container>
-        <Notification type="error" size="small" style={{ marginTop: 15 }}>
+        <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
           {t('errorLoadingCostIndex')}
         </Notification>
       </Container>
@@ -174,8 +185,8 @@ const CostIndexTable = (): JSX.Element => {
         </div>
         <div>
           <Button
-            variant="primary"
-            iconLeft={<IconPlus />}
+            variant={ButtonVariant.Primary}
+            iconStart={<IconPlus />}
             ref={openConfirmationDialogButtonRef}
             onClick={() =>
               trigger().then((valid) => {
@@ -198,7 +209,7 @@ const CostIndexTable = (): JSX.Element => {
           focusAfterCloseRef={openConfirmationDialogButtonRef}
           targetElement={confirmationDialogTarget.current ?? undefined}
         >
-          <Dialog.Header id={titleId} title={t('confirmTitle')} iconLeft={<IconQuestionCircle aria-hidden="true" />} />
+          <Dialog.Header id={titleId} title={t('confirmTitle')} iconStart={<IconQuestionCircle aria-hidden="true" />} />
           <Dialog.Content>
             <p id={descriptionId} className="text-body">
               {t('confirmBody')}
@@ -210,7 +221,7 @@ const CostIndexTable = (): JSX.Element => {
             <Button type="submit" form={formId} onClick={() => setTimeout(close, 1)}>
               {t('save')}
             </Button>
-            <Button onClick={close} variant="secondary">
+            <Button onClick={close} variant={ButtonVariant.Secondary}>
               {t('confirmCancel')}
             </Button>
           </Dialog.ActionButtons>

@@ -127,7 +127,7 @@ const InstallmentPaymentStateInfo = ({ state, payments, sentToSap }: IProps) => 
         <Dialog.Header
           id="payment-state-info-dialog-header"
           title={t('paymentDetailsTitle')}
-          iconLeft={<IconInfoCircle aria-hidden="true" />}
+          iconStart={<IconInfoCircle aria-hidden="true" />}
         />
         <Dialog.Content>
           <Table

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import moment from 'moment';
-import { Button, Checkbox } from 'hds-react';
+import { Button, ButtonVariant, Checkbox } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import formattedSalesPrice from '../../utils/formatSalesPrice';
@@ -155,7 +155,7 @@ const InstallmentsInvoice = ({
         >
           {t(`${T_PATH}.print`)}
         </Button>
-        <Button className={styles.closeBtn} variant="secondary" onClick={() => handleCloseCallback()}>
+        <Button className={styles.closeBtn} variant={ButtonVariant.Secondary} onClick={() => handleCloseCallback()}>
           {t(`${T_PATH}.close`)}
         </Button>
       </div>

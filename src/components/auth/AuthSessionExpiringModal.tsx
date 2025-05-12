@@ -1,4 +1,4 @@
-import { Button, Dialog, IconAlertCircle } from 'hds-react';
+import { Button, ButtonVariant, Dialog, IconAlertCircle } from 'hds-react';
 import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useIdleTimerContext } from 'react-idle-timer';
@@ -57,7 +57,7 @@ const AuthSessionExpiringModal = () => {
         <Dialog.Header
           id={titleId}
           title={t(`${T_PATH}.continueUsingTheService`)}
-          iconLeft={<IconAlertCircle aria-hidden="true" />}
+          iconStart={<IconAlertCircle aria-hidden="true" />}
         />
         <Dialog.Content>
           <p id={descriptionId}>
@@ -70,7 +70,7 @@ const AuthSessionExpiringModal = () => {
         <Dialog.ActionButtons>
           <Button onClick={handleContinue}>{t(`${T_PATH}.continue`)}</Button>
           {
-            <Button onClick={() => logout()} variant="secondary">
+            <Button onClick={() => logout()} variant={ButtonVariant.Secondary}>
               {t(`${T_PATH}.logout`)}
             </Button>
           }
