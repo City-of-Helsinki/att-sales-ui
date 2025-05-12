@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import moment from 'moment';
-import { Button, Combobox, DateInput, IconDownload, Select } from 'hds-react';
+import { Button, Combobox, DateInput, IconDownload, Select, Option, ButtonVariant, LoadingSpinner } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import Container from '../common/container/Container';
@@ -11,7 +11,7 @@ import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 import reportStyles from '../../pages/reports/Reports.module.scss';
 import styles from './SalesReport.module.scss';
-import { SelectOption, Project } from '../../types';
+import { Project } from '../../types';
 import { useGetProjectsQuery, useGetSelectedProjectsQuery } from '../../redux/services/api';
 
 const T_PATH = 'components.reports.SalesReport';
@@ -26,7 +26,7 @@ const SalesReport = (): JSX.Element => {
   const { data: projects } = useGetProjectsQuery();
   const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
 
-  const [selectedProjects, setSelectedProjects] = useState<SelectOption[]>([]);
+  const [selectedProjects, setSelectedProjects] = useState<Option[]>([]);
 
   const isValidDate = (date: string): boolean => moment(date, 'D.M.YYYY', true).isValid();
 
@@ -41,7 +41,7 @@ const SalesReport = (): JSX.Element => {
     const dateObject = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
-      project_uuids: selectedProjects.map((x) => x.selectValue).join(','),
+      project_uuids: selectedProjects.map((x) => x.value).join(','),
     };
 
     // Set new search params
@@ -56,18 +56,16 @@ const SalesReport = (): JSX.Element => {
     toast.show({ type: 'error' });
   };
 
-  const getDefaultValues = (): SelectOption[] => {
+  const getDefaultValues = (): Option[] => {
     if (!userSelectedProjects) return [];
     const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
-    const defaultOptions = selectOptions().filter((option: SelectOption) =>
-      selectedProjectUuids?.includes(option.selectValue)
-    );
-    defaultOptions.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
+    const defaultOptions = selectOptions().filter((option: Option) => selectedProjectUuids?.includes(option.value));
+    defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
     return defaultOptions;
   };
 
-  const selectOptions = (): SelectOption[] => {
-    let options: SelectOption[] = [];
+  const selectOptions = (): Option[] => {
+    let options: Option[] = [];
 
     projects?.forEach((project: Project) => {
       let label = `${project.housing_company} - ${project.street_address}`;
@@ -81,12 +79,16 @@ const SalesReport = (): JSX.Element => {
 
       options.push({
         label: label,
-        name: 'projectOption',
-        selectValue: project.uuid,
+        // name: 'projectOption',
+        value: project.uuid,
+        disabled: true,
+        selected: true,
+        isGroupLabel: false,
+        visible: true,
       });
     });
 
-    options.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
+    options.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
 
     return options;
   };
@@ -114,11 +116,11 @@ const SalesReport = (): JSX.Element => {
     preDownloading: preSalesReportDownloading,
   });
 
-  function handleSelectChange(selected: SelectOption[]): void {
+  function handleSelectChange(selected: Option[]): void {
     setSelectedProjects(selected);
   }
 
-  function handleSearch(options: SelectOption[], search: string): SelectOption[] {
+  function handleSearch(options: Option[], search: string): Option[] {
     const filtered = options.filter((option) => option.label.toLowerCase().includes(search.toLowerCase()));
     return filtered;
   }
@@ -158,15 +160,15 @@ const SalesReport = (): JSX.Element => {
         </span>
         <span>
           <Button
-            variant="primary"
-            iconRight={<IconDownload />}
+            variant={ButtonVariant.Primary}
+            iconStart={!isLoadingSalesReport ? <IconDownload /> : <LoadingSpinner small />}
             onClick={download}
-            isLoading={isLoadingSalesReport}
-            loadingText={t(`${T_PATH}.downloadReport`)}
+            // isLoading={isLoadingSalesReport}
+            // loadingText={t(`${T_PATH}.downloadReport`)}
             className={styles.downloadButton}
             disabled={!isValidDate(startDate) || !isValidDate(endDate)}
           >
-            {t(`${T_PATH}.downloadReport`)}
+            {!isLoadingSalesReport ? t(`${T_PATH}.downloadReport`) : t(`${T_PATH}.downloadReport`)}
           </Button>
         </span>
       </div>
@@ -175,18 +177,18 @@ const SalesReport = (): JSX.Element => {
           {
             // defaultValue prop is only checked once, ensure its filled with data
             userSelectedProjects !== undefined && projects !== undefined && (
-              <Combobox
-                multiselect
+              <Select
+                multiSelect
                 required
-                label={t(`${T_PATH}.projects`)}
+                // label={t(`${T_PATH}.projects`)}
                 placeholder={t(`${T_PATH}.searchProjectsPlaceHolder`)}
                 options={selectOptions()}
-                clearButtonAriaLabel={t(`${T_PATH}.clearButtonAriaLabel`)}
-                selectedItemRemoveButtonAriaLabel={t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`)}
-                onChange={handleSelectChange}
-                toggleButtonAriaLabel={t(`${T_PATH}.toggleButtonAriaLabel`)}
-                filter={handleSearch}
-                defaultValue={getDefaultValues()}
+                // clearButtonAriaLabel={t(`${T_PATH}.clearButtonAriaLabel`)}
+                // selectedItemRemoveButtonAriaLabel={t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`)}
+                onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(selected)}
+                // toggleButtonAriaLabel={t(`${T_PATH}.toggleButtonAriaLabel`)}
+                // filter={handleSearch}
+                // defaultValue={getDefaultValues()}
               />
             )
           }

@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
-import { Combobox } from 'hds-react';
+import { Combobox, Select, Option } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
-import { CustomerListItem, SelectOption } from '../../types';
+import { CustomerListItem } from '../../types';
 import { useGetCustomersQuery } from '../../redux/services/api';
+import { click } from '@testing-library/user-event/dist/click';
 
 const T_PATH = 'components.customers.SelectCustomerDropdown';
 const SEARCH_KEYWORD_MIN_LENGTH = 2;
@@ -19,7 +20,7 @@ interface IProps {
 const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, helpText }: IProps) => {
   const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState<string>('');
-  const [options, setOptions] = useState<SelectOption[]>([]);
+  const [options, setOptions] = useState<Option[]>([]);
   const [didMount, setDidMount] = useState(false);
   const {
     data: customers,
@@ -46,14 +47,17 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
     };
 
     // Create dropdown options from found customers
-    const mapOptions = (customerList: CustomerListItem[]): SelectOption[] => {
-      let list: SelectOption[] = [];
+    const mapOptions = (customerList: CustomerListItem[]): Option[] => {
+      let list: Option[] = [];
 
       customerList.forEach((customer) => {
         list.push({
           label: getLabel(customer),
-          name: 'selectCustomer',
-          selectValue: customer.id.toString(),
+          value: customer.id.toString(),
+          visible: true,
+          disabled: false,
+          selected: false,
+          isGroupLabel: false,
         });
       });
 
@@ -65,9 +69,12 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
       return setOptions([
         {
           label: t(`${T_PATH}.loading`),
-          name: 'selectCustomer',
-          selectValue: '',
+          // name: 'selectCustomer',
+          value: '',
           disabled: true,
+          selected: true,
+          isGroupLabel: false,
+          visible: true,
         },
       ]);
     }
@@ -85,9 +92,11 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
       return setOptions([
         {
           label: t(`${T_PATH}.noResults`),
-          name: 'selectCustomer',
-          selectValue: '',
+          value: '',
           disabled: true,
+          selected: true,
+          isGroupLabel: false,
+          visible: true,
         },
       ]);
     }
@@ -113,7 +122,7 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
 
   // Use debounced search keyword setting for the backend and return all of the found options
   const handleSearch = useCallback(
-    (selectOptions: SelectOption[], searchKeyword: string): SelectOption[] => {
+    (selectOptions: Option[], searchKeyword: string): Option[] => {
       debouncedSearch(searchKeyword);
       return selectOptions;
     },
@@ -121,11 +130,11 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
   );
 
   // Set the selected customer's ID
-  const handleSelectChange = (selected: SelectOption) => {
+  const handleSelectChange = (selected: Option) => {
     if (!selected) {
       return handleSelectCallback('');
     }
-    return handleSelectCallback(selected.selectValue);
+    return handleSelectCallback(selected.value);
   };
 
   const renderHelpText = () => {
@@ -138,24 +147,23 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
 
   return (
     <>
-      <Combobox
+      <Select
         required
         id="selectCustomer"
-        label={t(`${T_PATH}.selectCustomer`)}
+        // label={t(`${T_PATH}.selectCustomer`)}
         placeholder={t(`${T_PATH}.searchByName`)}
-        helper={renderHelpText()}
-        toggleButtonAriaLabel={t(`${T_PATH}.toggleMenu`)}
-        showToggleButton={searchValue.length >= SEARCH_KEYWORD_MIN_LENGTH}
+        // helper={renderHelpText()}
+        // toggleButtonAriaLabel={t(`${T_PATH}.toggleMenu`)}
+        // showToggleButton={searchValue.length >= SEARCH_KEYWORD_MIN_LENGTH}
         invalid={isError || hasError}
-        error={errorMessage || `${T_PATH}.errorLoadingCustomers`}
-        isOptionDisabled={(item: SelectOption): boolean => !!item.disabled}
+        // error={errorMessage || `${T_PATH}.errorLoadingCustomers`}
+        // isOptionDisabled={(item: Option): boolean => !!item.disabled}
         options={options}
-        onChange={(selected: SelectOption) => handleSelectChange(selected)}
-        multiselect={false}
-        filter={handleSearch}
+        onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
+        // filter={handleSearch}
         visibleOptions={8}
         clearable
-        virtualized
+        // virtualized
       />
     </>
   );
