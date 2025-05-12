@@ -107,8 +107,8 @@ const SalesReport = (): JSX.Element => {
         label: label,
         // name: 'projectOption',
         value: project.uuid,
-        disabled: true,
-        selected: true,
+        disabled: false,
+        selected: false,
         isGroupLabel: false,
         visible: true,
       });

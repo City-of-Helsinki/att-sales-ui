@@ -108,11 +108,11 @@ const ProjectOfferMessageForm = ({ uuid }: IProps): JSX.Element => {
         />
         <Button
           type="submit"
-          isLoading={patchExtraDataLoading}
+          // isLoading={patchExtraDataLoading}
           disabled={isFetching}
-          loadingText={t(`${T_PATH}.saving`)}
+          // loadingText={t(`${T_PATH}.saving`)}
         >
-          {t(`${T_PATH}.save`)}
+          {!patchExtraDataLoading ? t(`${T_PATH}.save`) : t(`${T_PATH}.saving`)}
         </Button>
       </div>
     </form>

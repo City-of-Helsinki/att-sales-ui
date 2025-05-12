@@ -67,7 +67,8 @@ export const ReservationsByProject = ({ customer, reservations }: ReservationsBy
           onClick={toggleProject}
           iconStart={projectOpen ? <IconAngleDown /> : <IconAngleRight />}
         >
-          <span className="visually-hidden">{projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}</span>
+          {/* <span className="visually-hidden">{projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}</span> */}
+          {projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}
         </Button>
       </div>
       {projectOpen &&

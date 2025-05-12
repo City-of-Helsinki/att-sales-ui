@@ -364,11 +364,15 @@ const OfferModal = (): JSX.Element | null => {
               variant={ButtonVariant.Primary}
               type="submit"
               form={formId}
-              isLoading={isCreatingOffer || isUpdatingOffer}
-              loadingText={t(`${T_PATH}.saving`)}
+              // isLoading={(isCreatingOffer || isUpdatingOffer)}
+              // loadingText={t(`${T_PATH}.saving`)}
               ref={openConfirmDialogButtonRef}
             >
-              {isNewOffer ? t(`${T_PATH}.setOfferAsSent`) : t(`${T_PATH}.saveOffer`)}
+              {!(isCreatingOffer || isUpdatingOffer)
+                ? t(`${T_PATH}.saving`)
+                : isNewOffer
+                ? t(`${T_PATH}.setOfferAsSent`)
+                : t(`${T_PATH}.saveOffer`)}
             </Button>
             <Button variant={ButtonVariant.Secondary} onClick={() => closeOfferDialog()}>
               {t(`${T_PATH}.cancel`)}

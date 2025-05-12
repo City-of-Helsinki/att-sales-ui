@@ -113,16 +113,20 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
                 ref={openLotteryConfirmDialogButtonRef}
                 disabled={!applicationPeriodHasEnded || lotteryLoading}
                 onClick={() => setIsLotteryConfirmOpen(true)}
-                isLoading={lotteryLoading}
-                loadingText={
-                  ownership_type.toLowerCase() === 'haso'
-                    ? t(`${T_PATH}.hasoLotteryLoading`)
-                    : t(`${T_PATH}.hitasLotteryLoading`)
-                }
+                // isLoading={lotteryLoading}
+                // loadingText={
+                //   ownership_type.toLowerCase() === 'haso'
+                //     ? t(`${T_PATH}.hasoLotteryLoading`)
+                //     : t(`${T_PATH}.hitasLotteryLoading`)
+                // }
               >
-                {ownership_type.toLowerCase() === 'haso'
-                  ? t(`${T_PATH}.startHasoLottery`)
-                  : t(`${T_PATH}.startHitasLottery`)}
+                {lotteryLoading
+                  ? ownership_type.toLowerCase() === 'haso'
+                    ? t(`${T_PATH}.startHasoLottery`)
+                    : t(`${T_PATH}.startHitasLottery`)
+                  : ownership_type.toLowerCase() === 'haso'
+                  ? t(`${T_PATH}.hasoLotteryLoading`)
+                  : t(`${T_PATH}.hitasLotteryLoading`)}
               </Button>
             </div>
           )}

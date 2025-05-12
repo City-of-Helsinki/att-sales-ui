@@ -149,11 +149,11 @@ const InstallmentsInvoice = ({
         </a>
         <Button
           disabled={!checkedInstallments.length}
-          isLoading={isLoading}
-          loadingText={t(`${T_PATH}.print`)}
+          // isLoading={isLoading}
+          // loadingText={t(`${T_PATH}.print`)}
           onClick={download}
         >
-          {t(`${T_PATH}.print`)}
+          {!isLoading ? t(`${T_PATH}.print`) : t(`${T_PATH}.print`)}
         </Button>
         <Button className={styles.closeBtn} variant={ButtonVariant.Secondary} onClick={() => handleCloseCallback()}>
           {t(`${T_PATH}.close`)}
