@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, ButtonVariant, IconDownload } from 'hds-react';
+import { Button, ButtonPresetTheme, ButtonVariant, IconDownload } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { Project } from '../../types';
@@ -76,7 +76,7 @@ const DownloadApplicantsListButton = ({
       <Button
         variant={ButtonVariant.Secondary}
         iconEnd={<IconDownload />}
-        theme="black"
+        theme={ButtonPresetTheme.Black}
         onClick={download}
         disabled={isLoadingApplicantsList}
       >
@@ -134,7 +134,7 @@ const OpenApplicantsMailingListDialogButton = ({
       <Button
         variant={ButtonVariant.Secondary}
         iconEnd={<IconDownload />}
-        theme="black"
+        theme={ButtonPresetTheme.Black}
         onClick={handleOpenMailingListDialog}
         disabled={isLoadingApplicantsList}
       >
@@ -191,7 +191,7 @@ const DownloadLotteryResultsButton = ({
       <Button
         variant={ButtonVariant.Primary}
         iconEnd={<IconDownload />}
-        theme="black"
+        theme={ButtonPresetTheme.Black}
         onClick={download}
         disabled={isLoadingLotteryResults}
       >

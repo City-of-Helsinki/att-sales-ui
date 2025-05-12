@@ -152,7 +152,7 @@ const InstallmentsItem = ({ apartment, project, reservationId, isCanceled }: IPr
         <>
           <Button
             variant={ButtonVariant.Supplementary}
-            size={NotificationSize.Small}
+            size={ButtonSize.Small}
             iconStart={<IconPenLine />}
             ref={openFormDialogButtonRef}
             onClick={() => setIsFormDialogOpen(true)}

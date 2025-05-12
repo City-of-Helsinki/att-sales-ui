@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { Button, ButtonVariant, IconAngleDown, IconAngleRight } from 'hds-react';
+import { Button, ButtonPresetTheme, ButtonVariant, IconAngleDown, IconAngleRight } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import CustomerReservationRow from './CustomerReservationRow';
@@ -62,7 +62,7 @@ export const ReservationsByProject = ({ customer, reservations }: ReservationsBy
         <ProjectName project={getReservationProjectData(reservations[0])} asLink />
         <Button
           variant={ButtonVariant.Secondary}
-          theme="black"
+          theme={ButtonPresetTheme.Black}
           className={styles.accordionButton}
           onClick={toggleProject}
           iconStart={projectOpen ? <IconAngleDown /> : <IconAngleRight />}
