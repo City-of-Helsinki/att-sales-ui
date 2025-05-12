@@ -120,7 +120,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
                 //     : t(`${T_PATH}.hitasLotteryLoading`)
                 // }
               >
-                {lotteryLoading
+                {!lotteryLoading
                   ? ownership_type.toLowerCase() === 'haso'
                     ? t(`${T_PATH}.startHasoLottery`)
                     : t(`${T_PATH}.startHitasLottery`)
