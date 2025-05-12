@@ -1,13 +1,13 @@
 import React from 'react';
 import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
 import { omit } from 'lodash';
-import { Select, TextArea } from 'hds-react';
+import { Select, TextArea, Option } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
 import SelectCustomerDropdown from '../customers/SelectCustomerDropdown';
-import { Project, ReservationCancelFormData, SelectOption } from '../../types';
+import { Project, ReservationCancelFormData } from '../../types';
 import { ReservationCancelReasons } from '../../enums';
 
 const T_PATH = 'components.reservations.ReservationCancelForm';
@@ -54,8 +54,8 @@ const ReservationCancelForm = ({ formId, ownershipType, handleFormCallback }: IP
     handleFormCallback(apiData);
   };
 
-  const reasonOptions = (): SelectOption[] => {
-    const options: SelectOption[] = [];
+  const reasonOptions = (): Option[] => {
+    const options: Option[] = [];
 
     Object.entries(ReservationCancelReasons).forEach((reason) => {
       const enumName = reason[0];
@@ -77,8 +77,12 @@ const ReservationCancelForm = ({ formId, ownershipType, handleFormCallback }: IP
 
       return options.push({
         label: t(`ENUMS.ReservationCancelReasons.${enumName}`),
-        name: 'cancellation_reason',
-        selectValue: enumValue,
+        // name: 'cancellation_reason',
+        value: enumValue,
+        disabled: false,
+        selected: false,
+        isGroupLabel: false,
+        visible: true,
       });
     });
 
@@ -86,8 +90,8 @@ const ReservationCancelForm = ({ formId, ownershipType, handleFormCallback }: IP
   };
 
   const getReasonOption = (value: string) => {
-    if (value === '') return null;
-    return reasonOptions().find((option) => option.selectValue === value);
+    if (value === '') return undefined;
+    return reasonOptions().filter((option) => option.value === value);
   };
 
   const handleSelectCallback = (customerId: string) => {
@@ -102,16 +106,18 @@ const ReservationCancelForm = ({ formId, ownershipType, handleFormCallback }: IP
         render={({ field }) => (
           <Select
             id="cancellation_reason"
-            label={t(`${T_PATH}.reason`)}
+            // label={t(`${T_PATH}.reason`)}
             placeholder={t(`${T_PATH}.reason`)}
+            // isOptionDisabled={
+            //   (item: Option, index: number): boolean => true
+            // }
             required
-            isOptionDisabled={(item: SelectOption): boolean => !!item.disabled}
             invalid={Boolean(get(errors, 'cancellation_reason'))}
-            error={get(errors, 'cancellation_reason')?.message}
+            // error={get(errors, 'cancellation_reason')?.message}
             options={reasonOptions()}
             value={getReasonOption(field.value || '')}
-            onChange={(selected: SelectOption) => {
-              setValue('cancellation_reason', selected.selectValue);
+            onChange={(selected: Option[], clickedOption: Option) => {
+              setValue('cancellation_reason', clickedOption.value);
             }}
             style={{ marginBottom: '1rem' }}
           />

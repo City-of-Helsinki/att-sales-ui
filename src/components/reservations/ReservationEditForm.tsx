@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
-import { Select, TextArea } from 'hds-react';
+import { Select, TextArea, Option } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
-import { ApartmentReservationWithCustomer, ReservationEditFormData, SelectOption } from '../../types';
+import { ApartmentReservationWithCustomer, ReservationEditFormData } from '../../types';
 import { ApartmentReservationStates } from '../../enums';
 
 const T_PATH = 'components.reservations.ReservationEditForm';
@@ -45,8 +45,8 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
     handleFormCallback(data);
   };
 
-  const stateOptions = (): SelectOption[] => {
-    const options: SelectOption[] = [];
+  const stateOptions = (): Option[] => {
+    const options: Option[] = [];
 
     Object.entries(ApartmentReservationStates).forEach((state) => {
       const enumName = state[0];
@@ -59,9 +59,12 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
 
       return options.push({
         label: t(`ENUMS.ApartmentReservationStates.${enumName}`),
-        name: 'state',
-        selectValue: enumValue,
+        // name: 'state',
+        value: enumValue,
         disabled: enumValue.indexOf('offer') !== -1, // disable options that contains "offer"
+        selected: false,
+        isGroupLabel: false,
+        visible: true,
       });
     });
 
@@ -69,8 +72,8 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
   };
 
   const getStateOption = (value: string) => {
-    if (value === '') return null;
-    return stateOptions().find((option) => option.selectValue === value);
+    if (value === '') return undefined;
+    return stateOptions().filter((option) => option.value === value);
   };
 
   return (
@@ -81,16 +84,16 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
         render={({ field }) => (
           <Select
             id="state"
-            label={t(`${T_PATH}.state`)}
+            // label={t(`${T_PATH}.state`)}
             placeholder={t(`${T_PATH}.state`)}
             required
-            isOptionDisabled={(item: SelectOption): boolean => !!item.disabled}
+            // isOptionDisabled={(item: Option): boolean => !!item.disabled}
             invalid={Boolean(get(errors, 'state'))}
-            error={get(errors, 'state')?.message}
+            // error={get(errors, 'state')?.message}
             options={stateOptions()}
             value={getStateOption(field.value || '')}
-            onChange={(selected: SelectOption) => {
-              setValue('state', selected.selectValue as ApartmentReservationStates);
+            onChange={(selected: Option[], clickedOption: Option) => {
+              setValue('state', clickedOption.value as ApartmentReservationStates);
             }}
             style={{ marginBottom: '1rem' }}
           />

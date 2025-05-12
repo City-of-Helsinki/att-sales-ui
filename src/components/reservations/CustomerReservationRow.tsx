@@ -331,7 +331,8 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               onClick={() => setIsDialogOpen(true)}
               ref={openDialogButtonRef}
             >
-              <span className="visually-hidden">{t(`${T_PATH}.showReservationInfo`)}</span>
+              {t(`${T_PATH}.showReservationInfo`)}
+              {/* <span className="visually-hidden">{t(`${T_PATH}.showReservationInfo`)}</span> */}
             </Button>
           </div>
         </div>
