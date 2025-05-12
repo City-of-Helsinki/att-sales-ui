@@ -70,7 +70,7 @@ const CustomerSearchForm = ({ searchParams, handleFormCallback }: IProps): JSX.E
         />
       </div>
       <div>
-        <Button iconRight={<IconSearch />} type="submit">
+        <Button iconEnd={<IconSearch />} type="submit">
           {t(`${T_PATH}.btnSearch`)}
         </Button>
       </div>

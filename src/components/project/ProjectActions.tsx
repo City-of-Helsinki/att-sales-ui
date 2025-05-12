@@ -75,7 +75,7 @@ const DownloadApplicantsListButton = ({
     <>
       <Button
         variant={ButtonVariant.Secondary}
-        iconRight={<IconDownload />}
+        iconEnd={<IconDownload />}
         theme="black"
         onClick={download}
         disabled={isLoadingApplicantsList}
@@ -133,7 +133,7 @@ const OpenApplicantsMailingListDialogButton = ({
     <>
       <Button
         variant={ButtonVariant.Secondary}
-        iconRight={<IconDownload />}
+        iconEnd={<IconDownload />}
         theme="black"
         onClick={handleOpenMailingListDialog}
         disabled={isLoadingApplicantsList}
@@ -190,7 +190,7 @@ const DownloadLotteryResultsButton = ({
     <>
       <Button
         variant={ButtonVariant.Primary}
-        iconRight={<IconDownload />}
+        iconEnd={<IconDownload />}
         theme="black"
         onClick={download}
         disabled={isLoadingLotteryResults}

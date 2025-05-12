@@ -66,7 +66,7 @@ const ReservationReleasePDF = ({ reservationId, customerId, disabled = false }: 
         variant={ButtonVariant.Primary}
         onClick={download}
         disabled={isLoadingRelease || disabled}
-        iconRight={<IconDownload />}
+        iconEnd={<IconDownload />}
       >
         {t('download')}
       </Button>
