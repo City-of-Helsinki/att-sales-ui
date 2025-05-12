@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
-import { Button, Dialog, IconPrinter, IconAlertCircleFill, IconCheckCircleFill } from 'hds-react';
+import {
+  Button,
+  Dialog,
+  IconPrinter,
+  IconAlertCircleFill,
+  IconCheckCircleFill,
+  ButtonSize,
+  ButtonVariant,
+  IconSize,
+} from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import formattedCurrency from '../../utils/formatCurrency';
@@ -61,9 +70,11 @@ const InstallmentsTable = ({ apartment, installments, project, reservationId, ta
   const renderSumMatchIcon = () => {
     if (targetPrice) {
       if (!sumsMatch(totalSum, targetPrice)) {
-        return <IconAlertCircleFill size="xs" color="var(--color-error)" style={{ marginBottom: -2 }} />;
+        return (
+          <IconAlertCircleFill size={IconSize.ExtraSmall} color="var(--color-error)" style={{ marginBottom: -2 }} />
+        );
       }
-      return <IconCheckCircleFill size="xs" color="var(--color-tram)" style={{ marginBottom: -2 }} />;
+      return <IconCheckCircleFill size={IconSize.ExtraSmall} color="var(--color-tram)" style={{ marginBottom: -2 }} />;
     }
   };
 
@@ -137,9 +148,9 @@ const InstallmentsTable = ({ apartment, installments, project, reservationId, ta
         {renderTableFooter()}
       </table>
       <Button
-        variant="primary"
-        size="small"
-        iconLeft={<IconPrinter />}
+        variant={ButtonVariant.Primary}
+        size={ButtonSize.Small}
+        iconStart={<IconPrinter />}
         ref={openPrintDialogButtonRef}
         onClick={() => setIsPrintInvoiceDialogOpen(true)}
       >

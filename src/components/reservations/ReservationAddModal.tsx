@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler, get } from 'react-hook-form';
-import { Button, Dialog } from 'hds-react';
+import { Button, ButtonVariant, Dialog } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -141,10 +141,10 @@ const ReservationAddModal = (): JSX.Element | null => {
         </form>
       </Dialog.Content>
       <Dialog.ActionButtons>
-        <Button variant="primary" type="submit" form={formId} disabled={isLoading}>
+        <Button variant={ButtonVariant.Primary} type="submit" form={formId} disabled={isLoading}>
           {t(`${T_PATH}.addBtn`)}
         </Button>
-        <Button variant="secondary" onClick={() => closeDialog()}>
+        <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
           {t(`${T_PATH}.cancelBtn`)}
         </Button>
       </Dialog.ActionButtons>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, IconDownload } from 'hds-react';
+import { Button, ButtonVariant, IconDownload } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { useGetCustomerByIdQuery } from '../../redux/services/api';
@@ -63,7 +63,7 @@ const ReservationReleasePDF = ({ reservationId, customerId, disabled = false }: 
   return (
     <>
       <Button
-        variant={'primary'}
+        variant={ButtonVariant.Primary}
         onClick={download}
         disabled={isLoadingRelease || disabled}
         iconRight={<IconDownload />}

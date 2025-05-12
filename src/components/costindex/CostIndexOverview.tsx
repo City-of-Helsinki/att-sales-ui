@@ -1,4 +1,4 @@
-import { Notification } from 'hds-react';
+import { Notification, NotificationSize } from 'hds-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -26,7 +26,7 @@ const CostIndexOverview = (): JSX.Element => {
   } else if (isError || !data) {
     content = (
       <Container>
-        <Notification type="error" size="small" style={{ marginTop: 15 }}>
+        <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
           {t('errorLoadingCostIndex')}
         </Notification>
       </Container>

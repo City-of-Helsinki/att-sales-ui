@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import moment from 'moment';
-import { Button, Combobox, DateInput, IconDownload, Select, Option, ButtonVariant, LoadingSpinner } from 'hds-react';
+import { Button, DateInput, IconDownload, Select, Option, ButtonVariant, LoadingSpinner } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import Container from '../common/container/Container';

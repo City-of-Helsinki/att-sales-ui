@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
-import { Combobox, Select, Option } from 'hds-react';
+import { Select, Option } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { CustomerListItem } from '../../types';
 import { useGetCustomersQuery } from '../../redux/services/api';
-import { click } from '@testing-library/user-event/dist/click';
 
 const T_PATH = 'components.customers.SelectCustomerDropdown';
 const SEARCH_KEYWORD_MIN_LENGTH = 2;

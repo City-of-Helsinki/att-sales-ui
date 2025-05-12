@@ -1,4 +1,4 @@
-import { Button, Dialog, Notification } from 'hds-react';
+import { Button, ButtonVariant, Dialog, Notification, NotificationSize } from 'hds-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -57,27 +57,27 @@ const ErrorContainer = ({
     <Container>
       {(costIndexesError || !costIndexes) && (
         <Dialog.Content>
-          <Notification type="error" size="small" style={{ marginTop: 15 }}>
+          <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
             {t('errorLoadingCostIndex')}
           </Notification>
         </Dialog.Content>
       )}
       {(apartmentHASOPaymentError || !apartmentHASOPayment) && (
         <Dialog.Content>
-          <Notification type="error" size="small" style={{ marginTop: 15 }}>
+          <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
             {t('errorLoadingApartmentPrice')}
           </Notification>
         </Dialog.Content>
       )}
       {(reservationsError || !reservations) && (
         <Dialog.Content>
-          <Notification type="error" size="small" style={{ marginTop: 15 }}>
+          <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
             {t('errorLoadingReservations')}
           </Notification>
         </Dialog.Content>
       )}
       <Dialog.ActionButtons>
-        <Button variant="secondary" onClick={() => closeDialog()}>
+        <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
           {t(`cancel`)}
         </Button>
       </Dialog.ActionButtons>

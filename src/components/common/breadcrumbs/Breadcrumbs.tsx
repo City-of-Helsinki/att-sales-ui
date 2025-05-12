@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconAngleRight } from 'hds-react';
+import { IconAngleRight, IconSize } from 'hds-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +24,8 @@ const Breadcrumbs = ({ current, ancestors }: IProps): JSX.Element => {
     <ul>
       {ancestors.map((ancestor, key) => (
         <li key={key}>
-          <Link to={ancestor.path}>{ancestor.label}</Link> <IconAngleRight className={styles.arrowIcon} size="xs" />
+          <Link to={ancestor.path}>{ancestor.label}</Link>{' '}
+          <IconAngleRight className={styles.arrowIcon} size={IconSize.ExtraSmall} />
         </li>
       ))}
       <li>{current}</li>

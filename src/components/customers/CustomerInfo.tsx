@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { Checkbox, Notification, Tabs, TabList, Tab, TabPanel } from 'hds-react';
+import { Checkbox, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
 
 import formatDateTime from '../../utils/formatDateTime';
 import { Customer, Applicant } from '../../types';
@@ -27,7 +27,7 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
 
   if (!customer) {
     return (
-      <Notification type="error" size="small" style={{ marginBottom: 24 }}>
+      <Notification type="error" size={NotificationSize.Small} style={{ marginBottom: 24 }}>
         {t(`${T_PATH}.errorNoCustomer`)}
       </Notification>
     );

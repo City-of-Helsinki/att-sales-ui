@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import { IconArrowRight, Notification, TextArea } from 'hds-react';
+import { IconArrowRight, Notification, NotificationSize, TextArea } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import Spinner from '../common/spinner/Spinner';
@@ -29,7 +29,7 @@ const OfferEmailMessage = ({ reservationId, validUntil }: IProps): JSX.Element =
 
   if (isError || !data) {
     return (
-      <Notification type="error" size="small" style={{ marginTop: 15 }}>
+      <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
         {t(`${T_PATH}.errorLoadingEmailMessage`)}
       </Notification>
     );

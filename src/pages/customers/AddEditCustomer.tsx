@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import moment from 'moment';
-import { Button, Checkbox, Notification, PhoneInput, Select, TextArea, TextInput } from 'hds-react';
+import {
+  Button,
+  Checkbox,
+  LoadingSpinner,
+  Notification,
+  NotificationSize,
+  PhoneInput,
+  Select,
+  SelectData,
+  TextArea,
+  TextInput,
+} from 'hds-react';
 import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { omit } from 'lodash';
@@ -285,9 +296,13 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
     { label: 'Svenska', name: 'contact_lang', selectValue: 'sv' },
   ];
 
+  // Type 'SelectOption | null | undefined' is not assignable to type 'string | string[] | Option[] | Partial<Option>[] | undefined'.
+  // Type 'null' is not assignable to type 'string | string[] | Option[] | Partial<Option>[] | undefined'.
   const getContactLanguageOption = (value: string) => {
-    if (value === '') return null;
-    return contactLanguageOptions.find((option) => option.selectValue === value);
+    if (value === '') return;
+    const option = contactLanguageOptions.find((option) => option.value === value);
+    if (!option) return undefined;
+    return option.value;
   };
 
   if (isEditMode && isCustomerLoading) {
@@ -303,7 +318,7 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
     return (
       <Container>
         {renderBreadcrumb()}
-        <Notification type="error" size="small" style={{ marginTop: 15 }}>
+        <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
           {t(`${T_PATH}.errorLoadingCustomer`)}
         </Notification>
       </Container>
@@ -443,15 +458,18 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
                       render={({ field }) => (
                         <Select
                           id="primaryProfileContactLanguage"
-                          label={t(`${T_PATH}.contact_language`)}
                           placeholder={t(`${T_PATH}.contact_language`)}
                           required
                           invalid={Boolean(errors.primary_profile?.contact_language)}
                           error={errors.primary_profile?.contact_language?.message}
                           options={contactLanguageOptions}
                           value={getContactLanguageOption(field.value || '')}
-                          onChange={(selected: SelectOption) => {
-                            setValue('primary_profile.contact_language', selected.selectValue as LangCode);
+                          onChange={(
+                            selectedOptions: SelectOption[],
+                            clickedOption: SelectOption,
+                            data: SelectData
+                          ) => {
+                            setValue('primary_profile.contact_language', clickedOption.value as LangCode);
                           }}
                         />
                       )}
@@ -598,8 +616,12 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
                               error={get(errors, 'secondary_profile.contact_language')?.message}
                               options={contactLanguageOptions}
                               value={getContactLanguageOption(field.value || '')}
-                              onChange={(selected: SelectOption) => {
-                                setValue('secondary_profile.contact_language', selected.selectValue as LangCode);
+                              onChange={(
+                                selectedOptions: SelectOption[],
+                                clickedOption: SelectOption,
+                                data: SelectData
+                              ) => {
+                                setValue('secondary_profile.contact_language', clickedOption.value as LangCode);
                               }}
                             />
                           )}
@@ -740,8 +762,8 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
 
           <div className={styles.buttons}>
             <span className={styles.divider} />
-            <Button type="submit" isLoading={isSubmitting} loadingText={t(`${T_PATH}.saving`)}>
-              {t(`${T_PATH}.save`)}
+            <Button type="submit" iconStart={isSubmitting ? <LoadingSpinner small /> : undefined}>
+              {isSubmitting ? t(`${T_PATH}.save`) : t(`${T_PATH}.saving`)}
             </Button>
             <Link
               to={isEditMode ? `/${ROUTES.CUSTOMERS}/${customerId}` : `/${ROUTES.CUSTOMERS}`}

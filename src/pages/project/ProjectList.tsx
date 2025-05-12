@@ -13,6 +13,7 @@ import {
   Tab,
   TabPanel,
   useOidcClient,
+  ButtonVariant,
 } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
@@ -52,15 +53,15 @@ const ProjectList = (): JSX.Element => {
         <div className={styles.toolbarLeft}>
           <div className={styles.toolbarButtons}>
             <Button
-              variant={showMyProjects ? 'primary' : 'secondary'}
-              iconLeft={<IconUser />}
+              variant={showMyProjects ? ButtonVariant.Primary : ButtonVariant.Secondary}
+              iconStart={<IconUser />}
               onClick={() => setShowMyProjects(true)}
             >
               {t(`${T_PATH}.btnMyProjects`)}
             </Button>
             <Button
-              variant={showMyProjects ? 'secondary' : 'primary'}
-              iconLeft={<IconGroup />}
+              variant={showMyProjects ? ButtonVariant.Secondary : ButtonVariant.Primary}
+              iconStart={<IconGroup />}
               onClick={() => setShowMyProjects(false)}
             >
               {t(`${T_PATH}.btnAllProjects`)}

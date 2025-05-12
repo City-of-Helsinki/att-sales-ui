@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { IconAlertCircleFill, IconArrowRight, IconCheckCircleFill } from 'hds-react';
+import { IconAlertCircleFill, IconArrowRight, IconCheckCircleFill, IconSize } from 'hds-react';
 
 import { ApartmentReservationOffer } from '../../types';
 import { OfferState } from '../../enums';
@@ -24,13 +24,13 @@ const OfferStatusText = ({ offer }: IProps) => {
         )}
       >
         {offer.state === OfferState.PENDING && !offer.is_expired && (
-          <IconArrowRight size="xs" aria-hidden className={styles.offerIcon} />
+          <IconArrowRight size={IconSize.ExtraSmall} aria-hidden className={styles.offerIcon} />
         )}
         {offer.state === OfferState.ACCEPTED && (
-          <IconCheckCircleFill size="xs" aria-hidden className={styles.offerIcon} />
+          <IconCheckCircleFill size={IconSize.ExtraSmall} aria-hidden className={styles.offerIcon} />
         )}
         {(offer.state === OfferState.REJECTED || offer.is_expired) && (
-          <IconAlertCircleFill size="xs" aria-hidden className={styles.offerIcon} />
+          <IconAlertCircleFill size={IconSize.ExtraSmall} aria-hidden className={styles.offerIcon} />
         )}
         <span>{renderOfferDate(offer)}</span>
       </span>

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import cx from 'classnames';
-import { Button, Dialog, IconInfoCircle, Tabs } from 'hds-react';
+import { Button, ButtonSize, ButtonVariant, Dialog, IconInfoCircle, Tabs } from 'hds-react';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -325,9 +325,9 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
               {t(`${T_PATH}.showReservationInfo`)}
             </span>
             <Button
-              variant="supplementary"
-              size="small"
-              iconLeft={<IconInfoCircle aria-hidden />}
+              variant={ButtonVariant.Supplementary}
+              size={ButtonSize.Small}
+              iconStart={<IconInfoCircle aria-hidden />}
               onClick={() => setIsDialogOpen(true)}
               ref={openDialogButtonRef}
             >
@@ -341,8 +341,8 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
           <div>
             {canCreateOffer && (
               <Button
-                variant="secondary"
-                size="small"
+                variant={ButtonVariant.Secondary}
+                size={ButtonSize.Small}
                 onClick={() =>
                   dispatch(
                     showOfferModal({
@@ -360,7 +360,12 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
             )}
             {canCreateContract && (
               <>
-                <Button variant="secondary" size="small" onClick={download} disabled={isLoadingContract}>
+                <Button
+                  variant={ButtonVariant.Secondary}
+                  size={ButtonSize.Small}
+                  onClick={download}
+                  disabled={isLoadingContract}
+                >
                   {isOwnershipTypeHaso ? t(`${T_PATH}.createContract`) : t(`${T_PATH}.createDeedOfSale`)}
                 </Button>
                 <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
@@ -371,9 +376,9 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
           </div>
           <div>
             <Button
-              variant="supplementary"
-              size="small"
-              iconLeft={''}
+              variant={ButtonVariant.Supplementary}
+              size={ButtonSize.Small}
+              iconStart={''}
               className={styles.cancelBtn}
               onClick={() =>
                 dispatch(
@@ -424,7 +429,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
           </Tabs>
         </Dialog.Content>
         <Dialog.ActionButtons>
-          <Button variant="secondary" onClick={() => closeDialog()}>
+          <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
             {t(`${T_PATH}.close`)}
           </Button>
         </Dialog.ActionButtons>
