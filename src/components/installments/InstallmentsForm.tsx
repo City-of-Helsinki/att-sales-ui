@@ -223,7 +223,6 @@ const InstallmentsForm = ({
 
   const handleSelectChange = (index: number, selectedOption: Option) => {
     const inputs = [...inputFields];
-
     if (selectedOption.value === '') {
       // Clear values from all input fields if the user selects the empty option from the dropdown
       Object.keys(inputs[index]).forEach((input) => {
@@ -233,9 +232,8 @@ const InstallmentsForm = ({
         }
       });
     } else {
-      inputs[index][selectedOption.label as keyof ApartmentInstallmentInputRow] = selectedOption.value;
+      inputs[index].type = selectedOption.value;
     }
-
     setInputFields(inputs);
   };
 
@@ -339,7 +337,11 @@ const InstallmentsForm = ({
               placeholder={t(`${T_PATH}.select`)}
               className={styles.select}
               options={InstallmentTypeOptions()}
-              // value={InstallmentTypeOptions().find((value) => value.value === input.type) || emptyOption}
+              value={
+                InstallmentTypeOptions().find((value) => {
+                  return value.value === input.type;
+                })?.value || emptyOption.value
+              }
               onChange={(values: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption)}
               disabled={!!input.added_to_be_sent_to_sap_at}
             />
