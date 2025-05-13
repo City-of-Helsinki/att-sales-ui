@@ -279,7 +279,7 @@ const ProjectInstallments = ({
 
   const handleSelectChange = (index: number, selectedOption: Option) => {
     const inputs = [...inputFields];
-    inputs[index][selectedOption.label as keyof ProjectInstallmentInputRow] = selectedOption.value;
+    inputs[index].type = selectedOption.value;
     setInputFields(inputs);
   };
 
