@@ -277,9 +277,9 @@ const ProjectInstallments = ({
     setInputFields(inputs);
   };
 
-  const handleSelectChange = (index: number, selectedOption: Option) => {
+  const handleSelectChange = (index: number, selectedOption: Option, field: string) => {
     const inputs = [...inputFields];
-    inputs[index].type = selectedOption.value;
+    inputs[index][field as keyof ProjectInstallmentInputRow] = selectedOption.value;
     setInputFields(inputs);
   };
 
@@ -410,7 +410,7 @@ const ProjectInstallments = ({
               value={
                 InstallmentTypeOptions().find((value) => value.value === input.type)?.value || emptySelectOption.value
               }
-              onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption)}
+              onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption, 'type')}
             />
           </td>
           <td>
@@ -432,12 +432,12 @@ const ProjectInstallments = ({
               placeholder={!isFlexibleInstallmentRow(index) ? t(`${T_PATH}.select`) : ''}
               className={styles.select}
               options={InstallmentUnitOptions}
-              // value={
-              //   isFlexibleInstallmentRow(index)
-              //     ? emptySelectOption
-              //     : InstallmentUnitOptions.find((value) => value.value === input.unit) || emptySelectOption
-              // }
-              onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption)}
+              value={
+                isFlexibleInstallmentRow(index)
+                  ? emptySelectOption.value
+                  : InstallmentUnitOptions.find((value) => value.value === input.unit)?.value || emptySelectOption.value
+              }
+              onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption, 'unit')}
               disabled={isFlexibleInstallmentRow(index)}
             />
           </td>
@@ -447,14 +447,15 @@ const ProjectInstallments = ({
               placeholder={isPercentageRow(index) ? t(`${T_PATH}.select`) : ''}
               className={styles.select}
               options={InstallmentPercentageSpecifierOptions()}
-              // value={
-              //   isPercentageRow(index)
-              //     ? InstallmentPercentageSpecifierOptions().find(
-              //         (value) => value.value === input.percentage_specifier
-              //       ) || emptySelectOption
-              //     : emptySelectOption
-              // }
-              onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption)}
+              value={
+                isPercentageRow(index)
+                  ? InstallmentPercentageSpecifierOptions().find((value) => value.value === input.percentage_specifier)
+                      ?.value || emptySelectOption.value
+                  : emptySelectOption.value
+              }
+              onChange={(value: Option[], clickedOption: Option) =>
+                handleSelectChange(index, clickedOption, 'percentage_specifier')
+              }
               disabled={!isPercentageRow(index)}
             />
           </td>
