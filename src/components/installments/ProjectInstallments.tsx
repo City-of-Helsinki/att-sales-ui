@@ -407,7 +407,9 @@ const ProjectInstallments = ({
               placeholder={t(`${T_PATH}.select`)}
               className={styles.select}
               options={InstallmentTypeOptions()}
-              // value={InstallmentTypeOptions().find((value) => value.value === input.type) || emptySelectOption}
+              value={
+                InstallmentTypeOptions().find((value) => value.value === input.type)?.value || emptySelectOption.value
+              }
               onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption)}
             />
           </td>
