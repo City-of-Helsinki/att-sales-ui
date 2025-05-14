@@ -25,7 +25,6 @@ import { toast } from '../common/toast/ToastManager';
 import InstallmentsLoader from './InstallmentsLoader';
 import styles from './ProjectInstallments.module.scss';
 import ReservationsLoader from './ReservationsLoader';
-import { click } from '@testing-library/user-event/dist/click';
 
 const T_PATH = 'components.installments.ProjectInstallments';
 
