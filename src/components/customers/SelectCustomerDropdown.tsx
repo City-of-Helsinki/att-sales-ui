@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
-import { Select, Option, SearchResult } from 'hds-react';
+import { Select, Option, SearchResult, SelectData } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { CustomerListItem } from '../../types';
@@ -28,7 +28,7 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
     isLoading,
     isFetching,
   } = useGetCustomersQuery(`last_name=${searchValue}`, { skip: searchValue.length < SEARCH_KEYWORD_MIN_LENGTH });
-
+  console.log('re-render');
   // Update component mount state
   useEffect(() => {
     setDidMount(true);
@@ -122,8 +122,10 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
 
   // Use debounced search keyword setting for the backend and return all of the found options
   const handleSearch = useCallback(
-    async (searchKeyword: string, selectOptions: Option[]): Promise<SearchResult> => {
+    async (searchKeyword: string, selectOptions: Option[], selectData: SelectData): Promise<SearchResult> => {
+      console.log('selectData', selectData);
       debouncedSearch(searchKeyword);
+      setSearchValue(searchKeyword);
       return { options: selectOptions };
     },
     [debouncedSearch]
@@ -160,7 +162,9 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
         // isOptionDisabled={(item: Option): boolean => !!item.disabled}
         options={options}
         onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
-        // onSearch={handleSearch}
+        // onSearch={(searchKeyword: string, selectOptions: Option[]) => {
+        //   return Promise<{options: []}>
+        // }}
         onSearch={handleSearch}
         visibleOptions={8}
         clearable
