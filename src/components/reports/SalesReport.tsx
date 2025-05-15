@@ -26,7 +26,7 @@ const SalesReport = (): JSX.Element => {
   const { data: projects } = useGetProjectsQuery();
   const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
 
-  const [selectedProjects, setSelectedProjects] = useState<Option[]>([]);
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
   const isValidDate = (date: string): boolean => moment(date, 'D.M.YYYY', true).isValid();
 
@@ -41,12 +41,20 @@ const SalesReport = (): JSX.Element => {
     const dateObject = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
-      project_uuids: selectedProjects.map((x) => x.value).join(','),
+      // project_uuids: selectedProjects.map((x) => x.value).join(','),
+      project_uuids: selectedProjects.join(','),
     };
 
     // Set new search params
     setParams(new URLSearchParams(dateObject));
+    console.log('useEffect', startDate, endDate, selectedProjects);
   }, [formattedDate, startDate, endDate, selectedProjects, setParams]);
+
+  useEffect(() => {
+    console.log('userSelectedProjects', userSelectedProjects);
+    if (!userSelectedProjects) return;
+    setSelectedProjects(userSelectedProjects.map((x) => x.uuid));
+  }, [userSelectedProjects]);
 
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
   const postSalesReportDownloading = () => setIsLoadingSalesReport(false);
@@ -56,12 +64,16 @@ const SalesReport = (): JSX.Element => {
     toast.show({ type: 'error' });
   };
 
-  const getDefaultValues = (): Option[] => {
+  const getDefaultValues = (): string[] => {
     if (!userSelectedProjects) return [];
     const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
     const defaultOptions = selectOptions().filter((option: Option) => selectedProjectUuids?.includes(option.value));
     defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
-    return defaultOptions;
+    console.log(
+      'defaultOptions',
+      defaultOptions.map((x) => x.value)
+    );
+    return defaultOptions.map((x) => x.value);
   };
 
   const selectOptions = (): Option[] => {
@@ -79,7 +91,6 @@ const SalesReport = (): JSX.Element => {
 
       options.push({
         label: label,
-        // name: 'projectOption',
         value: project.uuid,
         disabled: false,
         selected: false,
@@ -116,13 +127,12 @@ const SalesReport = (): JSX.Element => {
     preDownloading: preSalesReportDownloading,
   });
 
-  function handleSelectChange(selected: Option[]): void {
-    setSelectedProjects(selected);
+  function handleSelectChange(selected: Option[], clickedOption: Option): void {
+    setSelectedProjects(selected.map((x) => x.value));
   }
 
-  function handleSearch(options: Option[], search: string): Option[] {
-    const filtered = options.filter((option) => option.label.toLowerCase().includes(search.toLowerCase()));
-    return filtered;
+  function handleSearch(option: Option, search: string): boolean {
+    return option.label.toLowerCase().includes(search.toLowerCase());
   }
 
   return (
@@ -163,8 +173,6 @@ const SalesReport = (): JSX.Element => {
             variant={ButtonVariant.Primary}
             iconStart={!isLoadingSalesReport ? <IconDownload /> : <LoadingSpinner small />}
             onClick={download}
-            // isLoading={isLoadingSalesReport}
-            // loadingText={t(`${T_PATH}.downloadReport`)}
             className={styles.downloadButton}
             disabled={!isValidDate(startDate) || !isValidDate(endDate)}
           >
@@ -180,15 +188,12 @@ const SalesReport = (): JSX.Element => {
               <Select
                 multiSelect
                 required
-                // label={t(`${T_PATH}.projects`)}
+                aria-label={t(`${T_PATH}.projects`)}
                 placeholder={t(`${T_PATH}.searchProjectsPlaceHolder`)}
                 options={selectOptions()}
-                // clearButtonAriaLabel={t(`${T_PATH}.clearButtonAriaLabel`)}
-                // selectedItemRemoveButtonAriaLabel={t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`)}
-                onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(selected)}
-                // toggleButtonAriaLabel={t(`${T_PATH}.toggleButtonAriaLabel`)}
-                // filter={handleSearch}
-                // defaultValue={getDefaultValues()}
+                onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(selected, clickedOption)}
+                filter={handleSearch}
+                value={selectedProjects}
               />
             )
           }
