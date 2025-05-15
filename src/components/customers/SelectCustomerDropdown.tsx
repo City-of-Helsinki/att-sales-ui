@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
-import { Select, Option, SearchResult, SelectData } from 'hds-react';
+import { Select, Option, SearchResult, SelectData, TextInput, IconSearch } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { CustomerListItem } from '../../types';
 import { useGetCustomersQuery } from '../../redux/services/api';
+import { ChangeEvent } from 'hds-react/DataContext-3ff69c47';
+import styles from './SelectCustomerDropdown.module.scss';
 
 const T_PATH = 'components.customers.SelectCustomerDropdown';
 const SEARCH_KEYWORD_MIN_LENGTH = 2;
@@ -28,7 +30,7 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
     isLoading,
     isFetching,
   } = useGetCustomersQuery(`last_name=${searchValue}`, { skip: searchValue.length < SEARCH_KEYWORD_MIN_LENGTH });
-  console.log('re-render');
+
   // Update component mount state
   useEffect(() => {
     setDidMount(true);
@@ -68,7 +70,6 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
       return setOptions([
         {
           label: t(`${T_PATH}.loading`),
-          // name: 'selectCustomer',
           value: '',
           disabled: true,
           selected: true,
@@ -122,10 +123,8 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
 
   // Use debounced search keyword setting for the backend and return all of the found options
   const handleSearch = useCallback(
-    async (searchKeyword: string, selectOptions: Option[], selectData: SelectData): Promise<SearchResult> => {
-      console.log('selectData', selectData);
+    async (searchKeyword: string, selectOptions: Option[]): Promise<SearchResult> => {
       debouncedSearch(searchKeyword);
-      setSearchValue(searchKeyword);
       return { options: selectOptions };
     },
     [debouncedSearch]
@@ -148,29 +147,38 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
   };
 
   return (
-    <>
-      <Select
-        required
-        id="selectCustomer"
-        // label={t(`${T_PATH}.selectCustomer`)}
+    /* Quick fix while refactoring. Select-component's own searchfield doesn't retain
+    its search value between searches when using a debounced search 
+    which leads to a janky user experience. -> use a separate TextInput
+    **/
+    <div className={styles.inputWrapper}>
+      <TextInput
+        buttonIcon={<IconSearch />}
+        type="search"
+        id={'searchCustomer'}
         placeholder={t(`${T_PATH}.searchByName`)}
-        // helper={renderHelpText()}
-        // toggleButtonAriaLabel={t(`${T_PATH}.toggleMenu`)}
-        // showToggleButton={searchValue.length >= SEARCH_KEYWORD_MIN_LENGTH}
-        invalid={isError || hasError}
-        // error={errorMessage || `${T_PATH}.errorLoadingCustomers`}
-        // isOptionDisabled={(item: Option): boolean => !!item.disabled}
-        options={options}
-        onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
-        // onSearch={(searchKeyword: string, selectOptions: Option[]) => {
-        //   return Promise<{options: []}>
-        // }}
-        onSearch={handleSearch}
-        visibleOptions={8}
-        clearable
-        virtualize
+        label={t(`${T_PATH}.selectCustomer`)}
+        onChange={(e) => {
+          handleSearch(e.target.value, options);
+        }}
       />
-    </>
+      {searchValue && (
+        <Select
+          required
+          id="selectCustomer"
+          placeholder={t(`${T_PATH}.searchByName`)}
+          invalid={isError || hasError}
+          // error={errorMessage || `${T_PATH}.errorLoadingCustomers`}
+          options={options}
+          onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
+          defaultValue={options.find((x: Option) => !x.disabled)?.value}
+          open={true}
+          visibleOptions={8}
+          clearable
+          virtualize
+        />
+      )}
+    </div>
   );
 };
 
