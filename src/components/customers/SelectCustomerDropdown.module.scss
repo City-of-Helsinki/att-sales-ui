@@ -1,0 +1,8 @@
+.inputWrapper {
+    display: flex;
+    flex-direction: column;
+    [class*=TextInput-module_root], [class*=Select-module_root] {
+        max-width: 35%;
+        margin-bottom: var(--spacing-s);
+    }
+}
