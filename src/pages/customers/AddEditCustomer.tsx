@@ -756,7 +756,7 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
           <div className={styles.buttons}>
             <span className={styles.divider} />
             <Button type="submit" iconStart={isSubmitting ? <LoadingSpinner small /> : undefined}>
-              {isSubmitting ? t(`${T_PATH}.save`) : t(`${T_PATH}.saving`)}
+              {!isSubmitting ? t(`${T_PATH}.save`) : t(`${T_PATH}.saving`)}
             </Button>
             <Link
               to={isEditMode ? `/${ROUTES.CUSTOMERS}/${customerId}` : `/${ROUTES.CUSTOMERS}`}
