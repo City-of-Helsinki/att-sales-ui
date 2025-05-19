@@ -147,13 +147,8 @@ const InstallmentsInvoice = ({
         <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
           {t(`${T_PATH}.download`)}
         </a>
-        <Button
-          disabled={!checkedInstallments.length}
-          // isLoading={isLoading}
-          // loadingText={t(`${T_PATH}.print`)}
-          onClick={download}
-        >
-          {!isLoading ? t(`${T_PATH}.print`) : t(`${T_PATH}.print`)}
+        <Button disabled={!checkedInstallments.length} onClick={download}>
+          {t(`${T_PATH}.print`)}
         </Button>
         <Button className={styles.closeBtn} variant={ButtonVariant.Secondary} onClick={() => handleCloseCallback()}>
           {t(`${T_PATH}.close`)}
