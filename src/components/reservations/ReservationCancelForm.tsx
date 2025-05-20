@@ -106,14 +106,13 @@ const ReservationCancelForm = ({ formId, ownershipType, handleFormCallback }: IP
         render={({ field }) => (
           <Select
             id="cancellation_reason"
-            // label={t(`${T_PATH}.reason`)}
+            texts={{
+              label: t(`${T_PATH}.reason`),
+              error: get(errors, 'cancellation_reason')?.message,
+            }}
             placeholder={t(`${T_PATH}.reason`)}
-            // isOptionDisabled={
-            //   (item: Option, index: number): boolean => true
-            // }
             required
             invalid={Boolean(get(errors, 'cancellation_reason'))}
-            // error={get(errors, 'cancellation_reason')?.message}
             options={reasonOptions()}
             value={getReasonOption(field.value || '')}
             onChange={(selected: Option[], clickedOption: Option) => {

@@ -114,7 +114,6 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
       debounce((searchKeyword: string) => {
         // Wait for the component to mount before trying to update it's state
         if (didMount) {
-          console.log('setSearchValue as', searchKeyword);
           setSearchValue(searchKeyword);
         }
       }, 500),
@@ -164,11 +163,14 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
       />
       {searchValue && (
         <Select
+          texts={{
+            error: errorMessage || `${T_PATH}.errorLoadingCustomers`,
+            label: t(`${T_PATH}.selectCustomer`),
+          }}
           required
           id="selectCustomer"
           placeholder={t(`${T_PATH}.searchByName`)}
           invalid={isError || hasError}
-          // error={errorMessage || `${T_PATH}.errorLoadingCustomers`}
           options={options}
           onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
           defaultValue={options.find((x: Option) => !x.disabled)?.value}

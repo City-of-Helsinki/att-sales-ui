@@ -52,11 +52,9 @@ const SalesReport = (): JSX.Element => {
     setParams(urlParams);
   }, [formattedDate, startDate, endDate, selectedProjects]);
     setParams(new URLSearchParams(dateObject));
-    console.log('useEffect', startDate, endDate, selectedProjects);
   }, [formattedDate, startDate, endDate, selectedProjects, setParams]);
 
   useEffect(() => {
-    console.log('userSelectedProjects', userSelectedProjects);
     if (!userSelectedProjects) return;
     setSelectedProjects(userSelectedProjects.map((x) => x.uuid));
   }, [userSelectedProjects]);
@@ -74,10 +72,6 @@ const SalesReport = (): JSX.Element => {
     const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
     const defaultOptions = selectOptions().filter((option: Option) => selectedProjectUuids?.includes(option.value));
     defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
-    console.log(
-      'defaultOptions',
-      defaultOptions.map((x) => x.value)
-    );
     return defaultOptions.map((x) => x.value);
   };
 
@@ -193,6 +187,12 @@ const SalesReport = (): JSX.Element => {
               <Select
                 multiSelect
                 required
+                texts={{
+                  label: t(`${T_PATH}.projects`),
+                  clearButtonAriaLabel_multiple: t(`${T_PATH}.clearButtonAriaLabel`),
+                  tagRemoveSelectionAriaLabel: t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`),
+                  dropdownButtonAriaLabel: t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`),
+                }}
                 aria-label={t(`${T_PATH}.projects`)}
                 placeholder={t(`${T_PATH}.searchProjectsPlaceHolder`)}
                 options={selectOptions()}

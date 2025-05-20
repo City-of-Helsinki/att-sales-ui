@@ -458,11 +458,14 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
                       control={control}
                       render={({ field }) => (
                         <Select
+                          texts={{
+                            label: t(`${T_PATH}.contact_language`),
+                            error: errors.primary_profile?.contact_language?.message,
+                          }}
                           id="primaryProfileContactLanguage"
                           placeholder={t(`${T_PATH}.contact_language`)}
                           required
                           invalid={Boolean(errors.primary_profile?.contact_language)}
-                          // error={errors.primary_profile?.contact_language?.message}
                           options={contactLanguageOptions}
                           value={getContactLanguageOption(field.value || '')}
                           onChange={(selectedOptions: Option[], clickedOption: Option, data: SelectData) => {
@@ -606,11 +609,13 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
                           render={({ field }) => (
                             <Select
                               id="secondaryProfileContactLanguage"
-                              // label={t(`${T_PATH}.contact_language`)}
+                              texts={{
+                                label: t(`${T_PATH}.contact_language`),
+                                error: get(errors, 'secondary_profile.contact_language')?.message,
+                              }}
                               placeholder={t(`${T_PATH}.contact_language`)}
                               required
                               invalid={Boolean(get(errors, 'secondary_profile.contact_language'))}
-                              // error={get(errors, 'secondary_profile.contact_language')?.message}
                               options={contactLanguageOptions}
                               value={getContactLanguageOption(field.value || '')}
                               onChange={(selectedOptions: Option[], clickedOption: Option, data: SelectData) => {

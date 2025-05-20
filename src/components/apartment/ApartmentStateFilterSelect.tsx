@@ -25,13 +25,14 @@ const ApartmentStateFilterSelect = ({ activeFilter, handleFilterChangeCallback }
       {
         label: t(`${T_PATH}.allApartments`),
         // name: 'ApartmentState',
-        value: '',
+        value: '-', // if this is empty string, gets replaced with label when selected
         disabled: false,
         visible: true,
         selected: false,
         isGroupLabel: false,
       },
     ];
+
     // Loop through ApartmentState ENUMs and create dropdown options out of them
     Object.values(ApartmentState).forEach((type) => {
       options.push({
@@ -43,12 +44,15 @@ const ApartmentStateFilterSelect = ({ activeFilter, handleFilterChangeCallback }
         isGroupLabel: false,
       });
     });
+
     return options;
   };
 
   return (
     <Select
-      // label={t(`${T_PATH}.show`)}
+      texts={{
+        label: t(`${T_PATH}.show`),
+      }}
       placeholder={t(`${T_PATH}.allApartments`)}
       options={selectOptions()}
       value={selectOptions().filter((option) => option.value === activeFilter || '')}

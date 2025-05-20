@@ -115,7 +115,7 @@ const OpenApplicantsMailingListDialogButton = ({
   };
   const export_type = 'reserved';
   const applicantExportApiUrl = `/projects/${projectUuid}/export_applicants_mailing_list/${export_type}`;
-  // console.log('downloading from', applicantExportApiUrl);
+
   const {
     download,
     ref: fileRef,

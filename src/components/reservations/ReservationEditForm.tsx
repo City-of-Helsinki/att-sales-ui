@@ -83,13 +83,14 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
         control={control}
         render={({ field }) => (
           <Select
+            texts={{
+              label: t(`${T_PATH}.state`),
+              error: get(errors, 'state')?.message,
+            }}
             id="state"
-            // label={t(`${T_PATH}.state`)}
             placeholder={t(`${T_PATH}.state`)}
             required
-            // isOptionDisabled={(item: Option): boolean => !!item.disabled}
             invalid={Boolean(get(errors, 'state'))}
-            // error={get(errors, 'state')?.message}
             options={stateOptions()}
             value={getStateOption(field.value || '')}
             onChange={(selected: Option[], clickedOption: Option) => {
