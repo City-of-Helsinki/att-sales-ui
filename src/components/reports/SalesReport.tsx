@@ -37,16 +37,20 @@ const SalesReport = (): JSX.Element => {
     return date;
   }, []);
 
-  useEffect(() => {
-    const dateObject = {
+  const getUrlParams = () => {
+    const params = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
       project_uuids: selectedProjects.map((x) => x.selectValue).join(','),
     };
+    return new URLSearchParams(params);
+  };
 
+  useEffect(() => {
+    const urlParams = getUrlParams();
     // Set new search params
-    setParams(new URLSearchParams(dateObject));
-  }, [formattedDate, startDate, endDate, selectedProjects, setParams]);
+    setParams(urlParams);
+  }, [formattedDate, startDate, endDate, selectedProjects]);
 
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
   const postSalesReportDownloading = () => setIsLoadingSalesReport(false);
@@ -56,14 +60,24 @@ const SalesReport = (): JSX.Element => {
     toast.show({ type: 'error' });
   };
 
-  const getDefaultValues = (): SelectOption[] => {
-    if (!userSelectedProjects) return [];
-    const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
-    const defaultOptions = selectOptions().filter((option: SelectOption) =>
-      selectedProjectUuids?.includes(option.selectValue)
-    );
-    defaultOptions.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
-    return defaultOptions;
+  /**
+   * Returns the projects the user selected for their last project
+   * if the user hasn't clicked on any of the selections yet.
+   * Otherwise return the projects the user has clicked on.
+   */
+  const getValues = (): SelectOption[] => {
+    if (selectedProjects.length > 0) {
+      return selectedProjects;
+    } else if (userSelectedProjects) {
+      const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
+      const defaultOptions = selectOptions().filter((option: SelectOption) =>
+        selectedProjectUuids?.includes(option.selectValue)
+      );
+      defaultOptions.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
+      setSelectedProjects(defaultOptions);
+      return defaultOptions;
+    }
+    return [];
   };
 
   const selectOptions = (): SelectOption[] => {
@@ -75,7 +89,7 @@ const SalesReport = (): JSX.Element => {
 
       // ComboBox doesn't like duplicate labels
       // these should only appear in the case there are duplicates
-      if (index > 0) {
+      if (index !== -1) {
         label = `${label} #${project.id}`;
       }
 
@@ -186,7 +200,7 @@ const SalesReport = (): JSX.Element => {
                 onChange={handleSelectChange}
                 toggleButtonAriaLabel={t(`${T_PATH}.toggleButtonAriaLabel`)}
                 filter={handleSearch}
-                defaultValue={getDefaultValues()}
+                defaultValue={getValues()}
               />
             )
           }
