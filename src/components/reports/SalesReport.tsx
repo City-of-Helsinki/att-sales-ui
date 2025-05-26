@@ -66,9 +66,10 @@ const SalesReport = (): JSX.Element => {
    * Otherwise return the projects the user has clicked on.
    */
   const getValues = (): SelectOption[] => {
+
     if (selectedProjects.length > 0) {
       return selectedProjects;
-    } else if (userSelectedProjects) {
+    } else if (userSelectedProjects && userSelectedProjects.length > 0) {
       const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
       const defaultOptions = selectOptions().filter((option: SelectOption) =>
         selectedProjectUuids?.includes(option.selectValue)
