@@ -186,7 +186,7 @@ const SalesReport = (): JSX.Element => {
             className={styles.downloadButton}
             disabled={!isValidDate(startDate) || !isValidDate(endDate)}
           >
-            {!isLoadingSalesReport ? t(`${T_PATH}.downloadReport`) : t(`${T_PATH}.downloadReport`)}
+            {t(`${T_PATH}.downloadReport`)}
           </Button>
         </span>
       </div>
