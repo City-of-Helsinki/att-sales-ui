@@ -214,7 +214,7 @@ const CostIndexTable = (): JSX.Element => {
             <p id={descriptionId} className="text-body">
               {t('confirmBody')}
             </p>
-            <CostIndexSingleTable costIndex={{ valid_from: fiDateToISO(validFrom), value: value }} />
+            <CostIndexSingleTable costIndex={{ valid_from: validFrom, value: value }} />
           </Dialog.Content>
           <Dialog.ActionButtons>
             {/* Calling close directly prevents the form from being submitted */}
