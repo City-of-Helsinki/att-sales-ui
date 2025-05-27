@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import moment from 'moment';
-import { Button, Combobox, DateInput, IconDownload, Select, Option, ButtonVariant, LoadingSpinner } from 'hds-react';
+import { Button, DateInput, IconDownload, Select, Option, ButtonVariant, LoadingSpinner } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import Container from '../common/container/Container';
@@ -41,8 +41,9 @@ const SalesReport = (): JSX.Element => {
     const params = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
-      project_uuids: selectedProjects.map((x) => x.value).join(','),
+      project_uuids: selectedProjects.map((x) => x).join(','),
     };
+    console.log('selectedProjects', selectedProjects);
     return new URLSearchParams(params);
   };
 
@@ -51,11 +52,13 @@ const SalesReport = (): JSX.Element => {
     // Set new search params
     setParams(urlParams);
   }, [formattedDate, startDate, endDate, selectedProjects]);
-    setParams(new URLSearchParams(dateObject));
-  }, [formattedDate, startDate, endDate, selectedProjects, setParams]);
 
   useEffect(() => {
     if (!userSelectedProjects) return;
+    console.log(
+      'useEffect.setSelectedProjects()',
+      userSelectedProjects.map((x) => x.uuid)
+    );
     setSelectedProjects(userSelectedProjects.map((x) => x.uuid));
   }, [userSelectedProjects]);
 
@@ -72,6 +75,10 @@ const SalesReport = (): JSX.Element => {
     const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
     const defaultOptions = selectOptions().filter((option: Option) => selectedProjectUuids?.includes(option.value));
     defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
+    console.log(
+      'getDefaultValues()',
+      defaultOptions.map((x) => x.value)
+    );
     return defaultOptions.map((x) => x.value);
   };
 
@@ -91,8 +98,8 @@ const SalesReport = (): JSX.Element => {
       options.push({
         label: label,
         value: project.uuid,
-        disabled: true,
-        selected: true,
+        disabled: false,
+        selected: false,
         isGroupLabel: false,
         visible: true,
       });
@@ -127,6 +134,10 @@ const SalesReport = (): JSX.Element => {
   });
 
   function handleSelectChange(selected: Option[], clickedOption: Option): void {
+    console.log(
+      'setSelectedProjects()',
+      selected.map((x) => x.value)
+    );
     setSelectedProjects(selected.map((x) => x.value));
   }
 
@@ -199,6 +210,7 @@ const SalesReport = (): JSX.Element => {
                 onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(selected, clickedOption)}
                 filter={handleSearch}
                 value={selectedProjects}
+                defaultValue={getDefaultValues()}
               />
             )
           }
