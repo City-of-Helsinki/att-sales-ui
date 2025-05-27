@@ -35,7 +35,6 @@ import { toast } from '../common/toast/ToastManager';
 import { useSetApartmentInstallmentsMutation } from '../../redux/services/api';
 
 import styles from './InstallmentsForm.module.scss';
-import { click } from '@testing-library/user-event/dist/click';
 
 const T_PATH = 'components.installments.InstallmentsForm';
 

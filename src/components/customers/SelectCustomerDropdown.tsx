@@ -1,11 +1,10 @@
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
-import { Select, Option, SearchResult, SelectData, TextInput, IconSearch } from 'hds-react';
+import { Select, Option, SearchResult, TextInput, IconSearch } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { CustomerListItem } from '../../types';
 import { useGetCustomersQuery } from '../../redux/services/api';
-import { ChangeEvent } from 'hds-react/DataContext-3ff69c47';
 import styles from './SelectCustomerDropdown.module.scss';
 
 const T_PATH = 'components.customers.SelectCustomerDropdown';

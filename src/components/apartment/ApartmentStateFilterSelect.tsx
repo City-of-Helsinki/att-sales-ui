@@ -1,9 +1,7 @@
 import { Select, Option } from 'hds-react';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ApartmentState } from '../../enums';
-import { click } from '@testing-library/user-event/dist/click';
 
 const T_PATH = 'components.apartment.ApartmentStateFilterSelect';
 
