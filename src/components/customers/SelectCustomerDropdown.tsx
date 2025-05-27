@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
-import { Combobox } from 'hds-react';
+import { Select, Option, SearchResult, TextInput, IconSearch } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
-import { CustomerListItem, SelectOption } from '../../types';
+import { CustomerListItem } from '../../types';
 import { useGetCustomersQuery } from '../../redux/services/api';
+import styles from './SelectCustomerDropdown.module.scss';
 
 const T_PATH = 'components.customers.SelectCustomerDropdown';
 const SEARCH_KEYWORD_MIN_LENGTH = 2;
@@ -19,7 +20,7 @@ interface IProps {
 const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, helpText }: IProps) => {
   const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState<string>('');
-  const [options, setOptions] = useState<SelectOption[]>([]);
+  const [options, setOptions] = useState<Option[]>([]);
   const [didMount, setDidMount] = useState(false);
   const {
     data: customers,
@@ -46,14 +47,17 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
     };
 
     // Create dropdown options from found customers
-    const mapOptions = (customerList: CustomerListItem[]): SelectOption[] => {
-      let list: SelectOption[] = [];
+    const mapOptions = (customerList: CustomerListItem[]): Option[] => {
+      let list: Option[] = [];
 
       customerList.forEach((customer) => {
         list.push({
           label: getLabel(customer),
-          name: 'selectCustomer',
-          selectValue: customer.id.toString(),
+          value: customer.id.toString(),
+          visible: true,
+          disabled: false,
+          selected: false,
+          isGroupLabel: false,
         });
       });
 
@@ -65,9 +69,11 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
       return setOptions([
         {
           label: t(`${T_PATH}.loading`),
-          name: 'selectCustomer',
-          selectValue: '',
+          value: '',
           disabled: true,
+          selected: true,
+          isGroupLabel: false,
+          visible: true,
         },
       ]);
     }
@@ -85,9 +91,11 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
       return setOptions([
         {
           label: t(`${T_PATH}.noResults`),
-          name: 'selectCustomer',
-          selectValue: '',
+          value: '',
           disabled: true,
+          selected: true,
+          isGroupLabel: false,
+          visible: true,
         },
       ]);
     }
@@ -113,19 +121,19 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
 
   // Use debounced search keyword setting for the backend and return all of the found options
   const handleSearch = useCallback(
-    (selectOptions: SelectOption[], searchKeyword: string): SelectOption[] => {
+    async (searchKeyword: string, selectOptions: Option[]): Promise<SearchResult> => {
       debouncedSearch(searchKeyword);
-      return selectOptions;
+      return { options: selectOptions };
     },
     [debouncedSearch]
   );
 
   // Set the selected customer's ID
-  const handleSelectChange = (selected: SelectOption) => {
+  const handleSelectChange = (selected: Option) => {
     if (!selected) {
       return handleSelectCallback('');
     }
-    return handleSelectCallback(selected.selectValue);
+    return handleSelectCallback(selected.value);
   };
 
   const renderHelpText = () => {
@@ -137,27 +145,41 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
   };
 
   return (
-    <>
-      <Combobox
-        required
-        id="selectCustomer"
-        label={t(`${T_PATH}.selectCustomer`)}
+    /* Quick fix while refactoring. Select-component's own searchfield doesn't retain
+    its search value between searches when using a debounced search 
+    which leads to a janky user experience. -> use a separate TextInput
+    **/
+    <div className={styles.inputWrapper}>
+      <TextInput
+        buttonIcon={<IconSearch />}
+        type="search"
+        id={'searchCustomer'}
         placeholder={t(`${T_PATH}.searchByName`)}
-        helper={renderHelpText()}
-        toggleButtonAriaLabel={t(`${T_PATH}.toggleMenu`)}
-        showToggleButton={searchValue.length >= SEARCH_KEYWORD_MIN_LENGTH}
-        invalid={isError || hasError}
-        error={errorMessage || `${T_PATH}.errorLoadingCustomers`}
-        isOptionDisabled={(item: SelectOption): boolean => !!item.disabled}
-        options={options}
-        onChange={(selected: SelectOption) => handleSelectChange(selected)}
-        multiselect={false}
-        filter={handleSearch}
-        visibleOptions={8}
-        clearable
-        virtualized
+        label={t(`${T_PATH}.selectCustomer`)}
+        onChange={(e) => {
+          handleSearch(e.target.value, options);
+        }}
       />
-    </>
+      {searchValue && (
+        <Select
+          texts={{
+            error: errorMessage || `${T_PATH}.errorLoadingCustomers`,
+            label: t(`${T_PATH}.selectCustomer`),
+          }}
+          required
+          id="selectCustomer"
+          placeholder={t(`${T_PATH}.searchByName`)}
+          invalid={isError || hasError}
+          options={options}
+          onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
+          defaultValue={options.find((x: Option) => !x.disabled)?.value}
+          open={true}
+          visibleOptions={8}
+          clearable
+          virtualize
+        />
+      )}
+    </div>
   );
 };
 

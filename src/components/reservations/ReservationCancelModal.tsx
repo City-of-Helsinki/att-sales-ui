@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Dialog, IconInfoCircle } from 'hds-react';
+import { Button, ButtonVariant, Dialog, IconInfoCircle } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -98,7 +98,7 @@ const ReservationCancelModal = (): JSX.Element | null => {
       <Dialog.Header
         id="reservation-cancel-dialog-header"
         title={t(`${T_PATH}.cancelReservation`)}
-        iconLeft={<IconInfoCircle aria-hidden />}
+        iconStart={<IconInfoCircle aria-hidden />}
       />
       <Dialog.Content>
         <div className={styles.customer}>
@@ -112,10 +112,10 @@ const ReservationCancelModal = (): JSX.Element | null => {
         <ReservationCancelForm ownershipType={ownershipType} handleFormCallback={handleFormCallback} formId={formId} />
       </Dialog.Content>
       <Dialog.ActionButtons>
-        <Button variant="primary" type="submit" form={formId} disabled={isLoading}>
+        <Button variant={ButtonVariant.Primary} type="submit" form={formId} disabled={isLoading}>
           {t(`${T_PATH}.cancelReservation`)}
         </Button>
-        <Button variant="secondary" onClick={() => closeDialog()}>
+        <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
           {t(`${T_PATH}.close`)}
         </Button>
       </Dialog.ActionButtons>

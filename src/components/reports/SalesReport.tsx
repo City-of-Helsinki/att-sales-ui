@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import moment from 'moment';
-import { Button, Combobox, DateInput, IconDownload, Select } from 'hds-react';
+import { Button, DateInput, IconDownload, Select, Option, ButtonVariant, LoadingSpinner } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import Container from '../common/container/Container';
@@ -11,7 +11,7 @@ import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 import reportStyles from '../../pages/reports/Reports.module.scss';
 import styles from './SalesReport.module.scss';
-import { SelectOption, Project } from '../../types';
+import { Project } from '../../types';
 import { useGetProjectsQuery, useGetSelectedProjectsQuery } from '../../redux/services/api';
 
 const T_PATH = 'components.reports.SalesReport';
@@ -26,7 +26,7 @@ const SalesReport = (): JSX.Element => {
   const { data: projects } = useGetProjectsQuery();
   const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
 
-  const [selectedProjects, setSelectedProjects] = useState<SelectOption[]>([]);
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
   const isValidDate = (date: string): boolean => moment(date, 'D.M.YYYY', true).isValid();
 
@@ -41,8 +41,9 @@ const SalesReport = (): JSX.Element => {
     const params = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
-      project_uuids: selectedProjects.map((x) => x.selectValue).join(','),
+      project_uuids: selectedProjects.map((x) => x).join(','),
     };
+    console.log('selectedProjects', selectedProjects);
     return new URLSearchParams(params);
   };
 
@@ -52,6 +53,15 @@ const SalesReport = (): JSX.Element => {
     setParams(urlParams);
   }, [formattedDate, startDate, endDate, selectedProjects]);
 
+  useEffect(() => {
+    if (!userSelectedProjects) return;
+    console.log(
+      'useEffect.setSelectedProjects()',
+      userSelectedProjects.map((x) => x.uuid)
+    );
+    setSelectedProjects(userSelectedProjects.map((x) => x.uuid));
+  }, [userSelectedProjects]);
+
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
   const postSalesReportDownloading = () => setIsLoadingSalesReport(false);
 
@@ -60,29 +70,20 @@ const SalesReport = (): JSX.Element => {
     toast.show({ type: 'error' });
   };
 
-  /**
-   * Returns the projects the user selected for their last project
-   * if the user hasn't clicked on any of the selections yet.
-   * Otherwise return the projects the user has clicked on.
-   */
-  const getValues = (): SelectOption[] => {
-
-    if (selectedProjects.length > 0) {
-      return selectedProjects;
-    } else if (userSelectedProjects && userSelectedProjects.length > 0) {
-      const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
-      const defaultOptions = selectOptions().filter((option: SelectOption) =>
-        selectedProjectUuids?.includes(option.selectValue)
-      );
-      defaultOptions.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
-      setSelectedProjects(defaultOptions);
-      return defaultOptions;
-    }
-    return [];
+  const getDefaultValues = (): string[] => {
+    if (!userSelectedProjects) return [];
+    const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
+    const defaultOptions = selectOptions().filter((option: Option) => selectedProjectUuids?.includes(option.value));
+    defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
+    console.log(
+      'getDefaultValues()',
+      defaultOptions.map((x) => x.value)
+    );
+    return defaultOptions.map((x) => x.value);
   };
 
-  const selectOptions = (): SelectOption[] => {
-    let options: SelectOption[] = [];
+  const selectOptions = (): Option[] => {
+    let options: Option[] = [];
 
     projects?.forEach((project: Project) => {
       let label = `${project.housing_company} - ${project.street_address}`;
@@ -96,12 +97,15 @@ const SalesReport = (): JSX.Element => {
 
       options.push({
         label: label,
-        name: 'projectOption',
-        selectValue: project.uuid,
+        value: project.uuid,
+        disabled: false,
+        selected: false,
+        isGroupLabel: false,
+        visible: true,
       });
     });
 
-    options.sort((a: SelectOption, b: SelectOption) => a.label.localeCompare(b.label));
+    options.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
 
     return options;
   };
@@ -129,13 +133,16 @@ const SalesReport = (): JSX.Element => {
     preDownloading: preSalesReportDownloading,
   });
 
-  function handleSelectChange(selected: SelectOption[]): void {
-    setSelectedProjects(selected);
+  function handleSelectChange(selected: Option[], clickedOption: Option): void {
+    console.log(
+      'setSelectedProjects()',
+      selected.map((x) => x.value)
+    );
+    setSelectedProjects(selected.map((x) => x.value));
   }
 
-  function handleSearch(options: SelectOption[], search: string): SelectOption[] {
-    const filtered = options.filter((option) => option.label.toLowerCase().includes(search.toLowerCase()));
-    return filtered;
+  function handleSearch(option: Option, search: string): boolean {
+    return option.label.toLowerCase().includes(search.toLowerCase());
   }
 
   return (
@@ -173,11 +180,9 @@ const SalesReport = (): JSX.Element => {
         </span>
         <span>
           <Button
-            variant="primary"
-            iconRight={<IconDownload />}
+            variant={ButtonVariant.Primary}
+            iconStart={!isLoadingSalesReport ? <IconDownload /> : <LoadingSpinner small />}
             onClick={download}
-            isLoading={isLoadingSalesReport}
-            loadingText={t(`${T_PATH}.downloadReport`)}
             className={styles.downloadButton}
             disabled={!isValidDate(startDate) || !isValidDate(endDate)}
           >
@@ -190,18 +195,22 @@ const SalesReport = (): JSX.Element => {
           {
             // defaultValue prop is only checked once, ensure its filled with data
             userSelectedProjects !== undefined && projects !== undefined && (
-              <Combobox
-                multiselect
+              <Select
+                multiSelect
                 required
-                label={t(`${T_PATH}.projects`)}
+                texts={{
+                  label: t(`${T_PATH}.projects`),
+                  clearButtonAriaLabel_multiple: t(`${T_PATH}.clearButtonAriaLabel`),
+                  tagRemoveSelectionAriaLabel: t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`),
+                  dropdownButtonAriaLabel: t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`),
+                }}
+                aria-label={t(`${T_PATH}.projects`)}
                 placeholder={t(`${T_PATH}.searchProjectsPlaceHolder`)}
                 options={selectOptions()}
-                clearButtonAriaLabel={t(`${T_PATH}.clearButtonAriaLabel`)}
-                selectedItemRemoveButtonAriaLabel={t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`)}
-                onChange={handleSelectChange}
-                toggleButtonAriaLabel={t(`${T_PATH}.toggleButtonAriaLabel`)}
+                onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(selected, clickedOption)}
                 filter={handleSearch}
-                defaultValue={getValues()}
+                value={selectedProjects}
+                defaultValue={getDefaultValues()}
               />
             )
           }

@@ -1,10 +1,9 @@
-import { Button, Dialog, IconAlertCircle } from 'hds-react';
+import { useOidcClient, Button, ButtonVariant, Dialog, IconAlertCircle } from 'hds-react';
 import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useIdleTimerContext } from 'react-idle-timer';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { useOidcClient } from 'hds-react';
 import { hideAuthSessionExpiringModal } from '../../redux/features/authSessionExpiringModalSlice';
 import { RootState } from '../../redux/store';
 import { TIMEOUT_MINUTES } from './WithIdleProvider';
@@ -52,31 +51,29 @@ const AuthSessionExpiringModal = () => {
   if (!isDialogOpen) return null;
 
   return (
-    <>
-      <Dialog id="confirmation-dialog" aria-labelledby={titleId} aria-describedby={descriptionId} isOpen={isDialogOpen}>
-        <Dialog.Header
-          id={titleId}
-          title={t(`${T_PATH}.continueUsingTheService`)}
-          iconLeft={<IconAlertCircle aria-hidden="true" />}
-        />
-        <Dialog.Content>
-          <p id={descriptionId}>
-            <Trans i18nKey={`${T_PATH}.inactivityMessage`}>
-              You have been inactive for {TIMEOUT_MINUTES} minutes. You will be logged out automatically in <Timer />{' '}
-              seconds.
-            </Trans>
-          </p>
-        </Dialog.Content>
-        <Dialog.ActionButtons>
-          <Button onClick={handleContinue}>{t(`${T_PATH}.continue`)}</Button>
-          {
-            <Button onClick={() => logout()} variant="secondary">
-              {t(`${T_PATH}.logout`)}
-            </Button>
-          }
-        </Dialog.ActionButtons>
-      </Dialog>
-    </>
+    <Dialog id="confirmation-dialog" aria-labelledby={titleId} aria-describedby={descriptionId} isOpen={isDialogOpen}>
+      <Dialog.Header
+        id={titleId}
+        title={t(`${T_PATH}.continueUsingTheService`)}
+        iconStart={<IconAlertCircle aria-hidden="true" />}
+      />
+      <Dialog.Content>
+        <p id={descriptionId}>
+          <Trans i18nKey={`${T_PATH}.inactivityMessage`}>
+            You have been inactive for {TIMEOUT_MINUTES} minutes. You will be logged out automatically in <Timer />{' '}
+            seconds.
+          </Trans>
+        </p>
+      </Dialog.Content>
+      <Dialog.ActionButtons>
+        <Button onClick={handleContinue}>{t(`${T_PATH}.continue`)}</Button>
+        {
+          <Button onClick={() => logout()} variant={ButtonVariant.Secondary}>
+            {t(`${T_PATH}.logout`)}
+          </Button>
+        }
+      </Dialog.ActionButtons>
+    </Dialog>
   );
 };
 

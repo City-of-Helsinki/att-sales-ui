@@ -1,5 +1,15 @@
 import cx from 'classnames';
-import { Button, Dialog, IconQuestionCircle, Notification, RadioButton, SelectionGroup, Tabs } from 'hds-react';
+import {
+  Button,
+  ButtonVariant,
+  Dialog,
+  IconQuestionCircle,
+  Notification,
+  NotificationSize,
+  RadioButton,
+  SelectionGroup,
+  Tabs,
+} from 'hds-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -42,7 +52,7 @@ const ProjectDetail = (): JSX.Element | null => {
     defaultValue: '',
     key: `apartmentStateFilter-${projectId || project?.id}`,
   });
-  const hasActiveFilters = apartmentStateFilter !== '';
+  const hasActiveFilters = apartmentStateFilter !== '-';
 
   const [isMailingListDialogOpen, setIsMailingListDialogOpen] = useState(false);
   const [mailingListReservationType, setMailingListReservationType] = useState(ApplicantMailingListExportType.RESERVED);
@@ -116,7 +126,7 @@ const ProjectDetail = (): JSX.Element | null => {
   if (isError) {
     return (
       <Container>
-        <Notification type="error" size="small" style={{ marginTop: 15 }}>
+        <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
           {t(`${T_PATH}.errorLoadingProject`)}
         </Notification>
       </Container>
@@ -133,7 +143,6 @@ const ProjectDetail = (): JSX.Element | null => {
   };
 
   const downloadApplicantMailingList = () => {
-    console.log('downloading from', applicantExportApiUrl);
     const onApplicantListLoadError = () => {
       // setIsLoadingApplicantsList(false);
       toast.show({ type: 'error' });
@@ -221,7 +230,7 @@ const ProjectDetail = (): JSX.Element | null => {
         <Dialog.Header
           id="mailing-list-dialog-title"
           title={t(`${T_PATH}.createApplicantMailingListTitle`)}
-          iconLeft={<IconQuestionCircle aria-hidden="true" />}
+          iconStart={<IconQuestionCircle aria-hidden="true" />}
         />
         <Dialog.Content>
           <div className={styles.checkBoxRow}>
@@ -258,7 +267,7 @@ const ProjectDetail = (): JSX.Element | null => {
             onClick={() => {
               setIsMailingListDialogOpen(false);
             }}
-            variant="secondary"
+            variant={ButtonVariant.Secondary}
           >
             {t(`${T_PATH}.createApplicantMailingListCancel`)}
           </Button>

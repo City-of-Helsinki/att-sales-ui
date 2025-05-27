@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, IconAlertCircle } from 'hds-react';
+import { Button, ButtonSize, ButtonVariant, IconAlertCircle } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
@@ -44,7 +44,7 @@ const ReservationRevaluationInfo = ({ reservationWithCustomer }: Props): JSX.Ele
 
   return (
     <Button
-      variant="supplementary"
+      variant={ButtonVariant.Supplementary}
       onClick={() => {
         dispatch(
           showApartmentRevaluationModal({
@@ -54,8 +54,8 @@ const ReservationRevaluationInfo = ({ reservationWithCustomer }: Props): JSX.Ele
           })
         );
       }}
-      size="small"
-      iconLeft={<IconAlertCircle />}
+      size={ButtonSize.Small}
+      iconStart={<IconAlertCircle />}
     >
       {t('buttonCreate')}
     </Button>
