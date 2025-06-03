@@ -49,7 +49,7 @@ const ProjectDetail = (): JSX.Element | null => {
   } = useGetProjectByIdQuery(projectId || '0');
   const [startLotteryForProject, { isLoading: startLotterIsLoading }] = useStartLotteryForProjectMutation();
   const [apartmentStateFilter, setApartmentStateFilter] = useSessionStorage({
-    defaultValue: '',
+    defaultValue: '-',
     key: `apartmentStateFilter-${projectId || project?.id}`,
   });
   const hasActiveFilters = apartmentStateFilter !== '-';
