@@ -259,6 +259,7 @@
   "components.installments.ProjectInstallments.sendToSAPMessage": "Oletteko varma, että haluatte lähettää tiedot SAP:iin?",
   "components.installments.ProjectInstallments.unit": "Yksikkö",
   "components.installments.ProjectInstallments.unitSpecifier": "Yksikön täsmennys",
+  "components.installments.sentSuccessfully": "Erät lähetettiin onnistuneesti SAP:iin",
   "components.offer.OfferEmailMessage.errorLoadingEmailMessage": "Virhe ladattaessa sähköpostiviestiä",
   "components.offer.OfferEmailMessage.offerIntroLabel": "Sähköpostiviesti",
   "components.offer.OfferEmailMessage.openInEmailApp": "Avaa sähköpostiohjelmassa",
