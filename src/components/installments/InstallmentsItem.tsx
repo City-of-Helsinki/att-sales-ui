@@ -1,6 +1,17 @@
 import React, { useRef, useState } from 'react';
 import cx from 'classnames';
-import { Button, Dialog, IconAngleDown, IconAngleRight, IconPenLine, Notification, useAccordion } from 'hds-react';
+import {
+  Button,
+  ButtonSize,
+  ButtonVariant,
+  Dialog,
+  IconAngleDown,
+  IconAngleRight,
+  IconPenLine,
+  Notification,
+  NotificationSize,
+  useAccordion,
+} from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import formattedLivingArea from '../../utils/formatLivingArea';
@@ -107,7 +118,7 @@ const InstallmentsItem = ({ apartment, project, reservationId, isCanceled }: IPr
   if (isError) {
     return (
       <div className={styles.apartmentRow}>
-        <Notification type="error" size="small" style={{ marginTop: 15 }}>
+        <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
           {t(`${T_PATH}.errorLoadingInstallments`)}
         </Notification>
       </div>
@@ -140,9 +151,9 @@ const InstallmentsItem = ({ apartment, project, reservationId, isCanceled }: IPr
       return (
         <>
           <Button
-            variant="supplementary"
-            size="small"
-            iconLeft={<IconPenLine />}
+            variant={ButtonVariant.Supplementary}
+            size={ButtonSize.Small}
+            iconStart={<IconPenLine />}
             ref={openFormDialogButtonRef}
             onClick={() => setIsFormDialogOpen(true)}
           >
@@ -167,7 +178,12 @@ const InstallmentsItem = ({ apartment, project, reservationId, isCanceled }: IPr
     }
 
     return (
-      <Button variant="secondary" size="small" ref={openFormDialogButtonRef} onClick={() => setIsFormDialogOpen(true)}>
+      <Button
+        variant={ButtonVariant.Secondary}
+        size={ButtonSize.Small}
+        ref={openFormDialogButtonRef}
+        onClick={() => setIsFormDialogOpen(true)}
+      >
         {t(`${T_PATH}.createInstallments`)}
       </Button>
     );

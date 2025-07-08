@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import cx from 'classnames';
-import { Button, Dialog, Notification, Tooltip } from 'hds-react';
+import { Button, ButtonVariant, Dialog, Notification, NotificationSize, Tooltip } from 'hds-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
@@ -158,10 +158,10 @@ const OfferModal = (): JSX.Element | null => {
             : t(`${T_PATH}.confirmDialogHitasContent`)}
         </Dialog.Content>
         <Dialog.ActionButtons>
-          <Button variant="danger" type="submit" form={formId}>
+          <Button variant={ButtonVariant.Danger} type="submit" form={formId}>
             {t(`${T_PATH}.rejectOffer`)}
           </Button>
-          <Button variant="secondary" onClick={() => closeConfirmDialog()}>
+          <Button variant={ButtonVariant.Secondary} onClick={() => closeConfirmDialog()}>
             {t(`${T_PATH}.cancel`)}
           </Button>
         </Dialog.ActionButtons>
@@ -176,19 +176,19 @@ const OfferModal = (): JSX.Element | null => {
       switch (offerItem.state) {
         case OfferState.PENDING:
           return (
-            <Notification type="info" size="small">
+            <Notification type="info" size={NotificationSize.Small}>
               {notificationText}
             </Notification>
           );
         case OfferState.ACCEPTED:
           return (
-            <Notification type="success" size="small">
+            <Notification type="success" size={NotificationSize.Small}>
               {notificationText}
             </Notification>
           );
         case OfferState.REJECTED:
           return (
-            <Notification type="error" size="small">
+            <Notification type="error" size={NotificationSize.Small}>
               {notificationText}
             </Notification>
           );
@@ -198,7 +198,7 @@ const OfferModal = (): JSX.Element | null => {
     return (
       <div className={styles.offerStatus}>
         {offerItem.is_expired ? (
-          <Notification type="error" size="small">
+          <Notification type="error" size={NotificationSize.Small}>
             {notificationText}
           </Notification>
         ) : (
@@ -309,7 +309,7 @@ const OfferModal = (): JSX.Element | null => {
   );
 
   const renderError = () => (
-    <Notification type="error" size="small" style={{ marginTop: 15 }}>
+    <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
       {t(`${T_PATH}.errorLoadingOffer`)}
     </Notification>
   );
@@ -361,16 +361,20 @@ const OfferModal = (): JSX.Element | null => {
         {((!isNewOffer && offer) || isNewOffer) && (
           <Dialog.ActionButtons>
             <Button
-              variant="primary"
+              variant={ButtonVariant.Primary}
               type="submit"
               form={formId}
-              isLoading={isCreatingOffer || isUpdatingOffer}
-              loadingText={t(`${T_PATH}.saving`)}
+              // isLoading={(isCreatingOffer || isUpdatingOffer)}
+              // loadingText={t(`${T_PATH}.saving`)}
               ref={openConfirmDialogButtonRef}
             >
-              {isNewOffer ? t(`${T_PATH}.setOfferAsSent`) : t(`${T_PATH}.saveOffer`)}
+              {!(isCreatingOffer || isUpdatingOffer)
+                ? t(`${T_PATH}.saving`)
+                : isNewOffer
+                ? t(`${T_PATH}.setOfferAsSent`)
+                : t(`${T_PATH}.saveOffer`)}
             </Button>
-            <Button variant="secondary" onClick={() => closeOfferDialog()}>
+            <Button variant={ButtonVariant.Secondary} onClick={() => closeOfferDialog()}>
               {t(`${T_PATH}.cancel`)}
             </Button>
           </Dialog.ActionButtons>

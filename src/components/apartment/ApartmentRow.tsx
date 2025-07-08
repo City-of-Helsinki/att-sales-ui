@@ -1,14 +1,18 @@
 import cx from 'classnames';
 import {
   Button,
+  ButtonSize,
+  ButtonVariant,
   IconAngleDown,
   IconAngleRight,
   IconBell,
   IconGroup,
   IconPlus,
+  IconSize,
   LoadingSpinner,
   Notification,
   StatusLabel,
+  NotificationSize,
 } from 'hds-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -210,9 +214,9 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
     const addReservation = () => (
       <div className={styles.addNewReservationButton}>
         <Button
-          size="small"
-          variant="supplementary"
-          iconLeft={<IconPlus size="xs" />}
+          size={ButtonSize.Small}
+          variant={ButtonVariant.Supplementary}
+          iconStart={<IconPlus size={IconSize.ExtraSmall} />}
           onClick={() =>
             dispatch(
               showReservationAddModal({
@@ -241,9 +245,9 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                 : t(`${T_PATH}.canceled`)}{' '}
               {reservation.cancellation_timestamp && formatDateTime(reservation.cancellation_timestamp)}
               <Button
-                variant="supplementary"
-                size="small"
-                iconLeft={''}
+                variant={ButtonVariant.Supplementary}
+                size={ButtonSize.Small}
+                iconStart={''}
                 disabled={false}
                 onClick={() => handleRestore(reservation.id, project.uuid, apartment.apartment_uuid)}
               >
@@ -258,9 +262,9 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
         ) : (
           <>
             <Button
-              variant="supplementary"
-              size="small"
-              iconLeft={''}
+              variant={ButtonVariant.Supplementary}
+              size={ButtonSize.Small}
+              iconStart={''}
               onClick={() =>
                 dispatch(
                   showReservationCancelModal({
@@ -278,9 +282,9 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
             {showAllButtons && (
               <>
                 <Button
-                  variant="supplementary"
-                  size="small"
-                  iconLeft={''}
+                  variant={ButtonVariant.Supplementary}
+                  size={ButtonSize.Small}
+                  iconStart={''}
                   onClick={() =>
                     dispatch(
                       showReservationEditModal({
@@ -294,8 +298,8 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                   {t(`${T_PATH}.btnEdit`)}
                 </Button>
                 <Button
-                  variant="secondary"
-                  size="small"
+                  variant={ButtonVariant.Secondary}
+                  size={ButtonSize.Small}
                   onClick={() =>
                     dispatch(
                       showOfferModal({
@@ -383,7 +387,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
           {isError && (
             <div className={styles.reservationLoadError}>
               <Notification
-                size="small"
+                size={NotificationSize.Small}
                 type="error"
                 label={t(`${T_PATH}.errorWhileLoadingReservationsLabel`)}
                 position="inline"

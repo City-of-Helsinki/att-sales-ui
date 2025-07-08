@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import cx from 'classnames';
-import { Notification } from 'hds-react';
+import { Notification, NotificationSize } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 const T_PATH = 'components.common.toast.Toast';
@@ -75,7 +75,6 @@ const Toast = ({
       label={title ? title : renderDefaultLabel()}
       onClose={() => onClose()}
       position="top-right"
-      size="default"
       type={type}
     >
       {content ? content : renderDefaultMessage()}

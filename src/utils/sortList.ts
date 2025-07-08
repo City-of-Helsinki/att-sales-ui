@@ -1,7 +1,10 @@
 export const sortAlphanumeric = (items: any[], key: string, direction: string) => {
   items.sort((a, b) => {
-    const firstValue = a[key].split(' ').join('');
-    const secondValue = b[key].split(' ').join('');
+    const firstRaw = a[key] ?? '';
+    const secondRaw = b[key] ?? '';
+    const firstValue = firstRaw.split(' ').join('');
+    const secondValue = secondRaw.split(' ').join('');
+
     if (direction === 'ascending') {
       return firstValue.localeCompare(secondValue, 'fi', { numeric: true });
     }

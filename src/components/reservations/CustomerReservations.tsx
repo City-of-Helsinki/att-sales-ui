@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { Button, IconAngleDown, IconAngleRight } from 'hds-react';
+import { Button, ButtonPresetTheme, ButtonVariant, IconAngleDown, IconAngleRight } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import CustomerReservationRow from './CustomerReservationRow';
@@ -61,13 +61,14 @@ export const ReservationsByProject = ({ customer, reservations }: ReservationsBy
       <div className={styles.projectRow}>
         <ProjectName project={getReservationProjectData(reservations[0])} asLink />
         <Button
-          variant="secondary"
-          theme="black"
+          variant={ButtonVariant.Secondary}
+          theme={ButtonPresetTheme.Black}
           className={styles.accordionButton}
           onClick={toggleProject}
-          iconLeft={projectOpen ? <IconAngleDown /> : <IconAngleRight />}
+          iconStart={projectOpen ? <IconAngleDown /> : <IconAngleRight />}
         >
-          <span className="visually-hidden">{projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}</span>
+          {/* <span className="visually-hidden">{projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}</span> */}
+          {projectOpen ? t(`${T_PATH}.hide`) : t(`${T_PATH}.show`)}
         </Button>
       </div>
       {projectOpen &&

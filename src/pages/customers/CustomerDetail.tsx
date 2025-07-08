@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel } from 'hds-react';
+import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
 
 import Breadcrumbs, { BreadcrumbItem } from '../../components/common/breadcrumbs/Breadcrumbs';
 import Container from '../../components/common/container/Container';
@@ -70,7 +70,7 @@ const CustomerDetail = (): JSX.Element | null => {
     return (
       <Container>
         {renderBreadcrumb()}
-        <Notification type="error" size="small" style={{ marginTop: 15 }}>
+        <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
           {t(`${T_PATH}.errorLoadingCustomer`)}
         </Notification>
       </Container>
