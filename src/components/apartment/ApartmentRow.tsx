@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import { Link } from 'react-router-dom';
 import {
   Button,
   IconAngleDown,
@@ -10,22 +8,14 @@ import {
   IconPlus,
   LoadingSpinner,
   Notification,
+  StatusLabel,
 } from 'hds-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 
-import ApartmentBaseDetails from './ApartmentBaseDetails';
 import { ApartmentReservationStates, ReservationCancelReasons, ROUTES } from '../../enums';
-import formatDateTime from '../../utils/formatDateTime';
-import OfferStatusText from '../offer/OfferStatusText';
-import {
-  Apartment,
-  ApartmentReservationCustomer,
-  ApartmentReservationWithCustomer,
-  Project,
-  WinningReservation,
-} from '../../types';
-import ReservationRevaluationInfo from '../revaluation/ReservationRevaluationInfo';
 import { showOfferModal } from '../../redux/features/offerModalSlice';
 import { showReservationAddModal } from '../../redux/features/reservationAddModalSlice';
 import { showReservationCancelModal } from '../../redux/features/reservationCancelModalSlice';
@@ -34,7 +24,18 @@ import {
   useGetApartmentReservationsQuery,
   useSetApartmentReservationToOfferedMutation,
 } from '../../redux/services/api';
+import {
+  Apartment,
+  ApartmentReservationCustomer,
+  ApartmentReservationWithCustomer,
+  Project,
+  WinningReservation,
+} from '../../types';
+import formatDateTime from '../../utils/formatDateTime';
 import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
+import OfferStatusText from '../offer/OfferStatusText';
+import ReservationRevaluationInfo from '../revaluation/ReservationRevaluationInfo';
+import ApartmentBaseDetails from './ApartmentBaseDetails';
 
 import styles from './ApartmentRow.module.scss';
 
@@ -167,6 +168,9 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                 <span className={styles.offer}>
                   <OfferStatusText offer={reservation.offer} />
                 </span>
+                {apartment.state === ApartmentReservationStates.SOLD && (
+                  <StatusLabel className={styles.label}>{t(`ENUMS.ApartmentState.${apartment.state}`)}</StatusLabel>
+                )}
               </div>
             )}
           </Link>
