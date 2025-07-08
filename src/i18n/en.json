@@ -257,6 +257,7 @@
   "components.installments.ProjectInstallments.sendToSAPMessage": "Are you sure you want to send the data to SAP?",
   "components.installments.ProjectInstallments.unit": "Unit",
   "components.installments.ProjectInstallments.unitSpecifier": "Unit Specifier",
+  "components.installments.sentSuccessfully": "Installments sent successfully to SAP",
   "components.offer.OfferEmailMessage.errorLoadingEmailMessage": "Error while loading the email message",
   "components.offer.OfferEmailMessage.offerIntroLabel": "Email message",
   "components.offer.OfferEmailMessage.openInEmailApp": "Open in email client",
