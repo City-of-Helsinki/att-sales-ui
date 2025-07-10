@@ -23,5 +23,6 @@ describe('CustomerTableRow', () => {
     expect(screen.getAllByText('matti.meikalainen@example.com')).toBeDefined();
     expect(screen.getAllByText('+358501234567')).toBeDefined();
     expect(screen.getAllByText('Meikäläinen, Maija')).toBeDefined();
+    expect(screen.getAllByText('123')).toBeDefined();
   });
 });

@@ -6,7 +6,8 @@
     "primary_email": "matti.meikalainen@example.com",
     "primary_phone_number": "+358501234567",
     "secondary_first_name": "Maija",
-    "secondary_last_name": "Meikäläinen"
+    "secondary_last_name": "Meikäläinen",
+    "right_of_residence": 123
   },
   {
     "id": 2,
@@ -15,7 +16,8 @@
     "primary_email": "teppo.teikalainen@example.com",
     "primary_phone_number": "+358501234567",
     "secondary_first_name": null,
-    "secondary_last_name": null
+    "secondary_last_name": null,
+    "right_of_residence": 456
   },
   {
     "id": 3,
@@ -24,7 +26,8 @@
     "primary_email": "seppo.sikalainen@example.com",
     "primary_phone_number": "+358501234567",
     "secondary_first_name": "Minna",
-    "secondary_last_name": "Meikäläinen"
+    "secondary_last_name": "Meikäläinen",
+    "right_of_residence": 789
   },
   {
     "id": 4,
@@ -33,6 +36,7 @@
     "primary_email": "julia.doe@example.com",
     "primary_phone_number": "+358501234567",
     "secondary_first_name": "John",
-    "secondary_last_name": "Doe"
+    "secondary_last_name": "Doe",
+    "right_of_residence": 912
   }
 ]

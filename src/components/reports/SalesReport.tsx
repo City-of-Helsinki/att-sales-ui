@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import moment from 'moment';
-import { Button, DateInput, IconDownload } from 'hds-react';
+import { Button, DateInput, IconDownload, Select, Option, ButtonVariant, LoadingSpinner } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import Container from '../common/container/Container';
@@ -11,6 +11,8 @@ import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 import reportStyles from '../../pages/reports/Reports.module.scss';
 import styles from './SalesReport.module.scss';
+import { Project } from '../../types';
+import { useGetProjectsQuery, useGetSelectedProjectsQuery } from '../../redux/services/api';
 
 const T_PATH = 'components.reports.SalesReport';
 
@@ -21,6 +23,11 @@ const SalesReport = (): JSX.Element => {
   const [endDate, setEndDate] = useState<string>('');
   const [params, setParams] = useState<URLSearchParams>();
 
+  const { data: projects } = useGetProjectsQuery();
+  const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
+
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+
   const isValidDate = (date: string): boolean => moment(date, 'D.M.YYYY', true).isValid();
 
   const formattedDate = useCallback((date: string) => {
@@ -30,15 +37,30 @@ const SalesReport = (): JSX.Element => {
     return date;
   }, []);
 
-  useEffect(() => {
-    const dateObject = {
+  const getUrlParams = () => {
+    const params = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
+      project_uuids: selectedProjects.map((x) => x).join(','),
     };
+    console.log('selectedProjects', selectedProjects);
+    return new URLSearchParams(params);
+  };
 
+  useEffect(() => {
+    const urlParams = getUrlParams();
     // Set new search params
-    setParams(new URLSearchParams(dateObject));
-  }, [formattedDate, startDate, endDate, setParams]);
+    setParams(urlParams);
+  }, [formattedDate, startDate, endDate, selectedProjects]);
+
+  useEffect(() => {
+    if (!userSelectedProjects) return;
+    console.log(
+      'useEffect.setSelectedProjects()',
+      userSelectedProjects.map((x) => x.uuid)
+    );
+    setSelectedProjects(userSelectedProjects.map((x) => x.uuid));
+  }, [userSelectedProjects]);
 
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
   const postSalesReportDownloading = () => setIsLoadingSalesReport(false);
@@ -48,9 +70,49 @@ const SalesReport = (): JSX.Element => {
     toast.show({ type: 'error' });
   };
 
+  const getDefaultValues = (): string[] => {
+    if (!userSelectedProjects) return [];
+    const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
+    const defaultOptions = selectOptions().filter((option: Option) => selectedProjectUuids?.includes(option.value));
+    defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
+    console.log(
+      'getDefaultValues()',
+      defaultOptions.map((x) => x.value)
+    );
+    return defaultOptions.map((x) => x.value);
+  };
+
+  const selectOptions = (): Option[] => {
+    let options: Option[] = [];
+
+    projects?.forEach((project: Project) => {
+      let label = `${project.housing_company} - ${project.street_address}`;
+      const index = options.findIndex((x) => x.label === label);
+
+      // ComboBox doesn't like duplicate labels
+      // these should only appear in the case there are duplicates
+      if (index !== -1) {
+        label = `${label} #${project.id}`;
+      }
+
+      options.push({
+        label: label,
+        value: project.uuid,
+        disabled: false,
+        selected: false,
+        isGroupLabel: false,
+        visible: true,
+      });
+    });
+
+    options.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
+
+    return options;
+  };
+
   const getSalesReportFileName = (): string => {
     const prefix = 'myyntiraportti';
-    const fileFormat = 'csv';
+    const fileFormat = 'xlsx';
     const dateRange = `_${formattedDate(startDate)}_${formattedDate(endDate)}`;
 
     return `${prefix}${dateRange}.${fileFormat}`;
@@ -70,6 +132,18 @@ const SalesReport = (): JSX.Element => {
     postDownloading: postSalesReportDownloading,
     preDownloading: preSalesReportDownloading,
   });
+
+  function handleSelectChange(selected: Option[], clickedOption: Option): void {
+    console.log(
+      'setSelectedProjects()',
+      selected.map((x) => x.value)
+    );
+    setSelectedProjects(selected.map((x) => x.value));
+  }
+
+  function handleSearch(option: Option, search: string): boolean {
+    return option.label.toLowerCase().includes(search.toLowerCase());
+  }
 
   return (
     <Container wide className={reportStyles.wrapper}>
@@ -106,21 +180,45 @@ const SalesReport = (): JSX.Element => {
         </span>
         <span>
           <Button
-            variant="primary"
-            iconRight={<IconDownload />}
+            variant={ButtonVariant.Primary}
+            iconStart={!isLoadingSalesReport ? <IconDownload /> : <LoadingSpinner small />}
             onClick={download}
-            isLoading={isLoadingSalesReport}
-            loadingText={t(`${T_PATH}.downloadReport`)}
             className={styles.downloadButton}
             disabled={!isValidDate(startDate) || !isValidDate(endDate)}
           >
             {t(`${T_PATH}.downloadReport`)}
           </Button>
         </span>
-        <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
-          {t(`${T_PATH}.download`)}
-        </a>
       </div>
+      <div className={styles.formFields}>
+        <span>
+          {
+            // defaultValue prop is only checked once, ensure its filled with data
+            userSelectedProjects !== undefined && projects !== undefined && (
+              <Select
+                multiSelect
+                required
+                texts={{
+                  label: t(`${T_PATH}.projects`),
+                  clearButtonAriaLabel_multiple: t(`${T_PATH}.clearButtonAriaLabel`),
+                  tagRemoveSelectionAriaLabel: t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`),
+                  dropdownButtonAriaLabel: t(`${T_PATH}.selectedItemRemoveButtonAriaLabel`),
+                }}
+                aria-label={t(`${T_PATH}.projects`)}
+                placeholder={t(`${T_PATH}.searchProjectsPlaceHolder`)}
+                options={selectOptions()}
+                onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(selected, clickedOption)}
+                filter={handleSearch}
+                value={selectedProjects}
+                defaultValue={getDefaultValues()}
+              />
+            )
+          }
+        </span>
+      </div>
+      <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
+        {t(`${T_PATH}.download`)}
+      </a>
     </Container>
   );
 };

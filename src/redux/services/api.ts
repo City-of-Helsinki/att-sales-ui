@@ -63,6 +63,11 @@ export const api = createApi({
       query: () => 'projects/',
     }),
 
+    // GET: Fetch selected projects for sales report UI
+    getSelectedProjects: builder.query<Project[], void>({
+      query: () => 'report/projects',
+    }),
+
     // GET: Fetch single project by project uuid
     getProjectById: builder.query<Project, string>({
       query: (id) => `projects/${id}/`,
@@ -424,6 +429,7 @@ export const api = createApi({
 
 export const {
   useGetProjectsQuery,
+  useGetSelectedProjectsQuery,
   useGetProjectByIdQuery,
   useGetApartmentsByProjectQuery,
   useStartLotteryForProjectMutation,

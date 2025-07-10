@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import cx from 'classnames';
-import { Button, Dialog, Notification, Select, TextInput } from 'hds-react';
+import { Button, ButtonVariant, Dialog, Notification, NotificationSize, Select, TextInput, Option } from 'hds-react';
 import _ from 'lodash';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -17,7 +17,7 @@ import {
   useSendApartmentInstallmentsToSAPMutation,
   useSetProjectInstallmentsMutation,
 } from '../../redux/services/api';
-import { Apartment, Project, ProjectInstallment, ProjectInstallmentInputRow, SelectOption } from '../../types';
+import { Apartment, Project, ProjectInstallment, ProjectInstallmentInputRow } from '../../types';
 import parseApiErrors from '../../utils/parseApiErrors';
 import StatusText from '../common/statusText/StatusText';
 import { toast } from '../common/toast/ToastManager';
@@ -276,9 +276,9 @@ const ProjectInstallments = ({
     setInputFields(inputs);
   };
 
-  const handleSelectChange = (index: number, selectedOption: SelectOption) => {
+  const handleSelectChange = (index: number, selectedOption: Option, field: string) => {
     const inputs = [...inputFields];
-    inputs[index][selectedOption.name as keyof ProjectInstallmentInputRow] = selectedOption.selectValue;
+    inputs[index][field as keyof ProjectInstallmentInputRow] = selectedOption.value;
     setInputFields(inputs);
   };
 
@@ -299,37 +299,74 @@ const ProjectInstallments = ({
 
   const InstallmentTypeOptions = () => {
     // Define an empty value as the first dropdown item
-    let options: SelectOption[] = [{ label: '', name: 'type', selectValue: '' }];
+    let options: Option[] = [
+      {
+        label: '',
+        value: '',
+        disabled: false,
+        selected: false,
+        isGroupLabel: false,
+        visible: true,
+      },
+    ];
     // Loop through InstallmentTypes ENUMs and create dropdown options out of them
     Object.values(InstallmentTypes).forEach((type) => {
-      options.push({ label: t(`ENUMS.InstallmentTypes.${type}`), name: 'type', selectValue: type });
+      options.push({
+        label: t(`ENUMS.InstallmentTypes.${type}`),
+        value: type,
+        disabled: false,
+        selected: false,
+        isGroupLabel: false,
+        visible: true,
+      });
     });
     return options;
   };
 
-  const InstallmentUnitOptions: SelectOption[] = [
-    { label: '€', name: 'unit', selectValue: unitOptions.UNIT_AS_EURO },
-    { label: t(`${T_PATH}.fromPrice`), name: 'unit', selectValue: unitOptions.UNIT_AS_PERCENTAGE },
+  const InstallmentUnitOptions: Option[] = [
+    {
+      label: '€',
+      value: unitOptions.UNIT_AS_EURO,
+      disabled: false,
+      selected: false,
+      isGroupLabel: false,
+      visible: true,
+    },
+    {
+      label: t(`${T_PATH}.fromPrice`),
+      value: unitOptions.UNIT_AS_PERCENTAGE,
+      disabled: false,
+      selected: false,
+      isGroupLabel: false,
+      visible: true,
+    },
   ];
 
   const InstallmentPercentageSpecifierOptions = () => {
-    let options: SelectOption[] = [];
+    let options: Option[] = [];
     // Loop through either Hitas or Haso InstallmentPercentageSpecifiers ENUM based on project ownership type,
     // and create dropdown options out of them
     if (ownershipType === 'haso') {
       Object.values(HasoInstallmentPercentageSpecifiers).forEach((type) => {
         options.push({
           label: t(`ENUMS.HasoInstallmentPercentageSpecifiers.${type}`),
-          name: 'percentage_specifier',
-          selectValue: type,
+          value: type,
+          disabled: false,
+          selected: false,
+          isGroupLabel: false,
+          visible: true,
         });
       });
     } else {
       Object.values(HitasInstallmentPercentageSpecifiers).forEach((type) => {
         options.push({
           label: t(`ENUMS.HitasInstallmentPercentageSpecifiers.${type}`),
-          name: 'percentage_specifier',
-          selectValue: type,
+
+          value: type,
+          disabled: false,
+          selected: false,
+          isGroupLabel: false,
+          visible: true,
         });
       });
     }
@@ -337,10 +374,13 @@ const ProjectInstallments = ({
   };
 
   // Define initial empty select option
-  const emptySelectOption: SelectOption = {
+  const emptySelectOption: Option = {
     label: '',
-    name: '',
-    selectValue: '',
+    value: '',
+    disabled: false,
+    selected: false,
+    isGroupLabel: false,
+    visible: true,
   };
 
   const renderTableHeader = () => (
@@ -364,11 +404,12 @@ const ProjectInstallments = ({
             <Select
               id={`type-${index}`}
               placeholder={t(`${T_PATH}.select`)}
-              label=""
               className={styles.select}
               options={InstallmentTypeOptions()}
-              value={InstallmentTypeOptions().find((value) => value.selectValue === input.type) || emptySelectOption}
-              onChange={(value: SelectOption) => handleSelectChange(index, value)}
+              value={
+                InstallmentTypeOptions().find((value) => value.value === input.type)?.value || emptySelectOption.value
+              }
+              onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption, 'type')}
             />
           </td>
           <td>
@@ -388,15 +429,14 @@ const ProjectInstallments = ({
             <Select
               id={`unit-${index}`}
               placeholder={!isFlexibleInstallmentRow(index) ? t(`${T_PATH}.select`) : ''}
-              label=""
               className={styles.select}
               options={InstallmentUnitOptions}
               value={
                 isFlexibleInstallmentRow(index)
-                  ? emptySelectOption
-                  : InstallmentUnitOptions.find((value) => value.selectValue === input.unit) || emptySelectOption
+                  ? emptySelectOption.value
+                  : InstallmentUnitOptions.find((value) => value.value === input.unit)?.value || emptySelectOption.value
               }
-              onChange={(value: SelectOption) => handleSelectChange(index, value)}
+              onChange={(value: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption, 'unit')}
               disabled={isFlexibleInstallmentRow(index)}
             />
           </td>
@@ -404,17 +444,17 @@ const ProjectInstallments = ({
             <Select
               id={`unitSpecifier-${index}`}
               placeholder={isPercentageRow(index) ? t(`${T_PATH}.select`) : ''}
-              label=""
               className={styles.select}
               options={InstallmentPercentageSpecifierOptions()}
               value={
                 isPercentageRow(index)
-                  ? InstallmentPercentageSpecifierOptions().find(
-                      (value) => value.selectValue === input.percentage_specifier
-                    ) || emptySelectOption
-                  : emptySelectOption
+                  ? InstallmentPercentageSpecifierOptions().find((value) => value.value === input.percentage_specifier)
+                      ?.value || emptySelectOption.value
+                  : emptySelectOption.value
               }
-              onChange={(value: SelectOption) => handleSelectChange(index, value)}
+              onChange={(value: Option[], clickedOption: Option) =>
+                handleSelectChange(index, clickedOption, 'percentage_specifier')
+              }
               disabled={!isPercentageRow(index)}
             />
           </td>
@@ -462,7 +502,7 @@ const ProjectInstallments = ({
 
   if (isError) {
     return (
-      <Notification type="error" size="small" style={{ marginTop: 15 }}>
+      <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
         {t(`${T_PATH}.errorLoadingInstallments`)}
       </Notification>
     );
@@ -555,9 +595,9 @@ const ProjectInstallments = ({
             <div className={styles.buttons}>
               <Button
                 type="submit"
-                variant="primary"
-                isLoading={postInstallmentsLoading}
-                loadingText={t(`${T_PATH}.save`)}
+                variant={ButtonVariant.Primary}
+                // isLoading={postInstallmentsLoading}
+                // loadingText={t(`${T_PATH}.save`)}
               >
                 {t(`${T_PATH}.save`)}
               </Button>
@@ -565,10 +605,10 @@ const ProjectInstallments = ({
                 <>
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant={ButtonVariant.Secondary}
                     style={{ marginLeft: '10px' }}
                     onClick={() => setIsConfirmDialogOpen(true)}
-                    isLoading={isSendingToSAP}
+                    // isLoading={isSendingToSAP}
                   >
                     {t(`${T_PATH}.SAP`)}
                   </Button>
@@ -593,7 +633,7 @@ const ProjectInstallments = ({
           <Button onClick={handleConfirmSend} disabled={isSendingToSAP}>
             {t(`${T_PATH}.sendToSAPButtonYes`)}
           </Button>
-          <Button onClick={() => setIsConfirmDialogOpen(false)} variant="secondary">
+          <Button onClick={() => setIsConfirmDialogOpen(false)} variant={ButtonVariant.Secondary}>
             {t(`${T_PATH}.sendToSAPButtonNo`)}
           </Button>
         </Dialog.ActionButtons>

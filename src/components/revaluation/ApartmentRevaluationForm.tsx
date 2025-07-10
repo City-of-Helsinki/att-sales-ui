@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, DateInput, Dialog, TextInput } from 'hds-react';
+import { Button, ButtonVariant, DateInput, Dialog, TextInput } from 'hds-react';
 import moment from 'moment';
 import React from 'react';
 import { get, useForm } from 'react-hook-form';
@@ -48,11 +48,16 @@ function determineAdjustedCost(
   endIndex: string,
   alterationWork: string | undefined = undefined
 ) {
+  // don't adjust the cost downwards if the index has gone down
+  if (stringDecimalToNumber(endIndex) < stringDecimalToNumber(startIndex)) {
+    endIndex = startIndex;
+  }
+
   const adjustedCost =
     (stringDecimalToNumber(originalRightOfOccupancyPayment) / stringDecimalToNumber(startIndex)) *
       stringDecimalToNumber(endIndex) +
     (alterationWork ? stringDecimalToNumber(alterationWork) : 0);
-    return roundHalfUp(adjustedCost,2);
+  return roundHalfUp(adjustedCost, 2);
 }
 
 function getDefaults(revaluation?: ApartmentRevaluation, newDefaults?: NewDefaults) {
@@ -252,10 +257,10 @@ const ApartmentRevaluationForm = ({
         </div>
       </Dialog.Content>
       <Dialog.ActionButtons>
-        <Button variant="primary" type="submit" form={formId} disabled={isLoading || !editing}>
+        <Button variant={ButtonVariant.Primary} type="submit" form={formId} disabled={isLoading || !editing}>
           {t('submit')}
         </Button>
-        <Button variant="secondary" onClick={() => closeDialog()}>
+        <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
           {editing ? t('cancel') : t('close')}
         </Button>
       </Dialog.ActionButtons>

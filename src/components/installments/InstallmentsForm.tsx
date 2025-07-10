@@ -4,6 +4,9 @@ import moment from 'moment';
 import Big from 'big.js';
 import {
   Button,
+  ButtonPresetTheme,
+  ButtonSize,
+  ButtonVariant,
   Card,
   IconAlertCircleFill,
   IconAngleDown,
@@ -13,6 +16,7 @@ import {
   Select,
   TextInput,
   useAccordion,
+  Option,
 } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { unionBy } from 'lodash';
@@ -25,7 +29,6 @@ import {
   ApartmentInstallmentCandidate,
   ApartmentInstallmentInputRow,
   ApartmentReservation,
-  SelectOption,
 } from '../../types';
 import parseApiErrors from '../../utils/parseApiErrors';
 import { toast } from '../common/toast/ToastManager';
@@ -217,10 +220,9 @@ const InstallmentsForm = ({
     setInputFields(inputs);
   };
 
-  const handleSelectChange = (index: number, selectedOption: SelectOption) => {
+  const handleSelectChange = (index: number, selectedOption: Option) => {
     const inputs = [...inputFields];
-
-    if (selectedOption.selectValue === '') {
+    if (selectedOption.value === '') {
       // Clear values from all input fields if the user selects the empty option from the dropdown
       Object.keys(inputs[index]).forEach((input) => {
         if (input !== 'reference_number') {
@@ -229,21 +231,24 @@ const InstallmentsForm = ({
         }
       });
     } else {
-      inputs[index][selectedOption.name as keyof ApartmentInstallmentInputRow] = selectedOption.selectValue;
+      inputs[index].type = selectedOption.value;
     }
-
     setInputFields(inputs);
   };
 
-  const InstallmentTypeOptions = (): SelectOption[] => {
-    let options: SelectOption[] = [];
+  const InstallmentTypeOptions = (): Option[] => {
+    let options: Option[] = [];
 
     // Loop through all available installment types and create dropdown options out of them
     Object.values(combinedPossibleInstallments()).forEach((installment) => {
       options.push({
         label: t(`ENUMS.InstallmentTypes.${installment.type}`),
-        name: 'type',
-        selectValue: installment.type,
+        // name: 'type',
+        value: installment.type,
+        disabled: false,
+        visible: true,
+        selected: false,
+        isGroupLabel: false,
       });
     });
 
@@ -252,17 +257,27 @@ const InstallmentsForm = ({
       const InstallmentOrder = Object.values(InstallmentTypes);
       const optionsCopy = [...options];
       return optionsCopy.sort((a, b) =>
-        a.selectValue
-          ? b.selectValue
-            ? InstallmentOrder.indexOf(a.selectValue as InstallmentTypes) -
-              InstallmentOrder.indexOf(b.selectValue as InstallmentTypes)
+        a.value
+          ? b.value
+            ? InstallmentOrder.indexOf(a.value as InstallmentTypes) -
+              InstallmentOrder.indexOf(b.value as InstallmentTypes)
             : -1
           : 1
       );
     };
 
     // Return options with an empty value as the first dropdown item
-    return [{ label: '', name: 'type', selectValue: '' }, ...sortedOptions()];
+    return [
+      {
+        label: '',
+        value: '',
+        disabled: false,
+        visible: true,
+        selected: false,
+        isGroupLabel: false,
+      },
+      ...sortedOptions(),
+    ];
   };
 
   const sumsMatch = (value: number, target: number) => {
@@ -271,10 +286,13 @@ const InstallmentsForm = ({
   };
 
   // Define initial empty select option
-  const emptySelectOption: SelectOption = {
+  const emptyOption: Option = {
     label: '',
-    name: '',
-    selectValue: '',
+    value: '',
+    disabled: false,
+    visible: true,
+    selected: false,
+    isGroupLabel: false,
   };
 
   const renderSumMatchIcon = () => {
@@ -316,11 +334,14 @@ const InstallmentsForm = ({
             <Select
               id={`type-${index}`}
               placeholder={t(`${T_PATH}.select`)}
-              label=""
               className={styles.select}
               options={InstallmentTypeOptions()}
-              value={InstallmentTypeOptions().find((value) => value.selectValue === input.type) || emptySelectOption}
-              onChange={(value: SelectOption) => handleSelectChange(index, value)}
+              value={
+                InstallmentTypeOptions().find((value) => {
+                  return value.value === input.type;
+                })?.value || emptyOption.value
+              }
+              onChange={(values: Option[], clickedOption: Option) => handleSelectChange(index, clickedOption)}
               disabled={!!input.added_to_be_sent_to_sap_at}
             />
           </td>
@@ -427,10 +448,10 @@ const InstallmentsForm = ({
     <>
       <div className={styles.installmentCandidatesWrapper}>
         <Button
-          size="small"
-          variant="secondary"
-          theme="black"
-          iconLeft={accordionIcon}
+          size={ButtonSize.Small}
+          variant={ButtonVariant.Secondary}
+          theme={ButtonPresetTheme.Black}
+          iconStart={accordionIcon}
           className={styles.toggleButton}
           {...accordionButtonProps}
         >

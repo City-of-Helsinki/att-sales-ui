@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import cx from 'classnames';
-import { Button, Container, Notification, TextArea } from 'hds-react';
+import { Button, Container, Notification, NotificationSize, TextArea } from 'hds-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -72,7 +72,7 @@ const ProjectOfferMessageForm = ({ uuid }: IProps): JSX.Element => {
 
   if (isError) {
     return (
-      <Notification type="error" size="small" style={{ marginTop: 15 }}>
+      <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
         {t(`${T_PATH}.errorLoadingExtraData`)}
       </Notification>
     );
@@ -108,11 +108,11 @@ const ProjectOfferMessageForm = ({ uuid }: IProps): JSX.Element => {
         />
         <Button
           type="submit"
-          isLoading={patchExtraDataLoading}
+          // isLoading={patchExtraDataLoading}
           disabled={isFetching}
-          loadingText={t(`${T_PATH}.saving`)}
+          // loadingText={t(`${T_PATH}.saving`)}
         >
-          {t(`${T_PATH}.save`)}
+          {!patchExtraDataLoading ? t(`${T_PATH}.save`) : t(`${T_PATH}.saving`)}
         </Button>
       </div>
     </form>
