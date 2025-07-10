@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { Button, Dialog, IconPlus } from 'hds-react';
+import { Button, ButtonVariant, Dialog, IconPlus } from 'hds-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAddCustomerCommentMutation, useGetCustomerCommentsQuery } from '../../redux/services/api';
@@ -43,7 +43,7 @@ const CustomerComments: React.FC<{ customerId: number }> = ({ customerId }) => {
   return (
     <div className={styles.commentsRoot}>
       <div className={styles.commentsHeader}>
-        <Button iconLeft={<IconPlus />} onClick={handleOpenDialog} variant="secondary" size="small">
+        <Button iconStart={<IconPlus />} onClick={handleOpenDialog} variant={ButtonVariant.Primary}>
           {t(`${T_PATH}.addComment`)}
         </Button>
       </div>
@@ -99,7 +99,7 @@ const CustomerComments: React.FC<{ customerId: number }> = ({ customerId }) => {
           <Button onClick={() => handleAddComment(newComment)} disabled={isSubmitting || !newComment.trim()}>
             {t(`${T_PATH}.addCommentSubmit`)}
           </Button>
-          <Button variant="secondary" onClick={handleCloseDialog} disabled={isSubmitting}>
+          <Button variant={ButtonVariant.Secondary} onClick={handleCloseDialog} disabled={isSubmitting}>
             {t(`${T_PATH}.addCommentCancel`)}
           </Button>
         </Dialog.ActionButtons>
