@@ -1,5 +1,4 @@
 import cx from 'classnames';
-import { IconPenLine, Notification, Tab, TabList, TabPanel, Tabs } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
