@@ -43,7 +43,7 @@ const CustomerComments: React.FC<{ customerId: number }> = ({ customerId }) => {
   return (
     <div className={styles.commentsRoot}>
       <div className={styles.commentsHeader}>
-        <Button iconLeft={<IconPlus />} onClick={handleOpenDialog} variant={ButtonVariant.Primary}>
+        <Button iconStart={<IconPlus />} onClick={handleOpenDialog} variant={ButtonVariant.Primary}>
           {t(`${T_PATH}.addComment`)}
         </Button>
       </div>
