@@ -462,3 +462,15 @@ export type ApartmentRevaluationWithId = ApartmentRevaluation & {
 export type ApartmentHASOPayment = {
   right_of_occupancy_payment: string;
 };
+
+export type CustomerComment = {
+  id: number;
+  author: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  content: string;
+  created_at: string;
+};

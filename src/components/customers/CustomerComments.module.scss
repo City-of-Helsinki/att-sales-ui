@@ -1,0 +1,26 @@
+.commentsRoot {
+  margin-top: var(--spacing-m);
+}
+.commentsHeader {
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  justify-content: flex-end;
+}
+.commentsTableWrap {
+  margin-top: var(--spacing-s);
+}
+.commentsTable {
+  width: 100%;
+}
+.noComments {
+  padding: var(--spacing-m);
+  color: var(--color-black-60);
+}
+.commentTextarea {
+  width: 100%;
+  min-height: 80px;
+  font-size: 1rem;
+}
+.commentsTable td {
+  padding: 0.75rem 1.4rem;
+}
