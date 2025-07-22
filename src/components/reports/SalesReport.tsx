@@ -43,7 +43,7 @@ const SalesReport = (): JSX.Element => {
       end_date: formattedDate(endDate),
       project_uuids: selectedProjects.map((x) => x).join(','),
     };
-    console.log('selectedProjects', selectedProjects);
+
     return new URLSearchParams(params);
   };
 
@@ -55,12 +55,10 @@ const SalesReport = (): JSX.Element => {
 
   useEffect(() => {
     if (!userSelectedProjects) return;
-    console.log(
-      'useEffect.setSelectedProjects()',
-      userSelectedProjects.map((x) => x.uuid)
-    );
+    
     setSelectedProjects(userSelectedProjects.map((x) => x.uuid));
   }, [userSelectedProjects]);
+
 
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
   const postSalesReportDownloading = () => setIsLoadingSalesReport(false);
@@ -75,11 +73,9 @@ const SalesReport = (): JSX.Element => {
     const selectedProjectUuids = userSelectedProjects?.map((project) => project.uuid);
     const defaultOptions = selectOptions().filter((option: Option) => selectedProjectUuids?.includes(option.value));
     defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
-    console.log(
-      'getDefaultValues()',
-      defaultOptions.map((x) => x.value)
-    );
+
     return defaultOptions.map((x) => x.value);
+
   };
 
   const selectOptions = (): Option[] => {
