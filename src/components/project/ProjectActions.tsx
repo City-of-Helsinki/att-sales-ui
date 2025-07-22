@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, IconDownload } from 'hds-react';
+import { Button, ButtonPresetTheme, ButtonVariant, IconDownload } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { Project } from '../../types';
@@ -74,9 +74,9 @@ const DownloadApplicantsListButton = ({
   return (
     <>
       <Button
-        variant="secondary"
-        iconRight={<IconDownload />}
-        theme="black"
+        variant={ButtonVariant.Secondary}
+        iconEnd={<IconDownload />}
+        theme={ButtonPresetTheme.Black}
         onClick={download}
         disabled={isLoadingApplicantsList}
       >
@@ -115,7 +115,7 @@ const OpenApplicantsMailingListDialogButton = ({
   };
   const export_type = 'reserved';
   const applicantExportApiUrl = `/projects/${projectUuid}/export_applicants_mailing_list/${export_type}`;
-  // console.log('downloading from', applicantExportApiUrl);
+
   const {
     download,
     ref: fileRef,
@@ -132,9 +132,9 @@ const OpenApplicantsMailingListDialogButton = ({
   return (
     <>
       <Button
-        variant="secondary"
-        iconRight={<IconDownload />}
-        theme="black"
+        variant={ButtonVariant.Secondary}
+        iconEnd={<IconDownload />}
+        theme={ButtonPresetTheme.Black}
         onClick={handleOpenMailingListDialog}
         disabled={isLoadingApplicantsList}
       >
@@ -189,9 +189,9 @@ const DownloadLotteryResultsButton = ({
   return (
     <>
       <Button
-        variant="primary"
-        iconRight={<IconDownload />}
-        theme="black"
+        variant={ButtonVariant.Primary}
+        iconEnd={<IconDownload />}
+        theme={ButtonPresetTheme.Black}
         onClick={download}
         disabled={isLoadingLotteryResults}
       >

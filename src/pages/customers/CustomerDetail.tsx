@@ -1,15 +1,14 @@
-import React from 'react';
 import cx from 'classnames';
-import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel } from 'hds-react';
-
+import { useParams } from 'react-router-dom';
+import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
 import Breadcrumbs, { BreadcrumbItem } from '../../components/common/breadcrumbs/Breadcrumbs';
 import Container from '../../components/common/container/Container';
+import Spinner from '../../components/common/spinner/Spinner';
+import CustomerComments from '../../components/customers/CustomerComments';
 import CustomerInfo from '../../components/customers/CustomerInfo';
 import Installments from '../../components/installments/Installments';
 import CustomerReservations from '../../components/reservations/CustomerReservations';
-import Spinner from '../../components/common/spinner/Spinner';
 import { ROUTES } from '../../enums';
 import { useGetCustomerByIdQuery, useGetCustomerLatestApplicantInfoQuery } from '../../redux/services/api';
 import { Customer } from '../../types';
@@ -70,7 +69,7 @@ const CustomerDetail = (): JSX.Element | null => {
     return (
       <Container>
         {renderBreadcrumb()}
-        <Notification type="error" size="small" style={{ marginTop: 15 }}>
+        <Notification type="error" size={NotificationSize.Small} style={{ marginTop: 15 }}>
           {t(`${T_PATH}.errorLoadingCustomer`)}
         </Notification>
       </Container>
@@ -110,12 +109,16 @@ const CustomerDetail = (): JSX.Element | null => {
             <TabList className={styles.tabs}>
               <Tab>{t(`${T_PATH}.tabReservations`)}</Tab>
               <Tab>{t(`${T_PATH}.tabInstallments`)}</Tab>
+              <Tab>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
             </TabList>
             <TabPanel className={styles.tabPanel}>
               <CustomerReservations customer={customer} />
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
               <Installments customer={customer} />
+            </TabPanel>
+            <TabPanel className={styles.tabPanel}>
+              <CustomerComments customerId={customer.id} />
             </TabPanel>
           </Tabs>
         </div>

@@ -1,31 +1,32 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import getApiBaseUrl from '../../utils/getApiBaseUrl';
+import { InstallmentTypes } from '../../enums';
 import {
   AddEditCostIndex,
   AddEditCustomerFormFields,
   Apartment,
+  ApartmentHASOPayment,
   ApartmentInstallment,
   ApartmentReservationWithCustomer,
   ApartmentReservationWithInstallments,
+  ApartmentRevaluation,
+  Applicant,
   CostIndex,
   Customer,
+  CustomerComment,
   CustomerListItem,
+  Offer,
+  OfferFormData,
+  OfferMessage,
   Project,
   ProjectExtraData,
-  ProjectOfferMessageFormData,
   ProjectInstallment,
+  ProjectOfferMessageFormData,
   ReservationAddFormData,
   ReservationCancelFormData,
   ReservationEditFormData,
-  OfferFormData,
-  Offer,
-  OfferMessage,
-  ApartmentHASOPayment,
-  ApartmentRevaluation,
-  Applicant,
 } from '../../types';
-import { InstallmentTypes } from '../../enums';
+import getApiBaseUrl from '../../utils/getApiBaseUrl';
 import { waitForApiToken } from './common';
 
 const InstallmentTypeKeys = Object.keys(InstallmentTypes);
@@ -49,6 +50,7 @@ export const api = createApi({
     'Applicant',
     'CostIndex',
     'Customer',
+    'CustomerComments',
     'Offer',
     'OfferMessage',
     'Project',
@@ -184,6 +186,22 @@ export const api = createApi({
         };
       },
       invalidatesTags: (result, error, arg) => [{ type: 'Customer', id: arg.id }],
+    }),
+
+    // GET: Fetch customer comments
+    getCustomerComments: builder.query<CustomerComment[], number>({
+      query: (customerId) => `customers/${customerId}/comments/`,
+      providesTags: (result, error, customerId) => [{ type: 'CustomerComments', id: customerId }],
+    }),
+
+    // POST: Add customer comment
+    addCustomerComment: builder.mutation<CustomerComment, { customerId: number; content: string }>({
+      query: ({ customerId, content }) => ({
+        url: `customers/${customerId}/comments/`,
+        method: 'POST',
+        body: { content },
+      }),
+      invalidatesTags: (result, error, { customerId }) => [{ type: 'CustomerComments', id: customerId }],
     }),
 
     // GET: Fetch saved installments for a project
@@ -421,6 +439,8 @@ export const {
   usePartialUpdateProjectExtraDataMutation,
   useGetCustomersQuery,
   useGetCustomerByIdQuery,
+  useGetCustomerCommentsQuery,
+  useAddCustomerCommentMutation,
   useGetCustomerLatestApplicantInfoQuery,
   useCreateCustomerMutation,
   useUpdateCustomerByIdMutation,

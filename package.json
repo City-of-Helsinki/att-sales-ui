@@ -19,7 +19,7 @@
     "axios": "^1.7.7",
     "big.js": "^6.1.1",
     "classnames": "^2.3.1",
-    "hds-react": "^3.10.1",
+    "hds-react": "^4.4.0",
     "history": "^5.2.0",
     "i18next": "^21.3.2",
     "lodash": "^4.17.21",
