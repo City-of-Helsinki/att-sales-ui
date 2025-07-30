@@ -207,3 +207,15 @@
   font-style: italic;
   margin: var(--spacing-m) 0 0 var(--spacing-m);
 }
+
+.formFields {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  
+  > span {
+    margin-right: var(--spacing-l);
+    width: 30%;
+  }
+
+}
