@@ -71,8 +71,6 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
   const [contractPlace, setContractPlace] = useState('Helsinki');
   const [contractDate, setContractDate] = useState<string>(new Date().toLocaleDateString('fi-Fi'));
 
-  // TODO: pick current user as default
-  const [contractSalesPersons, setContractSalesPersons] = useState<UserReturnType[]>([user]);
   const [contractSalesPersonUuid, setContractSalesPersonUuid] = useState<string>(user?.profile.sub || '');
   const [contractDownloadParams, setContractDownloadParams] = useState<URLSearchParams>();
 
@@ -436,7 +434,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
                 <Button
                   variant={ButtonVariant.Secondary}
                   size={ButtonSize.Small}
-                  onClick={() => setIsContractDialogOpen(true)}
+                  onClick={() => (isOwnershipTypeHaso ? download() : setIsContractDialogOpen(true))}
                   disabled={isLoadingContract}
                 >
                   {isOwnershipTypeHaso ? t(`${T_PATH}.createContract`) : t(`${T_PATH}.createDeedOfSale`)}
