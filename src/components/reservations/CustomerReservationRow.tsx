@@ -1,6 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import cx from 'classnames';
-import { Button, ButtonSize, ButtonVariant, Dialog, IconInfoCircle, Tabs } from 'hds-react';
+import {
+  Button,
+  ButtonSize,
+  ButtonVariant,
+  DateInput,
+  Dialog,
+  IconInfoCircle,
+  Option,
+  Select,
+  SelectData,
+  Tabs,
+  TextInput,
+  useOidcClient,
+} from 'hds-react';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -22,6 +35,10 @@ import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 
 import styles from './CustomerReservationRow.module.scss';
 import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
+import { UserReturnType } from 'hds-react/index-e0fd0f13';
+import { useGetSalesPersonsQuery, useGetSelectedProjectsQuery } from '../../redux/services/api';
+import { waitForApiToken } from '../../redux/services/common';
+import { click } from '@testing-library/user-event/dist/click';
 
 const T_PATH = 'components.reservations.CustomerReservationRow';
 
@@ -35,6 +52,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
   const dispatch = useDispatch();
   const [isLoadingContract, setIsLoadingContract] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
   const openDialogButtonRef = useRef(null);
   const apartment = getReservationApartmentData(reservation);
   const project = getReservationProjectData(reservation);
@@ -45,7 +63,19 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
   const canCreateOffer = isWinningReservation;
   const canCreateContract = isWinningReservation && !isInReview;
 
+  const { getUser } = useOidcClient();
+  const user = getUser();
+
+  const { data: salespersons } = useGetSalesPersonsQuery();
+
+  const [contractPlace, setContractPlace] = useState('Helsinki');
+  const [contractDate, setContractDate] = useState<string>(new Date().toLocaleDateString('fi-Fi'));
+
+  const [contractSalesPersonUuid, setContractSalesPersonUuid] = useState<string>(user?.profile.sub || '');
+  const [contractDownloadParams, setContractDownloadParams] = useState<URLSearchParams>();
+
   const closeDialog = () => setIsDialogOpen(false);
+  const closeContractDialog = () => setIsContractDialogOpen(false);
 
   const preContractDownloading = () => setIsLoadingContract(true);
   const postContractDownloading = () => setIsLoadingContract(false);
@@ -53,6 +83,46 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
   const onContractLoadError = () => {
     setIsLoadingContract(false);
     toast.show({ type: 'error' });
+  };
+
+  useEffect(() => {
+    const params = {
+      sales_price_paid_place: contractPlace,
+      sales_price_paid_time: contractDate,
+      salesperson_uuid: contractSalesPersonUuid?.toString() || '',
+    };
+    setContractDownloadParams(new URLSearchParams(params));
+  }, [contractSalesPersonUuid, contractDate, contractPlace]);
+
+  /**
+   * HDS <Select/> component uses the display label as the unique key,
+   * which causes problems if we have two or more salespeople with the same first+last
+   * name. Mostly a problem with the test data, but can't hurt to make sure.
+   * @returns Option[]
+   */
+  const getContractSalespersonOptions = (): Option[] => {
+    let options: Option[] = [];
+    salespersons?.forEach((sp) => {
+      let label = `${sp?.first_name} ${sp?.last_name}`;
+      const index = options.findIndex((x) => x.label === label);
+
+      // ComboBox doesn't like duplicate labels
+      // these should only appear in the case there are duplicates
+      if (index !== -1) {
+        label = `${label} #${sp.uuid}`;
+      }
+
+      options.push({
+        label: `${sp?.first_name} ${sp?.last_name}`,
+        selected: false,
+        value: sp.uuid,
+        disabled: false,
+        isGroupLabel: false,
+        visible: true,
+      });
+    });
+
+    return options;
   };
 
   const getContractFileName = (): string => {
@@ -81,7 +151,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
     return `${prefix}${slugify(projectName + ' ' + apartmentNumber)}-${new Date().toJSON().slice(0, 10)}.pdf`;
   };
 
-  const contractApiUrl = `/apartment_reservations/${reservation.id}/contract/`;
+  const contractApiUrl = `/apartment_reservations/${reservation.id}/contract/?${contractDownloadParams}`;
 
   const {
     download,
@@ -364,7 +434,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
                 <Button
                   variant={ButtonVariant.Secondary}
                   size={ButtonSize.Small}
-                  onClick={download}
+                  onClick={() => (isOwnershipTypeHaso ? download() : setIsContractDialogOpen(true))}
                   disabled={isLoadingContract}
                 >
                   {isOwnershipTypeHaso ? t(`${T_PATH}.createContract`) : t(`${T_PATH}.createDeedOfSale`)}
@@ -398,6 +468,60 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
           </div>
         </div>
       )}
+      <Dialog
+        id={`reservation-dialog-${reservation.id}`}
+        aria-labelledby="reservation-dialog-header"
+        isOpen={isContractDialogOpen}
+        close={closeContractDialog}
+        closeButtonLabelText={t(`${T_PATH}.closeDialog`)}
+        className={styles.reservationDialog}
+        focusAfterCloseRef={openDialogButtonRef}
+      >
+        <Dialog.Header id="reservation-contract-dialog-header" title={t(`${T_PATH}.createContractHeader`)} />
+        <Dialog.Content>
+          <div className={styles.formFields}>
+            <DateInput
+              id="contract-sales-price-paid-time"
+              initialMonth={new Date()}
+              label={t(`${T_PATH}.createContractDateLabel`)}
+              value={contractDate}
+              onChange={(value) => setContractDate(value)}
+              required
+            />
+            <TextInput
+              id="contract-sales-price-paid-location"
+              label={t(`${T_PATH}.createContractPlaceLabel`)}
+              value={contractPlace}
+              onChange={(evt) => setContractPlace(evt.target.value)}
+              required
+            />
+            <Select
+              options={getContractSalespersonOptions()}
+              texts={{
+                label: t(`${T_PATH}.createContractSalespersonLabel`),
+              }}
+              onChange={(selectedOptions: Option[], clickedOption: Option, data: SelectData) => {
+                setContractSalesPersonUuid(clickedOption.value);
+              }}
+              value={contractSalesPersonUuid}
+            />
+          </div>
+        </Dialog.Content>
+        <Dialog.ActionButtons>
+          <>
+            <Button variant={ButtonVariant.Primary} onClick={() => download()}>
+              {t(`${T_PATH}.createContract`)}
+            </Button>
+            <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
+              {t(`${T_PATH}.download`)}
+            </a>
+          </>
+          <Button variant={ButtonVariant.Secondary} onClick={() => closeContractDialog()}>
+            {t(`${T_PATH}.close`)}
+          </Button>
+        </Dialog.ActionButtons>
+      </Dialog>
+
       <Dialog
         id={`reservation-dialog-${reservation.id}`}
         aria-labelledby="reservation-dialog-header"
