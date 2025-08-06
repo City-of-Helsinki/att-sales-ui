@@ -77,7 +77,8 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
   const isCanceled = (reservation: ApartmentReservationWithCustomer): boolean => {
     return reservation.state === ApartmentReservationStates.CANCELED;
   };
-  const { data: reservationsQueue } = useGetApartmentReservationsQuery(apartment.apartment_uuid);
+
+  const reservationsQueue = apartment.reservations;
   const [setApartmentReservationToOffered] = useSetApartmentReservationToOfferedMutation();
   const [sortedReservations, setSortedReservations] = useState<ApartmentReservationWithCustomer[]>([]);
 

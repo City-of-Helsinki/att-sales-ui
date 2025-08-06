@@ -50,6 +50,7 @@ export type Apartment = {
   price_m2: number;
   project_id: number;
   reservation_count: number;
+  reservations: ApartmentReservationWithCustomer[];
   right_of_occupancy_payment: number;
   room_count: number;
   sales_price: number;
