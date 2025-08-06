@@ -1,14 +1,14 @@
-import React from 'react';
 import cx from 'classnames';
 import { IconSortAscending, IconSortDescending } from 'hds-react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import ApartmentRow from './ApartmentRow';
+import { Apartment, Project } from '../../types';
 import useSortApartments from '../../utils/useSortApartments';
 import StatusText from '../common/statusText/StatusText';
-import { Apartment, Project } from '../../types';
 
 import styles from './ApartmentTable.module.scss';
+import DelayedApartmentRow from './DelayedApartmentRow';
 
 const T_PATH = 'components.apartment.ApartmentTable';
 
@@ -34,6 +34,11 @@ const ApartmentTable = ({
     apartments ? apartments : [],
     `project-${project.uuid}`
   );
+  const [reservationsMap, setReservationsMap] = useState<Record<string, any[]>>({});
+
+  const handleReservationsLoaded = useCallback((apartmentUuid: string, reservations: any[]) => {
+    setReservationsMap((prev) => ({ ...prev, [apartmentUuid]: reservations }));
+  }, []);
 
   const isCurrentlyActiveSort = (key: string) => {
     return sortConfig ? sortConfig.key === key : false;
@@ -110,8 +115,9 @@ const ApartmentTable = ({
               </div>
             </li>
             {sortedApartments.map((apartment, index) => (
-              <ApartmentRow
-                key={index}
+              <DelayedApartmentRow
+                key={apartment.apartment_uuid}
+                delayMs={index * 50}
                 apartment={apartment}
                 ownershipType={ownershipType}
                 isLotteryCompleted={isLotteryCompleted}
