@@ -117,7 +117,7 @@ const ApartmentTable = ({
             {sortedApartments.map((apartment, index) => (
               <DelayedApartmentRow
                 key={apartment.apartment_uuid}
-                delayMs={index * 50}
+                delayMs={index * 100}
                 apartment={apartment}
                 ownershipType={ownershipType}
                 isLotteryCompleted={isLotteryCompleted}
