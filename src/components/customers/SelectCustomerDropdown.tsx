@@ -176,7 +176,6 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
           open={true}
           visibleOptions={8}
           clearable
-          virtualize
         />
       )}
     </div>
