@@ -1,7 +1,6 @@
 import Big from 'big.js';
 import cx from 'classnames';
-import { Button, ButtonVariant, Dialog, Notification, NotificationSize, Select, TextInput, Option } from 'hds-react';
-import _ from 'lodash';
+import { Button, ButtonVariant, Dialog, Notification, NotificationSize, Option, Select, TextInput } from 'hds-react';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +11,7 @@ import {
   InstallmentTypes,
 } from '../../enums';
 import {
-  useGetProjectByIdQuery,
+  useGetApartmentReservationByIdQuery,
   useGetProjectInstallmentsQuery,
   useSendApartmentInstallmentsToSAPMutation,
   useSetProjectInstallmentsMutation,
@@ -21,10 +20,7 @@ import { Apartment, Project, ProjectInstallment, ProjectInstallmentInputRow } fr
 import parseApiErrors from '../../utils/parseApiErrors';
 import StatusText from '../common/statusText/StatusText';
 import { toast } from '../common/toast/ToastManager';
-
-import InstallmentsLoader from './InstallmentsLoader';
 import styles from './ProjectInstallments.module.scss';
-import ReservationsLoader from './ReservationsLoader';
 
 const T_PATH = 'components.installments.ProjectInstallments';
 
@@ -61,10 +57,23 @@ const ProjectInstallments = ({
   const [sendApartmentInstallmentsToSAP, { isLoading: isSendingToSAP }] = useSendApartmentInstallmentsToSAPMutation();
   const [formData, setFormData] = useState<ProjectInstallment[]>([]); // Form data to be sent to the API
   const [inputFields, setInputFields] = useState<ProjectInstallmentInputRow[]>([]); // Form input field values
-  const [installmentsData, setInstallmentsData] = useState<Record<number, any[]>>({});
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [reservationIds, setReservationIds] = useState<string[]>([]);
+  const soldReservations = apartments
+    .filter((a) => a.state === 'sold' && !!a.winning_reservation)
+    .map((a) => a.winning_reservation!.id);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const installmentsResults = soldReservations.map((id) => useGetApartmentReservationByIdQuery(id));
+  const installmentsByReservation = Object.fromEntries(
+    soldReservations.map((id, idx) => [id, installmentsResults[idx].data || []])
+  );
+
+  const arePayments6And7Saved = useMemo(() => {
+    if (!installments) return false;
+    return ['PAYMENT_6', 'PAYMENT_7'].every((type) =>
+      installments.some((inst) => inst.type === type && !!inst.due_date)
+    );
+  }, [installments]);
 
   // Render saved installment data into inputFields
   useEffect(() => {
@@ -124,7 +133,6 @@ const ProjectInstallments = ({
       setInputFields(sortedInputRows);
     }
   }, [installments]);
-
   // // Set data to be sent to the API
   useEffect(() => {
     // Create a copy of inputFields
@@ -177,77 +185,12 @@ const ProjectInstallments = ({
     setFormData(apiData);
   }, [inputFields]);
 
-  const [allReservations, setAllReservations] = useState<Record<string, any[]>>({});
-
-  const handleReservationsLoaded = (apartmentUuid: string, reservations: any[]) => {
-    setAllReservations((prev) => ({
-      ...prev,
-      [apartmentUuid]: reservations,
-    }));
-  };
-
-  const { data: project } = useGetProjectByIdQuery(uuid);
-
-  const handleInstallmentsLoaded = (reservationId: number, installments: any[]) => {
-    setInstallmentsData((prev) => ({ ...prev, [reservationId]: installments }));
-  };
-
-  const [filteredReservations, setFilteredReservations] = useState<string[]>([]);
-
-  const isLotteryCompleted = useMemo(() => Boolean(project?.lottery_completed_at), [project]);
-
-  const isAllReservationsLoaded = useMemo(() => {
-    return isLotteryCompleted && Object.keys(allReservations).length > 0;
-  }, [allReservations, isLotteryCompleted]);
-
-  // Update `reservationIds`, when all `reservations` are loaded
-  useEffect(() => {
-    if (!isAllReservationsLoaded) {
-      return;
-    }
-
-    const newReservationIds = Object.values(allReservations)
-      .flat()
-      .filter((reservation) => reservation.id) // use only reservations with `id`
-      .map((reservation) => String(reservation.id));
-
-    if (!_.isEqual(newReservationIds, reservationIds)) {
-      setReservationIds(newReservationIds);
-    }
-  }, [reservationIds, isAllReservationsLoaded, allReservations]); // ✅ `reservationIds` update first
-
-  // filtered after load
-  useEffect(() => {
-    if (!isAllReservationsLoaded || !reservationIds.length || !isLotteryCompleted) {
-      return;
-    }
-
-    const reservationMap = new Map<number, any>();
-    for (const list of Object.values(allReservations)) {
-      for (const res of list) {
-        reservationMap.set(res.id, res);
-      }
-    }
-
-    const newFilteredReservations = reservationIds.filter((reservationId) => {
-      const numericId = Number(reservationId);
-      const reservation = reservationMap.get(numericId);
-      const hasInstallments = installmentsData[numericId]?.length > 0;
-      const isSold = reservation?.state === 'sold';
-      return hasInstallments && isSold;
-    });
-
-    if (!_.isEqual(newFilteredReservations, filteredReservations)) {
-      setFilteredReservations(newFilteredReservations);
-    }
-  }, [
-    filteredReservations,
-    reservationIds,
-    installmentsData,
-    isAllReservationsLoaded,
-    isLotteryCompleted,
-    allReservations,
-  ]);
+  const filteredReservations = soldReservations
+    .filter((id) => {
+      const reservation = installmentsByReservation[id] as { installments?: any[] };
+      return Array.isArray(reservation.installments) && reservation.installments.length > 0;
+    })
+    .map(String);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // prevent page reloads
@@ -508,23 +451,6 @@ const ProjectInstallments = ({
     );
   }
 
-  const isEra6Or7Filled = () => {
-    if (
-      !inputFields.some(
-        (row, index) =>
-          (index === 5 || index === 6) &&
-          row.due_date.trim() !== '' &&
-          row.account_number.trim() !== '' &&
-          row.sum.trim() !== '' &&
-          row.type.trim() !== ''
-      )
-    ) {
-      return false;
-    }
-
-    return reservationIds.length > 0;
-  };
-
   const handleConfirmSend = async () => {
     setIsConfirmDialogOpen(false);
     const numericIds = filteredReservations.map(Number);
@@ -541,29 +467,10 @@ const ProjectInstallments = ({
     }
   };
 
-  const isSAPButtonEnabled = false;
+  const isSAPButtonEnabled = true;
 
   return (
     <>
-      {apartments.length > 0 &&
-        apartments.map((apartment, index) => (
-          <ReservationsLoader
-            key={apartment.apartment_uuid}
-            apartmentUuid={apartment.apartment_uuid}
-            allReservations={allReservations}
-            onReservationsLoaded={handleReservationsLoaded}
-            delayMs={index * 100}
-          />
-        ))}
-      {reservationIds.map((reservationId, index) => (
-        <InstallmentsLoader
-          key={reservationId}
-          reservationId={Number(reservationId)}
-          onInstallmentsLoaded={handleInstallmentsLoaded}
-          allInstallments={installmentsData}
-          delayMs={index * 100}
-        />
-      ))}
       <table className={styles.bankAccounts}>
         <tbody>
           <tr>
@@ -603,7 +510,7 @@ const ProjectInstallments = ({
               >
                 {t(`${T_PATH}.save`)}
               </Button>
-              {isSAPButtonEnabled && isEra6Or7Filled() && filteredReservations.length > 0 && (
+              {isSAPButtonEnabled && arePayments6And7Saved && filteredReservations.length > 0 && (
                 <>
                   <Button
                     type="button"
