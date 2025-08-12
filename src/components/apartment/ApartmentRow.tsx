@@ -78,7 +78,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
     return reservation.state === ApartmentReservationStates.CANCELED;
   };
 
-  const reservationsQueue = apartment.reservations;
+  const reservationsQueue = resultRowOpen ? reservations : [];
   const [setApartmentReservationToOffered] = useSetApartmentReservationToOfferedMutation();
   const [sortedReservations, setSortedReservations] = useState<ApartmentReservationWithCustomer[]>([]);
 
