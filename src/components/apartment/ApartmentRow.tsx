@@ -14,7 +14,7 @@ import {
   StatusLabel,
   NotificationSize,
 } from 'hds-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -78,7 +78,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
     return reservation.state === ApartmentReservationStates.CANCELED;
   };
 
-  const reservationsQueue = apartment.reservations;
+  const reservationsQueue = useMemo(() => (resultRowOpen ? reservations : []), [reservations, resultRowOpen]);
   const [setApartmentReservationToOffered] = useSetApartmentReservationToOfferedMutation();
   const [sortedReservations, setSortedReservations] = useState<ApartmentReservationWithCustomer[]>([]);
 
