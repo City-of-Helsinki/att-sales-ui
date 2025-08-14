@@ -475,3 +475,9 @@ export type CustomerComment = {
   content: string;
   created_at: string;
 };
+
+export type SalesPerson = {
+  uuid: string;
+  first_name: string;
+  last_name: string;
+};

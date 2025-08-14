@@ -25,6 +25,7 @@ import {
   ReservationAddFormData,
   ReservationCancelFormData,
   ReservationEditFormData,
+  SalesPerson,
 } from '../../types';
 import getApiBaseUrl from '../../utils/getApiBaseUrl';
 import { waitForApiToken } from './common';
@@ -61,6 +62,16 @@ export const api = createApi({
     // GET: Fetch all projects
     getProjects: builder.query<Project[], void>({
       query: () => 'projects/',
+    }),
+
+    // GET: Fetch salespersons for Contract creation view
+    getProfiles: builder.query<SalesPerson[], void>({
+      query: () => 'salespersons',
+    }),
+
+    // GET: Fetch salespersons for Contract creation view
+    getSalesPersons: builder.query<SalesPerson[], void>({
+      query: () => 'salespersons',
     }),
 
     // GET: Fetch selected projects for sales report UI
@@ -429,6 +440,7 @@ export const api = createApi({
 
 export const {
   useGetProjectsQuery,
+  useGetSalesPersonsQuery,
   useGetSelectedProjectsQuery,
   useGetProjectByIdQuery,
   useGetApartmentsByProjectQuery,
