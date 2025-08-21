@@ -63,6 +63,8 @@ const CostIndexTable = (): JSX.Element => {
     resolver: yupResolver(schema),
   });
 
+  const fiDateToISO = (date: string) => moment(date, 'D.M.YYYY', true).format('YYYY-MM-DD');
+
   const errors = formState.errors;
   const validFromDate = watch('valid_from');
   const formId = `cost-index-add-form`;
@@ -81,7 +83,7 @@ const CostIndexTable = (): JSX.Element => {
       </Container>
     );
   }
-  const fiDateToISO = (date: string) => moment(date, 'D.M.YYYY', true).format('YYYY-MM-DD');
+
   const ISODateToFi = (date: string) => moment(date, 'YYYY-MM-DD').format('D.M.YYYY');
   const getValidTo = (index: number) => {
     if (index === 0) {
@@ -98,12 +100,18 @@ const CostIndexTable = (): JSX.Element => {
   };
 
   const handleFormSubmit = async (data: AddEditCostIndex) => {
-    data.valid_from = fiDateToISO(data.valid_from);
     data.value = data.value.replace(',', '.');
 
+    // only convert valid_from -date before sending since CostIndexSingleTable
+    // needs to always receive a CostIndex with valid_from formatted in d.m.YYYY
     if (!addIsLoading) {
       try {
-        await addCostIndex({ formData: data })
+        await addCostIndex({
+          formData: {
+            valid_from: fiDateToISO(data.valid_from),
+            value: data.value,
+          },
+        })
           .unwrap()
           .then(() => {
             toast.show({ type: 'success', content: t('createdSuccessfully') });
@@ -214,7 +222,7 @@ const CostIndexTable = (): JSX.Element => {
             <p id={descriptionId} className="text-body">
               {t('confirmBody')}
             </p>
-            <CostIndexSingleTable costIndex={{ valid_from: validFrom, value: value }} />
+            <CostIndexSingleTable costIndex={{ valid_from: fiDateToISO(validFrom), value: value }} />
           </Dialog.Content>
           <Dialog.ActionButtons>
             {/* Calling close directly prevents the form from being submitted */}
