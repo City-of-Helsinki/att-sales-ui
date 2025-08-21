@@ -8,6 +8,8 @@ import type { RenderOptions } from '@testing-library/react';
 import { setupStore } from '../redux/store';
 import type { AppStore, RootState } from '../redux/store';
 import { setApiTokensToStorage } from 'hds-react';
+import HDSLoginProvider from '../components/auth/LoginProvider';
+
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store. For
 // future dependencies, such as wanting to test with react-router, you can extend
@@ -31,7 +33,9 @@ function renderWithProviders(
     });
     return (
       <BrowserRouter>
-        <Provider store={store}>{children}</Provider>
+        <HDSLoginProvider>
+          <Provider store={store}>{children}</Provider>
+        </HDSLoginProvider>
       </BrowserRouter>
     );
   }
