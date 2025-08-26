@@ -36,6 +36,8 @@ const StatusLevel = {
 type StatusLevelValue = typeof StatusLevel[keyof typeof StatusLevel];
 
 const statusLevel = (state: ApartmentInstallmentPaymentState): StatusLevelValue => {
+  if (!state) return StatusLevel.UNIMPORTANT;
+
   if (state.status === ApartmentInstallmentPaymentStatus.PAID) {
     if (state.overdue) {
       return StatusLevel.IMPORTANT;
@@ -87,7 +89,7 @@ const InstallmentPaymentStateInfo = ({ state, payments, sentToSap }: IProps) => 
   } else {
     messages.push(translate(`ENUMS.InstallmentPaymentStatus.${state.status}`));
   }
-  if (state.overdue) {
+  if (state && state.overdue) {
     messages.push(t('overdue'));
   }
 
