@@ -434,7 +434,7 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
                 <Button
                   variant={ButtonVariant.Secondary}
                   size={ButtonSize.Small}
-                  onClick={() => (isOwnershipTypeHaso ? download() : setIsContractDialogOpen(true))}
+                  onClick={() => setIsContractDialogOpen(true)}
                   disabled={isLoadingContract}
                 >
                   {isOwnershipTypeHaso ? t(`${T_PATH}.createContract`) : t(`${T_PATH}.createDeedOfSale`)}
