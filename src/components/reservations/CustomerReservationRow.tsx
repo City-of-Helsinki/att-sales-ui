@@ -477,7 +477,10 @@ const CustomerReservationRow = ({ customer, reservation }: IProps): JSX.Element 
         className={styles.reservationDialog}
         focusAfterCloseRef={openDialogButtonRef}
       >
-        <Dialog.Header id="reservation-contract-dialog-header" title={t(`${T_PATH}.createContractHeader`)} />
+        <Dialog.Header
+          id="reservation-contract-dialog-header"
+          title={isOwnershipTypeHaso ? t(`${T_PATH}.createContract`) : t(`${T_PATH}.createDeedOfSale`)}
+        />
         <Dialog.Content>
           <div className={styles.formFields}>
             <DateInput
