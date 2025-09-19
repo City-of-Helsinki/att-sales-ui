@@ -467,7 +467,7 @@ const ProjectInstallments = ({
     }
   };
 
-  const isSAPButtonEnabled = true;
+  const isSAPButtonEnabled = false;
 
   return (
     <>
