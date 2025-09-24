@@ -227,12 +227,11 @@ const ProjectInstallments = ({
     const map: Partial<Record<InstallmentTypes, string>> = {};
     inputFields.forEach((row) => {
       if (!row?.type) return;
-      const key = row.type as InstallmentTypes;
       const iso =
         row.due_date && moment(row.due_date, 'D.M.YYYY', true).isValid()
           ? moment(row.due_date, 'D.M.YYYY').format('YYYY-MM-DD')
           : undefined;
-      if (iso) map[key] = iso;
+      if (iso) map[row.type as InstallmentTypes] = iso;
     });
     return map;
   };
@@ -245,12 +244,6 @@ const ProjectInstallments = ({
     );
 
     if (typesToBackfill.length === 0) return;
-
-    const tmplAccounts: Partial<Record<InstallmentTypes, string>> = {};
-    inputFields.forEach((row) => {
-      if (!row?.type || !row?.account_number) return;
-      tmplAccounts[row.type as InstallmentTypes] = String(row.account_number);
-    });
 
     const tasks = soldReservations.map(async (reservationId) => {
       const reservation = installmentsByReservation[reservationId] as ApartmentReservationWithInstallments | undefined;
@@ -267,14 +260,11 @@ const ProjectInstallments = ({
             ? tmplDates[type]!
             : inst.due_date ?? null;
 
-        const acc =
-          (inst.account_number ? String(inst.account_number) : undefined) ??
-          (tmplAccounts[type] ? String(tmplAccounts[type]) : undefined);
-
         return {
           type,
-          account_number: acc ?? '',
+          amount: inst.amount,
           due_date: patchedDue,
+          account_number: String(inst.account_number ?? ''),
         };
       });
 
