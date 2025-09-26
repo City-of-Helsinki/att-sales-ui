@@ -60,17 +60,22 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
 
     if (!profile) return null;
 
+    const effFirstName = isPrimary ? pick(profile.first_name, applicant?.first_name) : profile.first_name;
+    const effLastName = isPrimary ? pick(profile.last_name, applicant?.last_name) : profile.last_name;
     const effEmail = pick(profile.email, applicant?.email);
     const effPhone = pick(profile.phone_number, applicant?.phone_number);
     const effStreet = pick(profile.street_address, applicant?.street_address);
     const effCity = pick(profile.city, applicant?.city);
     const effPostal = pick(profile.postal_code, applicant?.postal_code);
 
+    const nameParts = [effLastName, effFirstName].filter(Boolean);
+    const displayName = nameParts.length === 2 ? `${nameParts[0]}, ${nameParts[1]}` : nameParts[0] || '—';
+
     return (
       <>
         <div className={styles.customerInfoColumn}>
           <InfoItem label={t(`${T_PATH}.name`)} largeFont>
-            {profile.last_name}, {profile.first_name}
+            {displayName}
           </InfoItem>
           <InfoItem label={t(`${T_PATH}.nin`)}>{profile.national_identification_number || '-'}</InfoItem>
           <InfoItem label={t(`${T_PATH}.dateOfBirth`)}>
