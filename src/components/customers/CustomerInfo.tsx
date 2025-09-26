@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
 import cx from 'classnames';
+import { Checkbox, Notification, NotificationSize, Tab, TabList, TabPanel, Tabs } from 'hds-react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Checkbox, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
 
+import { Applicant, Customer } from '../../types';
 import formatDateTime from '../../utils/formatDateTime';
-import { Customer, Applicant } from '../../types';
 import { getRightOfResidenceText } from '../../utils/getRightOfResidenceText';
 
 import styles from './CustomerInfo.module.scss';
 
 const T_PATH = 'components.customers.CustomerInfo';
+const isEmptyish = (v?: string | null) => !v || v.trim() === '' || v.trim() === '-';
+const pick = (primary?: string | null, fallback?: string | null) =>
+  !isEmptyish(primary) ? (primary as string) : !isEmptyish(fallback) ? (fallback as string) : '';
 
 interface IProps {
   customer?: Customer;
@@ -40,10 +43,28 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
     </div>
   );
 
-  const renderProfileInfo = (customer: Customer, isPrimary: boolean) => {
+  const renderProfileInfo = (
+    customer: Customer,
+    isPrimary: boolean,
+    applicant?: {
+      first_name?: string;
+      last_name?: string;
+      email?: string;
+      phone_number?: string;
+      street_address?: string;
+      city?: string;
+      postal_code?: string;
+    }
+  ) => {
     const profile = isPrimary ? customer.primary_profile : customer.secondary_profile;
 
     if (!profile) return null;
+
+    const effEmail = pick(profile.email, applicant?.email);
+    const effPhone = pick(profile.phone_number, applicant?.phone_number);
+    const effStreet = pick(profile.street_address, applicant?.street_address);
+    const effCity = pick(profile.city, applicant?.city);
+    const effPostal = pick(profile.postal_code, applicant?.postal_code);
 
     return (
       <>
@@ -60,10 +81,11 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
           <InfoItem label={t(`${T_PATH}.contactDetails`)}>
             <>
               <div>
-                {profile.street_address && `${profile.street_address},`} {profile.postal_code} {profile.city}
+                {effStreet && `${effStreet}, `}
+                {effPostal} {effCity}
               </div>
-              <div>{profile.phone_number}</div>
-              <div>{profile.email}</div>
+              <div>{effPhone || '—'}</div>
+              <div>{effEmail || '—'}</div>
             </>
           </InfoItem>
           <InfoItem label={t(`${T_PATH}.contactLanguage`)}>
@@ -110,7 +132,7 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
       </TabList>
 
       <TabPanel>
-        <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, true)}</div>
+        <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, true, applicant)}</div>
 
         <div className={styles.extraInfoRow}>
           <div className={styles.extraInfoRowItem}>
@@ -162,7 +184,7 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
         {customer.secondary_profile && (
           <>
             <h2 className={styles.coApplicantTitle}>{t(`${T_PATH}.coApplicant`)}</h2>
-            <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, false)}</div>
+            <div className={styles.customerInfoWrapper}>{renderProfileInfo(customer, false, applicant)}</div>
           </>
         )}
       </TabPanel>
