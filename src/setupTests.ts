@@ -7,6 +7,11 @@ import Enzyme from 'enzyme';
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 import { server } from './test/server';
 
+import ResizeObserver from 'resize-observer-polyfill';
+
+// Make the polyfill available globally for Jest
+global.ResizeObserver = ResizeObserver;
+
 beforeAll(() => {
   // Enable API mocking before tests.
   server.listen({ onUnhandledRequest: 'error' });
