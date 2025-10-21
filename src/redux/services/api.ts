@@ -362,6 +362,7 @@ export const api = createApi({
           body: params.formData,
         };
       },
+      invalidatesTags: (result, error, arg) => [{ type: 'Reservation', id: arg.id }],
     }),
 
     // POST: Send apartment installments to SAP
