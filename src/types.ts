@@ -264,6 +264,7 @@ export type ApartmentReservation = {
   queue_position_before_cancelation?: number | null;
   state: `${ApartmentReservationStates}`;
   revaluation: ApartmentRevaluationWithId | null;
+  sold_timestamp?: string | null;
   submitted_late: boolean;
 };
 

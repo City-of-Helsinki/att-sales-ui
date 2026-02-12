@@ -6,13 +6,14 @@ import {
   IconAngleDown,
   IconAngleRight,
   IconBell,
+  IconCheckCircleFill,
   IconGroup,
   IconPlus,
   IconSize,
   LoadingSpinner,
   Notification,
-  StatusLabel,
   NotificationSize,
+  StatusLabel,
 } from 'hds-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -360,6 +361,18 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
         >
           <div className={styles.singleReservationColumn}>
             {renderApplicants(reservation, true, hasMultipleWinningApartments())}
+            {reservation.state === ApartmentReservationStates.SOLD && (
+              <span className={styles.offer}>
+                <span className={styles.queueNumberSpacer} />
+                <span className={styles.offerState} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <IconCheckCircleFill size={IconSize.ExtraSmall} aria-hidden className={styles.offerIcon} />
+                  {t(`ENUMS.ApartmentState.${reservation.state}`)}
+                  <span style={{ marginLeft: '8px' }} className={(styles.offerDate, styles.offerSuccess)}>
+                    {reservation.sold_timestamp && formatDateTime(reservation.sold_timestamp)}
+                  </span>{' '}
+                </span>
+              </span>
+            )}
           </div>
           <div className={styles.singleReservationColumnSecond}>
             <div className={cx(styles.rowActions, isRowOpen && styles.rowOpen)}>
