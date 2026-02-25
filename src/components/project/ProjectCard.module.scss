@@ -161,3 +161,17 @@ a.projectCard {
 .infoText {
   margin-top: var(--spacing-3-xs);
 }
+
+.statusInfoText {
+  margin-top: var(--spacing-3-xs);
+  display: flex;
+  align-items: center;
+}
+
+.totalDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--color-black-60);
+  margin-right: 12px;
+}

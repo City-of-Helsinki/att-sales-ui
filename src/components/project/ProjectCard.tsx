@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Button,
   ButtonVariant,
@@ -8,15 +7,17 @@ import {
   IconLinkExternal,
   IconQuestionCircle,
 } from 'hds-react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
-import Label from '../common/label/Label';
+import { ApartmentState, ROUTES } from '../../enums';
+import { Project } from '../../types';
 import formatDateTime from '../../utils/formatDateTime';
 import { getInitials } from '../../utils/getInitials';
 import { getProjectState } from '../../utils/getProjectState';
-import { Project } from '../../types';
-import { ROUTES } from '../../enums';
+import ApartmentStateIndicator from '../apartment/ApartmentStateIndicator';
+import Label from '../common/label/Label';
 
 import styles from './ProjectCard.module.scss';
 
@@ -46,6 +47,10 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
     street_address,
     url,
     uuid,
+    apartment_count,
+    sold_apartment_count,
+    free_apartment_count,
+    reserved_apartment_count,
   } = project;
 
   const timeNow = new Date().getTime();
@@ -101,11 +106,26 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
                   {t(`${T_PATH}.lotteryCompletedAt`)} {formatDateTime(project.lottery_completed_at)}
                 </div>
               )}
-              <div className={styles.infoText}>
-                {t(`${T_PATH}.applications`)}: {project.application_count}
-              </div>
             </>
           )}
+          <>
+            <div className={styles.statusInfoText}>
+              <span className={styles.totalDot} aria-hidden />
+              {t(`${T_PATH}.apartmentCount`)}: {apartment_count}
+            </div>
+            <div className={styles.statusInfoText}>
+              <ApartmentStateIndicator state={ApartmentState.SOLD} />
+              {t(`${T_PATH}.soldApartmentCount`)}: {sold_apartment_count}
+            </div>
+            <div className={styles.statusInfoText}>
+              <ApartmentStateIndicator state={ApartmentState.FREE} />
+              {t(`${T_PATH}.freeApartmentCount`)}: {free_apartment_count}
+            </div>
+            <div className={styles.statusInfoText}>
+              <ApartmentStateIndicator state={ApartmentState.RESERVED} />
+              {t(`${T_PATH}.reservedApartmentCount`)}: {reserved_apartment_count}
+            </div>
+          </>
           {showActions && !lottery_completed_at && (
             <div className={styles.lotteryBtnWrap}>
               <Button
