@@ -130,6 +130,9 @@ export type Project = {
   virtual_presentation_url: string;
   zoning_info: string;
   zoning_status: string;
+  sold_apartment_count: number;
+  free_apartment_count: number;
+  reserved_apartment_count: number;
 };
 
 export type CustomerProfile = {

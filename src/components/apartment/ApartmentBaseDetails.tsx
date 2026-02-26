@@ -1,11 +1,10 @@
-import React from 'react';
 import { StatusLabel } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
-import ApartmentStateIndicator from './ApartmentStateIndicator';
-import formattedLivingArea from '../../utils/formatLivingArea';
 import { Apartment } from '../../types';
+import formattedLivingArea from '../../utils/formatLivingArea';
 import { fullURL } from '../../utils/fullURL';
+import ApartmentStateIndicator from './ApartmentStateIndicator';
 
 import styles from './ApartmentBaseDetails.module.scss';
 
