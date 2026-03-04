@@ -163,9 +163,16 @@ a.projectCard {
 }
 
 .statusInfoText {
-  margin-top: var(--spacing-3-xs);
   display: flex;
   align-items: center;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--spacing-m);
+  row-gap: var(--spacing-3-xs);
+  margin-top: var(--spacing-3-xs);
 }
 
 .totalDot {
