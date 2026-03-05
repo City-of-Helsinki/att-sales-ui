@@ -51,12 +51,6 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
     sold_apartment_count,
     free_apartment_count,
     reserved_apartment_count,
-    review_apartment_count,
-    reservation_agreement_apartment_count,
-    offered_apartment_count,
-    offer_accepted_apartment_count,
-    offer_expired_apartment_count,
-    accepted_by_municipality_apartment_count,
   } = project;
 
   const timeNow = new Date().getTime();
@@ -114,7 +108,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
               )}
             </>
           )}
-          <div className={styles.statusGrid}>
+          <>
             <div className={styles.statusInfoText}>
               <span className={styles.totalDot} aria-hidden />
               {t(`${T_PATH}.apartmentCount`)}: {apartment_count ?? 0}
@@ -131,33 +125,7 @@ const ProjectCard = ({ project, renderAsLink, showActions, lotteryLoading, lotte
               <ApartmentStateIndicator state={ApartmentState.RESERVED} />
               {t(`ENUMS.ApartmentState.${ApartmentState.RESERVED}`)}: {reserved_apartment_count ?? 0}
             </div>
-            <div className={styles.statusInfoText}>
-              <ApartmentStateIndicator state={ApartmentState.REVIEW} />
-              {t(`ENUMS.ApartmentState.${ApartmentState.REVIEW}`)}: {review_apartment_count ?? 0}
-            </div>
-            <div className={styles.statusInfoText}>
-              <ApartmentStateIndicator state={ApartmentState.RESERVATION_AGREEMENT} />
-              {t(`ENUMS.ApartmentState.${ApartmentState.RESERVATION_AGREEMENT}`)}:{' '}
-              {reservation_agreement_apartment_count ?? 0}
-            </div>
-            <div className={styles.statusInfoText}>
-              <ApartmentStateIndicator state={ApartmentState.OFFERED} />
-              {t(`ENUMS.ApartmentState.${ApartmentState.OFFERED}`)}: {offered_apartment_count ?? 0}
-            </div>
-            <div className={styles.statusInfoText}>
-              <ApartmentStateIndicator state={ApartmentState.OFFER_ACCEPTED} />
-              {t(`ENUMS.ApartmentState.${ApartmentState.OFFER_ACCEPTED}`)}: {offer_accepted_apartment_count ?? 0}
-            </div>
-            <div className={styles.statusInfoText}>
-              <ApartmentStateIndicator state={ApartmentState.OFFER_EXPIRED} />
-              {t(`ENUMS.ApartmentState.${ApartmentState.OFFER_EXPIRED}`)}: {offer_expired_apartment_count ?? 0}
-            </div>
-            <div className={styles.statusInfoText}>
-              <ApartmentStateIndicator state={ApartmentState.ACCEPTED_BY_MUNICIPALITY} />
-              {t(`ENUMS.ApartmentState.${ApartmentState.ACCEPTED_BY_MUNICIPALITY}`)}:{' '}
-              {accepted_by_municipality_apartment_count ?? 0}
-            </div>
-          </div>
+          </>
           {showActions && !lottery_completed_at && (
             <div className={styles.lotteryBtnWrap}>
               <Button
