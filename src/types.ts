@@ -133,12 +133,6 @@ export type Project = {
   sold_apartment_count: number;
   free_apartment_count: number;
   reserved_apartment_count: number;
-  review_apartment_count: number;
-  reservation_agreement_apartment_count: number;
-  offered_apartment_count: number;
-  offer_accepted_apartment_count: number;
-  offer_expired_apartment_count: number;
-  accepted_by_municipality_apartment_count: number;
 };
 
 export type CustomerProfile = {
