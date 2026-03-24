@@ -13,6 +13,7 @@ import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
 import { hideReservationAddModal } from '../../redux/features/reservationAddModalSlice';
 import { ApartmentReservationWithCustomer, ReservationAddFormData } from '../../types';
+import { ApartmentReservationStates } from '../../enums';
 import {
   useCreateApartmentReservationMutation,
   usePreviewApartmentQueueChangeMutation,
@@ -195,12 +196,16 @@ const ReservationAddModal = (): JSX.Element | null => {
         {pendingFormData && (
           <div style={{ marginTop: '1rem' }}>
             <strong>{t(`${T_PATH}.previewTitle`)}</strong>
-            {previewReservations.map((previewReservation) => (
-              <div key={previewReservation.id}>
-                {previewReservation.queue_position}. {previewReservation.customer.primary_profile.last_name}{' '}
-                {previewReservation.customer.primary_profile.first_name}
-              </div>
-            ))}
+            {/* New applicant placement decisions are made against active queue;
+                hiding canceled rows keeps the confirmation view focused. */}
+            {previewReservations
+              .filter((previewReservation) => previewReservation.state !== ApartmentReservationStates.CANCELED)
+              .map((previewReservation) => (
+                <div key={previewReservation.id}>
+                  {previewReservation.queue_position}. {previewReservation.customer.primary_profile.last_name}{' '}
+                  {previewReservation.customer.primary_profile.first_name}
+                </div>
+              ))}
           </div>
         )}
       </Dialog.Content>
