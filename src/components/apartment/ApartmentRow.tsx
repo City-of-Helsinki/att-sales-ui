@@ -238,93 +238,110 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
       reservation: ApartmentReservationWithCustomer,
       projectOwnershipType: Project['ownership_type'],
       showAllButtons: boolean
-    ) => (
-      <div className={styles.actionButtons}>
-        {isCanceled(reservation) ? (
-          <>
-            <div className={styles.cancellationReason}>
-              {reservation.cancellation_reason
-                ? t(`ENUMS.ReservationCancelReasons.${reservation.cancellation_reason.toUpperCase()}`)
-                : t(`${T_PATH}.canceled`)}{' '}
-              {reservation.cancellation_timestamp && formatDateTime(reservation.cancellation_timestamp)}
-              <Button
-                variant={ButtonVariant.Supplementary}
-                size={ButtonSize.Small}
-                iconStart={''}
-                disabled={false}
-                onClick={() => handleRestore(reservation.id, project.uuid, apartment.apartment_uuid)}
-              >
-                {t(`${T_PATH}.btnReturn`)}
-              </Button>
-            </div>
-            {projectOwnershipType.toLowerCase() === 'haso' &&
-              reservation.cancellation_reason === ReservationCancelReasons.TERMINATED && (
-                <ReservationRevaluationInfo reservationWithCustomer={reservation} />
-              )}
-          </>
-        ) : (
-          <>
-            <Button
-              variant={ButtonVariant.Supplementary}
-              size={ButtonSize.Small}
-              iconStart={''}
-              onClick={() =>
-                dispatch(
-                  showReservationCancelModal({
-                    ownershipType: projectOwnershipType,
-                    projectId: project.uuid,
-                    reservationId: reservation.id,
-                    customer: reservation.customer,
-                    apartmentId: reservation.apartment_uuid,
-                  })
-                )
-              }
-            >
-              {t(`${T_PATH}.btnCancel`)}
-            </Button>
-            <Button
-              variant={ButtonVariant.Secondary}
-              size={ButtonSize.Small}
-              onClick={() =>
-                dispatch(
-                  showOfferModal({
-                    apartment: apartment,
-                    customer: reservation.customer,
-                    isNewOffer: !reservation.offer,
-                    project: project,
-                    reservation: reservation,
-                  })
-                )
-              }
-            >
-              {t(`${T_PATH}.btnOffer`)}
-            </Button>
-            {showAllButtons && (
-              <>
+    ) => {
+      const isFirstInQueue = reservation.queue_position === 1;
+      return (
+        <div className={styles.actionButtons}>
+          {isCanceled(reservation) ? (
+            <>
+              <div className={styles.cancellationReason}>
+                {reservation.cancellation_reason
+                  ? t(`ENUMS.ReservationCancelReasons.${reservation.cancellation_reason.toUpperCase()}`)
+                  : t(`${T_PATH}.canceled`)}{' '}
+                {reservation.cancellation_timestamp && formatDateTime(reservation.cancellation_timestamp)}
                 <Button
                   variant={ButtonVariant.Supplementary}
                   size={ButtonSize.Small}
                   iconStart={''}
-                  onClick={() =>
-                    dispatch(
-                      showReservationEditModal({
-                        reservation: reservation,
-                        projectId: project.uuid,
-                        apartmentId: reservation.apartment_uuid,
-                        project: project,
-                        apartment: apartment,
-                      })
-                    )
-                  }
+                  disabled={false}
+                  onClick={() => handleRestore(reservation.id, project.uuid, apartment.apartment_uuid)}
                 >
-                  {t(`${T_PATH}.btnEdit`)}
+                  {t(`${T_PATH}.btnReturn`)}
                 </Button>
-              </>
-            )}
-          </>
-        )}
-      </div>
-    );
+              </div>
+              {projectOwnershipType.toLowerCase() === 'haso' &&
+                reservation.cancellation_reason === ReservationCancelReasons.TERMINATED && (
+                  <ReservationRevaluationInfo reservationWithCustomer={reservation} />
+                )}
+            </>
+          ) : (
+            <>
+              <Button
+                variant={ButtonVariant.Supplementary}
+                size={ButtonSize.Small}
+                iconStart={''}
+                onClick={() =>
+                  dispatch(
+                    showReservationCancelModal({
+                      ownershipType: projectOwnershipType,
+                      projectId: project.uuid,
+                      reservationId: reservation.id,
+                      customer: reservation.customer,
+                      apartmentId: reservation.apartment_uuid,
+                    })
+                  )
+                }
+              >
+                {t(`${T_PATH}.btnCancel`)}
+              </Button>
+              {showAllButtons && (
+                <>
+                  <Button
+                    variant={ButtonVariant.Supplementary}
+                    size={ButtonSize.Small}
+                    iconStart={''}
+                    onClick={() =>
+                      dispatch(
+                        showReservationEditModal({
+                          reservation: reservation,
+                          projectId: project.uuid,
+                          apartmentId: reservation.apartment_uuid,
+                          project: project,
+                          apartment: apartment,
+                        })
+                      )
+                    }
+                  >
+                    {t(`${T_PATH}.btnEdit`)}
+                  </Button>
+                  {isFirstInQueue && (
+                    <Button
+                      variant={ButtonVariant.Secondary}
+                      size={ButtonSize.Small}
+                      onClick={() =>
+                        dispatch(
+                          showOfferModal({
+                            apartment: apartment,
+                            customer: reservation.customer,
+                            isNewOffer: !reservation.offer,
+                            project: project,
+                            reservation: reservation,
+                          })
+                        )
+                      }
+                    >
+                      {t(`${T_PATH}.btnOffer`)}
+                    </Button>
+                  )}
+                  {!isFirstInQueue && (
+                    <Button
+                      variant={ButtonVariant.Secondary}
+                      size={ButtonSize.Small}
+                      className={styles.offerButtonPlaceholder}
+                      disabled
+                      tabIndex={-1}
+                      aria-hidden
+                    >
+                      {t(`${T_PATH}.btnOffer`)}
+                    </Button>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      );
+    };
 
     const renderFirstInQueue = () => {
       // If there's no one in the queue, show "add new reservation" button
