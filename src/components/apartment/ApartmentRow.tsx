@@ -377,7 +377,7 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
           <div className={styles.singleReservationColumnSecond}>
             <div className={cx(styles.rowActions, isRowOpen && styles.rowOpen)}>
               <span>{renderHasoNumberOrFamilyIcon(reservation)}</span>
-              {renderActionButtons(reservation, ownershipType, isFirstInQueue)}
+              {renderActionButtons(reservation, ownershipType, true)}
             </div>
           </div>
         </div>

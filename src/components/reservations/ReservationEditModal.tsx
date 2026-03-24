@@ -7,8 +7,11 @@ import ReservationEditForm from './ReservationEditForm';
 import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
 import { hideReservationEditModal } from '../../redux/features/reservationEditModalSlice';
-import { ReservationEditFormData } from '../../types';
-import { useSetApartmentReservationStateMutation } from '../../redux/services/api';
+import { ApartmentReservationWithCustomer, ReservationEditFormData } from '../../types';
+import {
+  usePreviewApartmentQueueChangeMutation,
+  useSetApartmentReservationStateMutation,
+} from '../../redux/services/api';
 
 import styles from './ReservationModal.module.scss';
 
@@ -21,6 +24,9 @@ const ReservationEditModal = (): JSX.Element | null => {
   const isDialogOpen = reservationEditModal.isOpened;
   const reservation = reservationEditModal.content?.reservation;
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<ReservationEditFormData | null>(null);
+  const [previewReservations, setPreviewReservations] = useState<ApartmentReservationWithCustomer[]>([]);
+  const [previewApartmentQueueChange, { isLoading: previewLoading }] = usePreviewApartmentQueueChangeMutation();
   const [setApartmentReservationState, { isLoading: postReservationStateLoading }] =
     useSetApartmentReservationStateMutation();
 
@@ -38,28 +44,45 @@ const ReservationEditModal = (): JSX.Element | null => {
 
   const closeDialog = () => dispatch(hideReservationEditModal());
 
+  const persistReservationState = async (formData: ReservationEditFormData) => {
+    // Project uuid and Apartment uuid is used to invalidate cached data after editing a reservation
+    const projectId = reservationEditModal.content?.projectId || '';
+    const apartmentId = reservationEditModal.content?.apartmentId || '';
+
+    await setApartmentReservationState({
+      formData,
+      reservationId: reservation.id,
+      projectId: projectId,
+      apartmentId: apartmentId,
+    }).unwrap();
+  };
+
   const handleFormCallback = async (formData: ReservationEditFormData) => {
-    if (!postReservationStateLoading) {
+    if (!postReservationStateLoading && !previewLoading) {
       setIsLoading(true);
 
-      // Project uuid and Apartment uuid is used to invalidate cached data after editing a reservation
-      const projectId = reservationEditModal.content?.projectId || '';
-      const apartmentId = reservationEditModal.content?.apartmentId || '';
-
       try {
-        // Send reservation edit form data to API
-        await setApartmentReservationState({
-          formData,
-          reservationId: reservation.id,
-          projectId: projectId,
-          apartmentId: apartmentId,
-        })
-          .unwrap()
-          .then(() => {
-            toast.show({ type: 'success', content: t(`${T_PATH}.formSentSuccessfully`) });
-            setIsLoading(false);
-            closeDialog();
-          });
+        if (pendingFormData) {
+          await persistReservationState(pendingFormData);
+          toast.show({ type: 'success', content: t(`${T_PATH}.formSentSuccessfully`) });
+          setPendingFormData(null);
+          setPreviewReservations([]);
+          setIsLoading(false);
+          closeDialog();
+          return;
+        }
+
+        const previewData = await previewApartmentQueueChange({
+          apartmentId: reservation.apartment_uuid,
+          formData: {
+            reservation_id: reservation.id,
+            ...formData,
+          },
+        }).unwrap();
+        setPendingFormData(formData);
+        setPreviewReservations(previewData);
+        toast.show({ type: 'success', content: t(`${T_PATH}.previewReady`) });
+        setIsLoading(false);
       } catch (err: any) {
         toast.show({ type: 'error' });
         console.error(err);
@@ -69,6 +92,10 @@ const ReservationEditModal = (): JSX.Element | null => {
   };
 
   const formId = `reservation-edit-form-${reservation.id}`;
+  const rejectPreview = () => {
+    setPendingFormData(null);
+    setPreviewReservations([]);
+  };
 
   return (
     <Dialog
@@ -93,11 +120,27 @@ const ReservationEditModal = (): JSX.Element | null => {
           </div>
         </div>
         <ReservationEditForm reservation={reservation} handleFormCallback={handleFormCallback} formId={formId} />
+        {pendingFormData && (
+          <div style={{ marginTop: '1rem' }}>
+            <strong>{t(`${T_PATH}.previewTitle`)}</strong>
+            {previewReservations.map((previewReservation) => (
+              <div key={previewReservation.id}>
+                {previewReservation.queue_position}. {previewReservation.customer.primary_profile.last_name}{' '}
+                {previewReservation.customer.primary_profile.first_name}
+              </div>
+            ))}
+          </div>
+        )}
       </Dialog.Content>
       <Dialog.ActionButtons>
         <Button variant={ButtonVariant.Primary} type="submit" form={formId} disabled={isLoading}>
-          {t(`${T_PATH}.edit`)}
+          {pendingFormData ? t(`${T_PATH}.confirm`) : t(`${T_PATH}.edit`)}
         </Button>
+        {pendingFormData && (
+          <Button variant={ButtonVariant.Secondary} type="button" onClick={rejectPreview}>
+            {t(`${T_PATH}.reject`)}
+          </Button>
+        )}
         <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
           {t(`${T_PATH}.cancel`)}
         </Button>
