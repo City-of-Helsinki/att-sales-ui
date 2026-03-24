@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Button, ButtonVariant, Dialog, IconInfoCircle } from 'hds-react';
+import React, { useEffect, useState } from 'react';
+import { Button, ButtonVariant, Dialog, IconArrowRight, IconInfoCircle, IconSize } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 
 import ReservationEditForm from './ReservationEditForm';
+import { ApartmentReservationStates } from '../../enums';
 import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
 import { hideReservationEditModal } from '../../redux/features/reservationEditModalSlice';
 import { ApartmentReservationWithCustomer, ReservationEditFormData } from '../../types';
 import {
+  useGetApartmentReservationsQuery,
   usePreviewApartmentQueueChangeMutation,
   useSetApartmentReservationStateMutation,
 } from '../../redux/services/api';
@@ -16,6 +18,7 @@ import {
 import styles from './ReservationModal.module.scss';
 
 const T_PATH = 'components.reservations.ReservationEditModal';
+type PreviewSubmitMode = 'confirm' | 'update_preview';
 
 const ReservationEditModal = (): JSX.Element | null => {
   const { t } = useTranslation();
@@ -25,10 +28,30 @@ const ReservationEditModal = (): JSX.Element | null => {
   const reservation = reservationEditModal.content?.reservation;
   const [isLoading, setIsLoading] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<ReservationEditFormData | null>(null);
+  const [previewSubmitMode, setPreviewSubmitMode] = useState<PreviewSubmitMode>('confirm');
+  const [latestFormData, setLatestFormData] = useState<ReservationEditFormData>({
+    state: reservation?.state || ApartmentReservationStates.RESERVED,
+    comment: '',
+    queue_position: reservation?.queue_position ?? null,
+    submitted_late: reservation?.submitted_late ?? false,
+  });
   const [previewReservations, setPreviewReservations] = useState<ApartmentReservationWithCustomer[]>([]);
+  const { data: currentReservations } = useGetApartmentReservationsQuery(reservation?.apartment_uuid || '', {
+    skip: !reservation?.apartment_uuid,
+  });
   const [previewApartmentQueueChange, { isLoading: previewLoading }] = usePreviewApartmentQueueChangeMutation();
   const [setApartmentReservationState, { isLoading: postReservationStateLoading }] =
     useSetApartmentReservationStateMutation();
+
+  useEffect(() => {
+    if (!reservation) return;
+    setLatestFormData({
+      state: reservation.state,
+      comment: '',
+      queue_position: reservation.queue_position ?? null,
+      submitted_late: reservation.submitted_late,
+    });
+  }, [reservation]);
 
   if (!isDialogOpen) return null;
 
@@ -42,7 +65,12 @@ const ReservationEditModal = (): JSX.Element | null => {
     return null;
   }
 
-  const closeDialog = () => dispatch(hideReservationEditModal());
+  const closeDialog = () => {
+    setPendingFormData(null);
+    setPreviewReservations([]);
+    setPreviewSubmitMode('confirm');
+    dispatch(hideReservationEditModal());
+  };
 
   const persistReservationState = async (formData: ReservationEditFormData) => {
     // Project uuid and Apartment uuid is used to invalidate cached data after editing a reservation
@@ -57,12 +85,15 @@ const ReservationEditModal = (): JSX.Element | null => {
     }).unwrap();
   };
 
-  const handleFormCallback = async (formData: ReservationEditFormData) => {
+  const handleFormCallback = async (
+    formData: ReservationEditFormData,
+    submitMode: PreviewSubmitMode = previewSubmitMode
+  ) => {
     if (!postReservationStateLoading && !previewLoading) {
       setIsLoading(true);
 
       try {
-        if (pendingFormData) {
+        if (pendingFormData && submitMode === 'confirm') {
           await persistReservationState(pendingFormData);
           toast.show({ type: 'success', content: t(`${T_PATH}.formSentSuccessfully`) });
           setPendingFormData(null);
@@ -92,10 +123,17 @@ const ReservationEditModal = (): JSX.Element | null => {
   };
 
   const formId = `reservation-edit-form-${reservation.id}`;
-  const rejectPreview = () => {
-    setPendingFormData(null);
-    setPreviewReservations([]);
+  const updatePreview = () => {
+    void handleFormCallback(latestFormData, 'update_preview');
   };
+  const currentPositionsById = new Map(
+    (currentReservations || []).map((current) => [current.id, current.queue_position])
+  );
+  const previewRows = pendingFormData ? previewReservations : currentReservations || [];
+  const canceledRows = previewRows.filter((row) => row.state === ApartmentReservationStates.CANCELED);
+  const activeRows = previewRows
+    .filter((row) => row.state !== ApartmentReservationStates.CANCELED)
+    .sort((a, b) => (a.queue_position || 0) - (b.queue_position || 0));
 
   return (
     <Dialog
@@ -104,6 +142,7 @@ const ReservationEditModal = (): JSX.Element | null => {
       isOpen={isDialogOpen}
       close={closeDialog}
       closeButtonLabelText={t(`${T_PATH}.closeDialog`)}
+      className={styles.reservationEditDialog}
     >
       <Dialog.Header
         id="reservation-edit-dialog-header"
@@ -111,40 +150,118 @@ const ReservationEditModal = (): JSX.Element | null => {
         iconStart={<IconInfoCircle aria-hidden />}
       />
       <Dialog.Content>
-        <div className={styles.customer}>
-          {t(`${T_PATH}.editingForCustomer`)}:
-          <div className={styles.applicants}>
-            {reservation.customer.primary_profile.last_name} {reservation.customer.primary_profile.first_name}
-            {reservation.customer.secondary_profile &&
-              ` (${reservation.customer.secondary_profile.last_name}, ${reservation.customer.secondary_profile.first_name})`}
-          </div>
-        </div>
-        <ReservationEditForm reservation={reservation} handleFormCallback={handleFormCallback} formId={formId} />
-        {pendingFormData && (
-          <div style={{ marginTop: '1rem' }}>
-            <strong>{t(`${T_PATH}.previewTitle`)}</strong>
-            {previewReservations.map((previewReservation) => (
-              <div key={previewReservation.id}>
-                {previewReservation.queue_position}. {previewReservation.customer.primary_profile.last_name}{' '}
-                {previewReservation.customer.primary_profile.first_name}
+        <div className={styles.editDialogContent}>
+          <div className={styles.editDialogFormColumn}>
+            <div className={styles.customer}>
+              {t(`${T_PATH}.editingForCustomer`)}:
+              <div className={styles.applicants}>
+                {reservation.customer.primary_profile.last_name} {reservation.customer.primary_profile.first_name}
+                {reservation.customer.secondary_profile &&
+                  ` (${reservation.customer.secondary_profile.last_name}, ${reservation.customer.secondary_profile.first_name})`}
               </div>
-            ))}
+            </div>
+            <ReservationEditForm
+              reservation={reservation}
+              handleFormCallback={handleFormCallback}
+              handleFormValuesChange={setLatestFormData}
+              formId={formId}
+            />
+            <div className={styles.inlineDialogActionButtons}>
+              <Button
+                variant={ButtonVariant.Primary}
+                type="submit"
+                form={formId}
+                disabled={isLoading}
+                onClick={() => setPreviewSubmitMode('confirm')}
+              >
+                {pendingFormData ? t(`${T_PATH}.confirm`) : t(`${T_PATH}.edit`)}
+              </Button>
+              {pendingFormData && (
+                <Button variant={ButtonVariant.Secondary} type="button" disabled={isLoading} onClick={updatePreview}>
+                  {t(`${T_PATH}.reject`)}
+                </Button>
+              )}
+              <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
+                {t(`${T_PATH}.cancel`)}
+              </Button>
+            </div>
           </div>
-        )}
+          {previewRows.length > 0 && (
+            <div className={styles.editDialogPreviewColumn}>
+              <strong>{t(`${T_PATH}.previewTitle`)}</strong>
+              <div className={styles.previewSectionsRow}>
+                <div className={styles.previewSectionColumn}>
+                  <div className={styles.previewSectionTitle}>{t(`${T_PATH}.previewActive`)}</div>
+                  {activeRows.map((previewReservation) => {
+                    const oldPosition = currentPositionsById.get(previewReservation.id);
+                    const newPosition = previewReservation.queue_position;
+                    const showDiff =
+                      oldPosition !== undefined &&
+                      oldPosition !== null &&
+                      newPosition !== undefined &&
+                      newPosition !== null;
+                    const isChanged = Boolean(pendingFormData) && showDiff && oldPosition !== newPosition;
+                    const isEditedReservation = previewReservation.id === reservation.id;
+
+                    return (
+                      <div
+                        key={previewReservation.id}
+                        className={`${styles.previewRow} ${isChanged ? styles.previewRowChanged : ''} ${
+                          isEditedReservation ? styles.previewRowEdited : ''
+                        }`}
+                      >
+                        <span className={styles.previewRowPosition}>
+                          {showDiff ? (
+                            oldPosition !== newPosition ? (
+                              <span className={styles.previewPositionDiff}>
+                                <span>{oldPosition}</span>
+                                <IconArrowRight size={IconSize.ExtraSmall} aria-hidden />
+                                <span>{newPosition}</span>
+                              </span>
+                            ) : (
+                              `${newPosition}.`
+                            )
+                          ) : (
+                            `${newPosition}.`
+                          )}
+                        </span>
+                        <span className={styles.previewRowName}>
+                          {previewReservation.customer.primary_profile.last_name}{' '}
+                          {previewReservation.customer.primary_profile.first_name}
+                          {isEditedReservation && (
+                            <span className={styles.previewEditedTag}> {t(`${T_PATH}.previewEdited`)}</span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className={styles.previewSectionColumn}>
+                  <div className={styles.previewSectionTitle}>{t(`${T_PATH}.previewCanceled`)}</div>
+                  {canceledRows.map((previewReservation) => {
+                    const isEditedReservation = previewReservation.id === reservation.id;
+                    return (
+                      <div
+                        key={previewReservation.id}
+                        className={`${styles.previewRow} ${isEditedReservation ? styles.previewRowEdited : ''}`}
+                      >
+                        <span className={styles.previewRowPosition}>-</span>
+                        <span className={styles.previewRowName}>
+                          {previewReservation.customer.primary_profile.last_name}{' '}
+                          {previewReservation.customer.primary_profile.first_name}
+                          {isEditedReservation && (
+                            <span className={styles.previewEditedTag}> {t(`${T_PATH}.previewEdited`)}</span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </Dialog.Content>
-      <Dialog.ActionButtons>
-        <Button variant={ButtonVariant.Primary} type="submit" form={formId} disabled={isLoading}>
-          {pendingFormData ? t(`${T_PATH}.confirm`) : t(`${T_PATH}.edit`)}
-        </Button>
-        {pendingFormData && (
-          <Button variant={ButtonVariant.Secondary} type="button" onClick={rejectPreview}>
-            {t(`${T_PATH}.reject`)}
-          </Button>
-        )}
-        <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
-          {t(`${T_PATH}.cancel`)}
-        </Button>
-      </Dialog.ActionButtons>
     </Dialog>
   );
 };

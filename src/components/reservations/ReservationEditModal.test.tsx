@@ -7,11 +7,13 @@ import { ApartmentReservationWithCustomer, Project } from '../../types';
 
 const mockPreviewMutation = jest.fn();
 const mockSetStateMutation = jest.fn();
+const mockCurrentReservations = [{ id: 123, queue_position: 2 }];
 
 jest.mock('../../redux/services/api', () => {
   const actual = jest.requireActual('../../redux/services/api');
   return {
     ...actual,
+    useGetApartmentReservationsQuery: () => ({ data: mockCurrentReservations }),
     usePreviewApartmentQueueChangeMutation: () => [mockPreviewMutation, { isLoading: false }],
     useSetApartmentReservationStateMutation: () => [mockSetStateMutation, { isLoading: false }],
   };
@@ -104,7 +106,7 @@ describe('ReservationEditModal preview flow', () => {
     });
   });
 
-  it('can reject preview without persisting changes', async () => {
+  it('can update preview without persisting changes', async () => {
     renderWithProviders(<ReservationEditModal />, {
       preloadedState: {
         tokens: { apiToken: 'test-token' },
@@ -125,10 +127,13 @@ describe('ReservationEditModal preview flow', () => {
       expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.getByText('Doe Jane')).toBeInTheDocument();
+    expect(screen.getAllByText('Doe Jane').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.reject' }));
 
-    expect(screen.queryByRole('button', { name: 'components.reservations.ReservationEditModal.confirm' })).toBeNull();
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(2);
+    });
+    expect(screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.confirm' })).toBeDefined();
     expect(mockSetStateMutation).not.toHaveBeenCalled();
   });
 });

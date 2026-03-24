@@ -14,9 +14,15 @@ interface IProps {
   formId: string;
   reservation: ApartmentReservationWithCustomer;
   handleFormCallback: (data: ReservationEditFormData) => void;
+  handleFormValuesChange?: (data: ReservationEditFormData) => void;
 }
 
-const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps): JSX.Element => {
+const ReservationEditForm = ({
+  formId,
+  reservation,
+  handleFormCallback,
+  handleFormValuesChange,
+}: IProps): JSX.Element => {
   const { t } = useTranslation();
   const schema = yup.object({
     state: yup.string().required(t(`${T_PATH}.stateRequired`)),
@@ -35,6 +41,7 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
     register,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ReservationEditFormData>({
     resolver: yupResolver(schema),
@@ -52,6 +59,14 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
     }
   }, [reservation, reset]);
 
+  useEffect(() => {
+    if (!handleFormValuesChange) return;
+    const subscription = watch((values) => {
+      handleFormValuesChange(values as ReservationEditFormData);
+    });
+    return () => subscription.unsubscribe();
+  }, [handleFormValuesChange, watch]);
+
   const onSubmit: SubmitHandler<ReservationEditFormData> = (data, event) => {
     event?.preventDefault();
     handleFormCallback(data);
@@ -64,8 +79,11 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
       const enumName = state[0];
       const enumValue = state[1];
 
-      // Don't add "submitted" and "canceled" state to the dropdown options
-      if (enumValue === ApartmentReservationStates.CANCELED || enumValue === ApartmentReservationStates.SUBMITTED) {
+      // Keep canceled/submitted hidden unless it is the current reservation state.
+      if (
+        (enumValue === ApartmentReservationStates.CANCELED || enumValue === ApartmentReservationStates.SUBMITTED) &&
+        enumValue !== reservation.state
+      ) {
         return null;
       }
 
@@ -106,7 +124,7 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
             options={stateOptions()}
             value={getStateOption(field.value || '')}
             onChange={(selected: Option[], clickedOption: Option) => {
-              setValue('state', clickedOption.value as ApartmentReservationStates);
+              field.onChange(clickedOption.value as ApartmentReservationStates);
             }}
             style={{ marginBottom: '1rem' }}
           />
@@ -133,11 +151,18 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
           setValueAs: (value) => (value === '' ? null : Number(value)),
         })}
       />
-      <Checkbox
-        id="submittedLate"
-        label={t(`${T_PATH}.submittedLate`)}
-        style={{ marginTop: '1rem' }}
-        {...register('submitted_late')}
+      <Controller
+        name="submitted_late"
+        control={control}
+        render={({ field }) => (
+          <Checkbox
+            id="submittedLate"
+            label={t(`${T_PATH}.submittedLate`)}
+            style={{ marginTop: '1rem' }}
+            checked={Boolean(field.value)}
+            onChange={(event) => field.onChange(event.target.checked)}
+          />
+        )}
       />
     </form>
   );
