@@ -25,6 +25,12 @@
   flex-wrap: wrap;
 }
 
+.saveConfirmationText {
+  margin-top: var(--spacing-s);
+  color: var(--color-black-90);
+  font-weight: 600;
+}
+
 .editDialogPreviewColumn {
   flex: 1 1 40%;
   min-width: 280px;

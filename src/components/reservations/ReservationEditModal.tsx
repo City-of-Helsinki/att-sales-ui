@@ -20,7 +20,6 @@ import Label from '../common/label/Label';
 import styles from './ReservationModal.module.scss';
 
 const T_PATH = 'components.reservations.ReservationEditModal';
-type PreviewSubmitMode = 'confirm' | 'update_preview';
 
 const ReservationEditModal = (): JSX.Element | null => {
   const { t } = useTranslation();
@@ -32,7 +31,7 @@ const ReservationEditModal = (): JSX.Element | null => {
   const project = reservationEditModal.content?.project;
   const [isLoading, setIsLoading] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<ReservationEditFormData | null>(null);
-  const [previewSubmitMode, setPreviewSubmitMode] = useState<PreviewSubmitMode>('confirm');
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
   const previewDebounceRef = useRef<number | null>(null);
   const [lastPreviewPayload, setLastPreviewPayload] = useState<string | null>(null);
   const [latestFormData, setLatestFormData] = useState<ReservationEditFormData>({
@@ -49,6 +48,21 @@ const ReservationEditModal = (): JSX.Element | null => {
   const [setApartmentReservationState, { isLoading: postReservationStateLoading }] =
     useSetApartmentReservationStateMutation();
 
+  const hasReservationChanges = (formData: ReservationEditFormData): boolean => {
+    if (!reservation) return false;
+
+    const normalizedQueuePosition =
+      formData.queue_position === undefined ? reservation.queue_position ?? null : formData.queue_position;
+    const normalizedSubmittedLate =
+      formData.submitted_late === undefined ? reservation.submitted_late : formData.submitted_late;
+
+    return (
+      formData.state !== reservation.state ||
+      normalizedQueuePosition !== (reservation.queue_position ?? null) ||
+      normalizedSubmittedLate !== reservation.submitted_late
+    );
+  };
+
   useEffect(() => {
     if (!reservation) return;
     const initialFormData = {
@@ -61,11 +75,7 @@ const ReservationEditModal = (): JSX.Element | null => {
     setLastPreviewPayload(JSON.stringify(initialFormData));
   }, [reservation]);
 
-  const runPreview = async (
-    formData: ReservationEditFormData,
-    showToast: boolean,
-    activateConfirmFlow: boolean = true
-  ) => {
+  const runPreview = async (formData: ReservationEditFormData, activateConfirmFlow: boolean = true) => {
     if (!reservation) return;
     const previewData = await previewApartmentQueueChange({
       apartmentId: reservation.apartment_uuid,
@@ -76,33 +86,44 @@ const ReservationEditModal = (): JSX.Element | null => {
     }).unwrap();
     if (activateConfirmFlow) {
       setPendingFormData(formData);
+      setShowSaveConfirmation(true);
     }
     setLastPreviewPayload(JSON.stringify(formData));
     setPreviewReservations(previewData);
-    if (showToast) {
-      toast.show({ type: 'success', content: t(`${T_PATH}.previewReady`) });
-    }
   };
 
-  const handleFormCallback = async (
-    formData: ReservationEditFormData,
-    submitMode: PreviewSubmitMode = previewSubmitMode
-  ) => {
+  const handleFormCallback = async (formData: ReservationEditFormData) => {
     if (!postReservationStateLoading && !previewLoading) {
       setIsLoading(true);
 
       try {
-        if (pendingFormData && submitMode === 'confirm') {
+        if (pendingFormData) {
+          if (!hasReservationChanges(pendingFormData)) {
+            setIsLoading(false);
+            setShowSaveConfirmation(false);
+            setPendingFormData(null);
+            setPreviewReservations([]);
+            return;
+          }
           await persistReservationState(pendingFormData);
           toast.show({ type: 'success', content: t(`${T_PATH}.formSentSuccessfully`) });
           setPendingFormData(null);
+          setShowSaveConfirmation(false);
           setPreviewReservations([]);
           setIsLoading(false);
           closeDialog();
           return;
         }
 
-        await runPreview(formData, true);
+        if (!hasReservationChanges(formData)) {
+          setIsLoading(false);
+          setShowSaveConfirmation(false);
+          setPendingFormData(null);
+          setPreviewReservations([]);
+          return;
+        }
+
+        await runPreview(formData);
         setIsLoading(false);
       } catch (err: any) {
         toast.show({ type: 'error' });
@@ -113,9 +134,6 @@ const ReservationEditModal = (): JSX.Element | null => {
   };
 
   const formId = `reservation-edit-form-${reservation?.id ?? 'unknown'}`;
-  const updatePreview = () => {
-    void handleFormCallback(latestFormData, 'update_preview');
-  };
 
   useEffect(() => {
     // Keep preview responsive while protecting backend capacity:
@@ -131,7 +149,7 @@ const ReservationEditModal = (): JSX.Element | null => {
     }
 
     previewDebounceRef.current = window.setTimeout(() => {
-      void runPreview(latestFormData, false, false).catch((err) => {
+      void runPreview(latestFormData, false).catch((err) => {
         console.error(err);
       });
     }, 700);
@@ -161,9 +179,15 @@ const ReservationEditModal = (): JSX.Element | null => {
     }
     setPendingFormData(null);
     setLastPreviewPayload(null);
+    setShowSaveConfirmation(false);
     setPreviewReservations([]);
-    setPreviewSubmitMode('confirm');
     dispatch(hideReservationEditModal());
+  };
+
+  const resetConfirmState = () => {
+    setPendingFormData(null);
+    setShowSaveConfirmation(false);
+    setPreviewReservations([]);
   };
 
   const persistReservationState = async (formData: ReservationEditFormData) => {
@@ -249,22 +273,28 @@ const ReservationEditModal = (): JSX.Element | null => {
               formId={formId}
               queuePositionMax={maxQueuePosition}
             />
+            {showSaveConfirmation && pendingFormData && (
+              <div className={styles.saveConfirmationText}>{t(`${T_PATH}.areYouSure`)}</div>
+            )}
             <div className={styles.inlineDialogActionButtons}>
               <Button
                 variant={ButtonVariant.Primary}
                 type="submit"
                 form={formId}
-                disabled={isLoading}
-                onClick={() => setPreviewSubmitMode('confirm')}
+                disabled={isLoading || !hasReservationChanges(latestFormData)}
               >
-                {pendingFormData ? t(`${T_PATH}.confirm`) : t(`${T_PATH}.edit`)}
+                {pendingFormData ? t(`${T_PATH}.confirm`) : t(`${T_PATH}.save`)}
               </Button>
-              {pendingFormData && (
-                <Button variant={ButtonVariant.Secondary} type="button" disabled={isLoading} onClick={updatePreview}>
-                  {t(`${T_PATH}.reject`)}
-                </Button>
-              )}
-              <Button variant={ButtonVariant.Secondary} onClick={() => closeDialog()}>
+              <Button
+                variant={ButtonVariant.Secondary}
+                onClick={() => {
+                  if (pendingFormData || showSaveConfirmation) {
+                    resetConfirmState();
+                    return;
+                  }
+                  closeDialog();
+                }}
+              >
                 {t(`${T_PATH}.cancel`)}
               </Button>
             </div>
