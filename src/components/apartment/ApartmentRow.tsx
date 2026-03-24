@@ -282,6 +282,23 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
             >
               {t(`${T_PATH}.btnCancel`)}
             </Button>
+            <Button
+              variant={ButtonVariant.Secondary}
+              size={ButtonSize.Small}
+              onClick={() =>
+                dispatch(
+                  showOfferModal({
+                    apartment: apartment,
+                    customer: reservation.customer,
+                    isNewOffer: !reservation.offer,
+                    project: project,
+                    reservation: reservation,
+                  })
+                )
+              }
+            >
+              {t(`${T_PATH}.btnOffer`)}
+            </Button>
             {showAllButtons && (
               <>
                 <Button
@@ -294,28 +311,13 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                         reservation: reservation,
                         projectId: project.uuid,
                         apartmentId: reservation.apartment_uuid,
+                        project: project,
+                        apartment: apartment,
                       })
                     )
                   }
                 >
                   {t(`${T_PATH}.btnEdit`)}
-                </Button>
-                <Button
-                  variant={ButtonVariant.Secondary}
-                  size={ButtonSize.Small}
-                  onClick={() =>
-                    dispatch(
-                      showOfferModal({
-                        apartment: apartment,
-                        customer: reservation.customer,
-                        isNewOffer: !reservation.offer,
-                        project: project,
-                        reservation: reservation,
-                      })
-                    )
-                  }
-                >
-                  {t(`${T_PATH}.btnOffer`)}
                 </Button>
               </>
             )}

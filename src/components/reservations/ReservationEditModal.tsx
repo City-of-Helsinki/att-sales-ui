@@ -14,6 +14,8 @@ import {
   usePreviewApartmentQueueChangeMutation,
   useSetApartmentReservationStateMutation,
 } from '../../redux/services/api';
+import formattedLivingArea from '../../utils/formatLivingArea';
+import Label from '../common/label/Label';
 
 import styles from './ReservationModal.module.scss';
 
@@ -26,6 +28,8 @@ const ReservationEditModal = (): JSX.Element | null => {
   const reservationEditModal = useSelector((state: RootState) => state.reservationEditModal);
   const isDialogOpen = reservationEditModal.isOpened;
   const reservation = reservationEditModal.content?.reservation;
+  const apartment = reservationEditModal.content?.apartment;
+  const project = reservationEditModal.content?.project;
   const [isLoading, setIsLoading] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<ReservationEditFormData | null>(null);
   const [previewSubmitMode, setPreviewSubmitMode] = useState<PreviewSubmitMode>('confirm');
@@ -184,6 +188,11 @@ const ReservationEditModal = (): JSX.Element | null => {
   const activeRows = previewRows
     .filter((row) => row.state !== ApartmentReservationStates.CANCELED)
     .sort((a, b) => (a.queue_position || 0) - (b.queue_position || 0));
+  const maxQueuePosition = Math.max(
+    ...activeRows.map((row) => row.queue_position || 0),
+    reservation.queue_position || 0,
+    1
+  );
 
   return (
     <Dialog
@@ -202,6 +211,29 @@ const ReservationEditModal = (): JSX.Element | null => {
       <Dialog.Content>
         <div className={styles.editDialogContent}>
           <div className={styles.editDialogFormColumn}>
+            {project && apartment && (
+              <div className={styles.details}>
+                <div className={styles.projectHousingCompany}>
+                  <Label type={project.ownership_type}>{project.ownership_type}</Label>
+                </div>
+                <div>
+                  <div className={styles.title}>
+                    <h3>{project.housing_company}</h3>
+                    <span>
+                      <strong>{project.district}, </strong>
+                      {project.street_address}
+                    </span>
+                  </div>
+                  <div className={styles.apartment}>
+                    <strong>{apartment.apartment_number}</strong>
+                    <span>&mdash;</span>
+                    {apartment.apartment_structure}
+                    <span>&mdash;</span>
+                    {apartment.living_area && formattedLivingArea(apartment.living_area)}
+                  </div>
+                </div>
+              </div>
+            )}
             <div className={styles.customer}>
               {t(`${T_PATH}.editingForCustomer`)}:
               <div className={styles.applicants}>
@@ -215,6 +247,7 @@ const ReservationEditModal = (): JSX.Element | null => {
               handleFormCallback={handleFormCallback}
               handleFormValuesChange={setLatestFormData}
               formId={formId}
+              queuePositionMax={maxQueuePosition}
             />
             <div className={styles.inlineDialogActionButtons}>
               <Button
@@ -239,7 +272,6 @@ const ReservationEditModal = (): JSX.Element | null => {
           {previewRows.length > 0 && (
             <div className={styles.editDialogPreviewColumn}>
               <strong>{t(`${T_PATH}.previewTitle`)}</strong>
-              <div className={styles.previewSectionTitle}>{t(`${T_PATH}.previewActive`)}</div>
               <div className={styles.previewSectionColumn}>
                 {activeRows.map((previewReservation) => {
                   const oldPosition = currentPositionsById.get(previewReservation.id);

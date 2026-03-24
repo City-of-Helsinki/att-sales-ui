@@ -15,6 +15,7 @@ interface IProps {
   reservation: ApartmentReservationWithCustomer;
   handleFormCallback: (data: ReservationEditFormData) => void;
   handleFormValuesChange?: (data: ReservationEditFormData) => void;
+  queuePositionMax?: number;
 }
 
 const ReservationEditForm = ({
@@ -22,6 +23,7 @@ const ReservationEditForm = ({
   reservation,
   handleFormCallback,
   handleFormValuesChange,
+  queuePositionMax,
 }: IProps): JSX.Element => {
   const { t } = useTranslation();
   const schema = yup.object({
@@ -146,6 +148,7 @@ const ReservationEditForm = ({
         invalid={Boolean(errors.queue_position)}
         errorText={errors.queue_position?.message}
         min={1}
+        max={queuePositionMax}
         style={{ marginTop: '1rem' }}
         {...register('queue_position', {
           setValueAs: (value) => (value === '' ? null : Number(value)),

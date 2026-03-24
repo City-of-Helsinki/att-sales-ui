@@ -16,6 +16,7 @@ import { ApartmentReservationWithCustomer, ReservationAddFormData } from '../../
 import { ApartmentReservationStates } from '../../enums';
 import {
   useCreateApartmentReservationMutation,
+  useGetApartmentReservationsQuery,
   usePreviewApartmentQueueChangeMutation,
 } from '../../redux/services/api';
 
@@ -33,6 +34,9 @@ const ReservationAddModal = (): JSX.Element | null => {
   const [isLoading, setIsLoading] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<ReservationAddFormData | null>(null);
   const [previewReservations, setPreviewReservations] = useState<ApartmentReservationWithCustomer[]>([]);
+  const { data: currentReservations } = useGetApartmentReservationsQuery(apartment?.apartment_uuid || '', {
+    skip: !apartment?.apartment_uuid,
+  });
   const [previewApartmentQueueChange, { isLoading: previewLoading }] = usePreviewApartmentQueueChangeMutation();
   const [createApartmentReservation, { isLoading: postCreateReservationLoading }] =
     useCreateApartmentReservationMutation();
@@ -128,6 +132,12 @@ const ReservationAddModal = (): JSX.Element | null => {
   }
 
   const formId = `reservation-add-form-${apartment.apartment_uuid}`;
+  const maxQueuePosition = Math.max(
+    ...(currentReservations || [])
+      .filter((reservation) => reservation.state !== ApartmentReservationStates.CANCELED)
+      .map((reservation) => reservation.queue_position || 0),
+    1
+  );
   const rejectPreview = () => {
     setPendingFormData(null);
     setPreviewReservations([]);
@@ -181,6 +191,7 @@ const ReservationAddModal = (): JSX.Element | null => {
             invalid={Boolean(errors.queue_position)}
             errorText={errors.queue_position?.message}
             min={1}
+            max={maxQueuePosition}
             style={{ marginTop: '1rem' }}
             {...register('queue_position', {
               setValueAs: (value) => (value === '' ? null : Number(value)),
