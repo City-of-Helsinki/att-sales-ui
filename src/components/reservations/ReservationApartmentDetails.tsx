@@ -30,7 +30,9 @@ const ReservationApartmentDetails = ({ project, apartment }: Props): JSX.Element
           <span>&mdash;</span>
           {apartment.apartment_structure}
           <span>&mdash;</span>
-          {apartment.living_area && formattedLivingArea(apartment.living_area)}
+          {apartment.living_area !== null &&
+            apartment.living_area !== undefined &&
+            formattedLivingArea(apartment.living_area)}
         </div>
       </div>
     </div>
