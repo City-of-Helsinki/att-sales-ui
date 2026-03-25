@@ -1,9 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 
 import ReservationEditModal from './ReservationEditModal';
-import { renderWithProviders } from '../../test/test-utils';
 import { ApartmentReservationStates } from '../../enums';
 import { ApartmentReservationWithCustomer, Project } from '../../types';
+import { renderReservationEditModalOpened } from '../../test/reservationModalTestUtils';
 
 const mockPreviewMutation = jest.fn();
 const mockSetStateMutation = jest.fn();
@@ -55,18 +55,10 @@ describe('ReservationEditModal preview flow', () => {
   });
 
   it('previews changes before persisting state update', async () => {
-    renderWithProviders(<ReservationEditModal />, {
-      preloadedState: {
-        tokens: { apiToken: 'test-token' },
-        reservationEditModal: {
-          isOpened: true,
-          content: {
-            reservation,
-            projectId: project.uuid,
-            apartmentId: reservation.apartment_uuid,
-          },
-        },
-      },
+    renderReservationEditModalOpened({
+      reservation,
+      projectId: project.uuid,
+      apartmentId: reservation.apartment_uuid,
     });
 
     const queuePositionInput = screen.getByRole('spinbutton', {
@@ -87,18 +79,10 @@ describe('ReservationEditModal preview flow', () => {
   });
 
   it('persists state update after preview confirmation', async () => {
-    renderWithProviders(<ReservationEditModal />, {
-      preloadedState: {
-        tokens: { apiToken: 'test-token' },
-        reservationEditModal: {
-          isOpened: true,
-          content: {
-            reservation,
-            projectId: project.uuid,
-            apartmentId: reservation.apartment_uuid,
-          },
-        },
-      },
+    renderReservationEditModalOpened({
+      reservation,
+      projectId: project.uuid,
+      apartmentId: reservation.apartment_uuid,
     });
 
     const queuePositionInput = screen.getByRole('spinbutton', {
@@ -124,18 +108,10 @@ describe('ReservationEditModal preview flow', () => {
   });
 
   it('auto-refreshes preview without persisting changes', async () => {
-    renderWithProviders(<ReservationEditModal />, {
-      preloadedState: {
-        tokens: { apiToken: 'test-token' },
-        reservationEditModal: {
-          isOpened: true,
-          content: {
-            reservation,
-            projectId: project.uuid,
-            apartmentId: reservation.apartment_uuid,
-          },
-        },
-      },
+    renderReservationEditModalOpened({
+      reservation,
+      projectId: project.uuid,
+      apartmentId: reservation.apartment_uuid,
     });
 
     const queuePositionInput = screen.getByRole('spinbutton', {

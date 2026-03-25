@@ -1,8 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 
 import ReservationAddModal from './ReservationAddModal';
-import { renderWithProviders } from '../../test/test-utils';
 import { Apartment, Project } from '../../types';
+import { renderReservationAddModalOpened } from '../../test/reservationModalTestUtils';
 
 const mockPreviewMutation = jest.fn();
 const mockCreateMutation = jest.fn();
@@ -68,15 +68,7 @@ describe('ReservationAddModal preview flow', () => {
   });
 
   it('previews add before persisting reservation', async () => {
-    renderWithProviders(<ReservationAddModal />, {
-      preloadedState: {
-        tokens: { apiToken: 'test-token' },
-        reservationAddModal: {
-          isOpened: true,
-          content: { apartment, project },
-        },
-      },
-    });
+    renderReservationAddModalOpened({ apartment, project });
 
     fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
     fireEvent.change(screen.getByLabelText('components.reservations.ReservationAddModal.queuePosition'), {
@@ -91,15 +83,7 @@ describe('ReservationAddModal preview flow', () => {
   });
 
   it('creates reservation after preview confirmation', async () => {
-    renderWithProviders(<ReservationAddModal />, {
-      preloadedState: {
-        tokens: { apiToken: 'test-token' },
-        reservationAddModal: {
-          isOpened: true,
-          content: { apartment, project },
-        },
-      },
-    });
+    renderReservationAddModalOpened({ apartment, project });
 
     fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
     fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
@@ -116,15 +100,7 @@ describe('ReservationAddModal preview flow', () => {
   });
 
   it('can reject add preview without creating reservation', async () => {
-    renderWithProviders(<ReservationAddModal />, {
-      preloadedState: {
-        tokens: { apiToken: 'test-token' },
-        reservationAddModal: {
-          isOpened: true,
-          content: { apartment, project },
-        },
-      },
-    });
+    renderReservationAddModalOpened({ apartment, project });
 
     fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
     fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));

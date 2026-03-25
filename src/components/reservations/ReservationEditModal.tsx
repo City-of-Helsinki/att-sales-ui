@@ -14,8 +14,7 @@ import {
   usePreviewApartmentQueueChangeMutation,
   useSetApartmentReservationStateMutation,
 } from '../../redux/services/api';
-import formattedLivingArea from '../../utils/formatLivingArea';
-import Label from '../common/label/Label';
+import ReservationApartmentDetails from './ReservationApartmentDetails';
 
 import styles from './ReservationModal.module.scss';
 
@@ -243,29 +242,7 @@ const ReservationEditModal = (): JSX.Element | null => {
       <Dialog.Content>
         <div className={styles.editDialogContent}>
           <div className={styles.editDialogFormColumn}>
-            {project && apartment && (
-              <div className={styles.details}>
-                <div className={styles.projectHousingCompany}>
-                  <Label type={project.ownership_type}>{project.ownership_type}</Label>
-                </div>
-                <div>
-                  <div className={styles.title}>
-                    <h3>{project.housing_company}</h3>
-                    <span>
-                      <strong>{project.district}, </strong>
-                      {project.street_address}
-                    </span>
-                  </div>
-                  <div className={styles.apartment}>
-                    <strong>{apartment.apartment_number}</strong>
-                    <span>&mdash;</span>
-                    {apartment.apartment_structure}
-                    <span>&mdash;</span>
-                    {apartment.living_area && formattedLivingArea(apartment.living_area)}
-                  </div>
-                </div>
-              </div>
-            )}
+            {project && apartment && <ReservationApartmentDetails project={project} apartment={apartment} />}
             <div className={styles.customer}>
               {t(`${T_PATH}.editingForCustomer`)}:
               <div className={styles.applicants}>

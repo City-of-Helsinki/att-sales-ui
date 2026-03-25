@@ -6,8 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
-import formattedLivingArea from '../../utils/formatLivingArea';
-import Label from '../common/label/Label';
+import ReservationApartmentDetails from './ReservationApartmentDetails';
 import SelectCustomerDropdown from '../customers/SelectCustomerDropdown';
 import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
@@ -155,27 +154,7 @@ const ReservationAddModal = (): JSX.Element | null => {
     >
       <Dialog.Header id="reservation-add-dialog-header" title={t(`${T_PATH}.addApplicant`)} />
       <Dialog.Content>
-        <div className={styles.details}>
-          <div className={styles.projectHousingCompany}>
-            <Label type={project.ownership_type}>{project.ownership_type}</Label>
-          </div>
-          <div>
-            <div className={styles.title}>
-              <h3>{project.housing_company}</h3>
-              <span>
-                <strong>{project.district}, </strong>
-                {project.street_address}
-              </span>
-            </div>
-            <div className={styles.apartment}>
-              <strong>{apartment.apartment_number}</strong>
-              <span>&mdash;</span>
-              {apartment.apartment_structure}
-              <span>&mdash;</span>
-              {apartment.living_area && formattedLivingArea(apartment.living_area)}
-            </div>
-          </div>
-        </div>
+        <ReservationApartmentDetails project={project} apartment={apartment} />
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <SelectCustomerDropdown
             handleSelectCallback={handleSelectCallback}
