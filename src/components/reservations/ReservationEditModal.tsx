@@ -149,7 +149,7 @@ const ReservationEditModal = (): JSX.Element | null => {
     }
 
     previewDebounceRef.current = window.setTimeout(() => {
-      void runPreview(latestFormData, false).catch((err) => {
+      void runPreview(latestFormData, Boolean(pendingFormData)).catch((err) => {
         console.error(err);
       });
     }, 700);
@@ -159,7 +159,15 @@ const ReservationEditModal = (): JSX.Element | null => {
         window.clearTimeout(previewDebounceRef.current);
       }
     };
-  }, [isDialogOpen, lastPreviewPayload, latestFormData, postReservationStateLoading, previewLoading, reservation]);
+  }, [
+    isDialogOpen,
+    lastPreviewPayload,
+    latestFormData,
+    postReservationStateLoading,
+    previewLoading,
+    reservation,
+    pendingFormData,
+  ]);
 
   if (!isDialogOpen) return null;
 
@@ -337,8 +345,8 @@ const ReservationEditModal = (): JSX.Element | null => {
                         )}
                       </span>
                       <span className={styles.previewRowName}>
-                        {previewReservation.customer.primary_profile.last_name}{' '}
-                        {previewReservation.customer.primary_profile.first_name}
+                        {previewReservation.customer?.primary_profile?.last_name ?? ''}{' '}
+                        {previewReservation.customer?.primary_profile?.first_name ?? ''}
                         {isEditedReservation && (
                           <span className={styles.previewEditedTag}> {t(`${T_PATH}.previewEdited`)}</span>
                         )}

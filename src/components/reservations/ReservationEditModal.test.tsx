@@ -69,7 +69,16 @@ describe('ReservationEditModal preview flow', () => {
       },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.edit' }));
+    const queuePositionInput = screen.getByRole('spinbutton', {
+      name: 'components.reservations.ReservationEditForm.queuePosition',
+    });
+    fireEvent.change(queuePositionInput, { target: { value: '1' } });
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'components.reservations.ReservationEditModal.save',
+      })
+    );
 
     await waitFor(() => {
       expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
@@ -92,8 +101,16 @@ describe('ReservationEditModal preview flow', () => {
       },
     });
 
-    const editButton = screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.edit' });
-    fireEvent.click(editButton);
+    const queuePositionInput = screen.getByRole('spinbutton', {
+      name: 'components.reservations.ReservationEditForm.queuePosition',
+    });
+    fireEvent.change(queuePositionInput, { target: { value: '1' } });
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'components.reservations.ReservationEditModal.save',
+      })
+    );
 
     await waitFor(() => {
       expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
@@ -106,7 +123,7 @@ describe('ReservationEditModal preview flow', () => {
     });
   });
 
-  it('can update preview without persisting changes', async () => {
+  it('auto-refreshes preview without persisting changes', async () => {
     renderWithProviders(<ReservationEditModal />, {
       preloadedState: {
         tokens: { apiToken: 'test-token' },
@@ -121,19 +138,31 @@ describe('ReservationEditModal preview flow', () => {
       },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.edit' }));
+    const queuePositionInput = screen.getByRole('spinbutton', {
+      name: 'components.reservations.ReservationEditForm.queuePosition',
+    });
+    fireEvent.change(queuePositionInput, { target: { value: '1' } });
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'components.reservations.ReservationEditModal.save',
+      })
+    );
 
     await waitFor(() => {
       expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
     });
 
     expect(screen.getAllByText('Doe Jane').length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.reject' }));
+
+    const submittedLateCheckbox = screen.getByRole('checkbox', {
+      name: 'components.reservations.ReservationEditForm.submittedLate',
+    });
+    fireEvent.click(submittedLateCheckbox);
 
     await waitFor(() => {
       expect(mockPreviewMutation).toHaveBeenCalledTimes(2);
     });
-    expect(screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.confirm' })).toBeDefined();
     expect(mockSetStateMutation).not.toHaveBeenCalled();
   });
 });
