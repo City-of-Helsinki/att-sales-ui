@@ -41,6 +41,23 @@ const reservation: ApartmentReservationWithCustomer = {
 
 const project = { uuid: 'project-1' } as Project;
 
+const setQueuePositionAndPreview = async () => {
+  const queuePositionInput = screen.getByRole('spinbutton', {
+    name: 'components.reservations.ReservationEditForm.queuePosition',
+  });
+  fireEvent.change(queuePositionInput, { target: { value: '1' } });
+
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: 'components.reservations.ReservationEditModal.save',
+    })
+  );
+
+  await waitFor(() => {
+    expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+  });
+};
+
 describe('ReservationEditModal preview flow', () => {
   beforeEach(() => {
     mockPreviewMutation.mockReset();
@@ -61,20 +78,7 @@ describe('ReservationEditModal preview flow', () => {
       apartmentId: reservation.apartment_uuid,
     });
 
-    const queuePositionInput = screen.getByRole('spinbutton', {
-      name: 'components.reservations.ReservationEditForm.queuePosition',
-    });
-    fireEvent.change(queuePositionInput, { target: { value: '1' } });
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'components.reservations.ReservationEditModal.save',
-      })
-    );
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await setQueuePositionAndPreview();
     expect(mockSetStateMutation).not.toHaveBeenCalled();
   });
 
@@ -85,20 +89,7 @@ describe('ReservationEditModal preview flow', () => {
       apartmentId: reservation.apartment_uuid,
     });
 
-    const queuePositionInput = screen.getByRole('spinbutton', {
-      name: 'components.reservations.ReservationEditForm.queuePosition',
-    });
-    fireEvent.change(queuePositionInput, { target: { value: '1' } });
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'components.reservations.ReservationEditModal.save',
-      })
-    );
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await setQueuePositionAndPreview();
 
     fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationEditModal.confirm' }));
 
@@ -114,20 +105,7 @@ describe('ReservationEditModal preview flow', () => {
       apartmentId: reservation.apartment_uuid,
     });
 
-    const queuePositionInput = screen.getByRole('spinbutton', {
-      name: 'components.reservations.ReservationEditForm.queuePosition',
-    });
-    fireEvent.change(queuePositionInput, { target: { value: '1' } });
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'components.reservations.ReservationEditModal.save',
-      })
-    );
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await setQueuePositionAndPreview();
 
     expect(screen.getAllByText('Doe Jane').length).toBeGreaterThan(0);
 
