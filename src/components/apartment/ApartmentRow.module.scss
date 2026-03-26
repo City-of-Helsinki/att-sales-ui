@@ -379,8 +379,10 @@
 }
 .cancellationReason button {
   display: inline-flex;
-  min-height: 1.2rem;
-  height: 1.2rem;
+  min-height: 32px;
+  height: auto;
+  padding: var(--spacing-2-xs) var(--spacing-xs);
+  margin-left: var(--spacing-2-xs);
 }
 
 .offer {
