@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
-import { Select, TextArea, Option } from 'hds-react';
+import { Checkbox, Option, Select, TextArea, TextInput } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -14,13 +14,28 @@ interface IProps {
   formId: string;
   reservation: ApartmentReservationWithCustomer;
   handleFormCallback: (data: ReservationEditFormData) => void;
+  handleFormValuesChange?: (data: ReservationEditFormData) => void;
+  queuePositionMax?: number;
 }
 
-const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps): JSX.Element => {
+const ReservationEditForm = ({
+  formId,
+  reservation,
+  handleFormCallback,
+  handleFormValuesChange,
+  queuePositionMax,
+}: IProps): JSX.Element => {
   const { t } = useTranslation();
   const schema = yup.object({
     state: yup.string().required(t(`${T_PATH}.stateRequired`)),
     comment: yup.string().nullable(),
+    queue_position: yup
+      .number()
+      .nullable()
+      .transform((value, originalValue) => (originalValue === '' ? null : value))
+      .integer(t(`${T_PATH}.queuePositionInteger`))
+      .min(1, t(`${T_PATH}.queuePositionMin`)),
+    submitted_late: yup.bool().optional(),
   });
   const {
     control,
@@ -28,6 +43,7 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
     register,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ReservationEditFormData>({
     resolver: yupResolver(schema),
@@ -36,9 +52,22 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
   useEffect(() => {
     if (reservation) {
       // Use reservation state as initial form state
-      reset({ state: reservation.state, comment: '' });
+      reset({
+        state: reservation.state,
+        comment: '',
+        queue_position: reservation.queue_position ?? null,
+        submitted_late: reservation.submitted_late,
+      });
     }
   }, [reservation, reset]);
+
+  useEffect(() => {
+    if (!handleFormValuesChange) return;
+    const subscription = watch((values) => {
+      handleFormValuesChange(values as ReservationEditFormData);
+    });
+    return () => subscription.unsubscribe();
+  }, [handleFormValuesChange, watch]);
 
   const onSubmit: SubmitHandler<ReservationEditFormData> = (data, event) => {
     event?.preventDefault();
@@ -52,8 +81,11 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
       const enumName = state[0];
       const enumValue = state[1];
 
-      // Don't add "submitted" and "canceled" state to the dropdown options
-      if (enumValue === ApartmentReservationStates.CANCELED || enumValue === ApartmentReservationStates.SUBMITTED) {
+      // Keep canceled/submitted hidden unless it is the current reservation state.
+      if (
+        (enumValue === ApartmentReservationStates.CANCELED || enumValue === ApartmentReservationStates.SUBMITTED) &&
+        enumValue !== reservation.state
+      ) {
         return null;
       }
 
@@ -94,7 +126,7 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
             options={stateOptions()}
             value={getStateOption(field.value || '')}
             onChange={(selected: Option[], clickedOption: Option) => {
-              setValue('state', clickedOption.value as ApartmentReservationStates);
+              field.onChange(clickedOption.value as ApartmentReservationStates);
             }}
             style={{ marginBottom: '1rem' }}
           />
@@ -108,6 +140,32 @@ const ReservationEditForm = ({ formId, reservation, handleFormCallback }: IProps
         autoComplete="off"
         maxLength={255}
         {...register('comment')}
+      />
+      <TextInput
+        id="queuePosition"
+        type="number"
+        label={t(`${T_PATH}.queuePosition`)}
+        invalid={Boolean(errors.queue_position)}
+        errorText={errors.queue_position?.message}
+        min={1}
+        max={queuePositionMax}
+        style={{ marginTop: '1rem' }}
+        {...register('queue_position', {
+          setValueAs: (value) => (value === '' ? null : Number(value)),
+        })}
+      />
+      <Controller
+        name="submitted_late"
+        control={control}
+        render={({ field }) => (
+          <Checkbox
+            id="submittedLate"
+            label={t(`${T_PATH}.submittedLate`)}
+            style={{ marginTop: '1rem' }}
+            checked={Boolean(field.value)}
+            onChange={(event) => field.onChange(event.target.checked)}
+          />
+        )}
       />
     </form>
   );

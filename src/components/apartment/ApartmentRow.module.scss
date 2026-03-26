@@ -357,6 +357,11 @@
   }
 }
 
+.offerButtonPlaceholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .addNewReservationButton {
   margin-left: 1.7rem;
 

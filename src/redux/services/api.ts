@@ -25,6 +25,7 @@ import {
   ReservationAddFormData,
   ReservationCancelFormData,
   ReservationEditFormData,
+  QueuePreviewFormData,
   SalesPerson,
 } from '../../types';
 import getApiBaseUrl from '../../utils/getApiBaseUrl';
@@ -258,6 +259,20 @@ export const api = createApi({
       providesTags: (result, error, arg) => [{ type: 'ApartmentReservations', id: arg }],
     }),
 
+    // POST: Preview apartment reservation queue changes
+    previewApartmentQueueChange: builder.mutation<
+      ApartmentReservationWithCustomer[],
+      { apartmentId: string; formData: QueuePreviewFormData }
+    >({
+      query: (params) => {
+        return {
+          url: `apartments/${params.apartmentId}/queue/preview/`,
+          method: 'POST',
+          body: params.formData,
+        };
+      },
+    }),
+
     // GET: Fetch single apartment reservation that includes installments
     getApartmentReservationById: builder.query<ApartmentReservationWithInstallments, number>({
       query: (id) => `apartment_reservations/${id}/`,
@@ -459,6 +474,7 @@ export const {
   useUpdateCustomerByIdMutation,
   useCreateApartmentReservationMutation,
   useGetApartmentReservationsQuery,
+  usePreviewApartmentQueueChangeMutation,
   useGetApartmentReservationByIdQuery,
   useSetApartmentReservationStateMutation,
   useSetApartmentReservationToOfferedMutation,
