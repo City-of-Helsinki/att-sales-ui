@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, ButtonVariant, IconDownload } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
-import { useGetCustomerByIdQuery } from '../../redux/services/api';
+import { useAllCustomerReservations } from '../../redux/services/useAllCustomerReservations';
 import { ApartmentReservation, Customer } from '../../types';
 import { useDownloadFile } from '../../utils/useDownloadFile';
 import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
@@ -23,7 +23,7 @@ const ReservationReleasePDF = ({ reservationId, customerId, disabled = false }: 
 
   // Non-essential, no need to wait for loading or check errors
   // Used as supplemental data to name the PDF file
-  const { data: customer } = useGetCustomerByIdQuery(customerId.toString());
+  const { reservations } = useAllCustomerReservations(customerId.toString());
 
   const releaseApiUrl = `/apartment_reservations/${reservationId}/release_pdf/`;
 
@@ -36,7 +36,7 @@ const ReservationReleasePDF = ({ reservationId, customerId, disabled = false }: 
   };
 
   const getReleaseFileName = (): string => {
-    const reservation = customer?.apartment_reservations?.find((ar) => ar.id === reservationId);
+    const reservation = reservations?.find((ar) => ar.id === reservationId);
 
     const projectName = reservation?.project_housing_company.replace(/\s/g, '-').toLocaleLowerCase();
     const apartmentNumber = reservation?.apartment_number.replace(/\s/g, '').toLocaleLowerCase();
