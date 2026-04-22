@@ -11,6 +11,7 @@ import Installments from '../../components/installments/Installments';
 import CustomerReservations from '../../components/reservations/CustomerReservations';
 import { ROUTES } from '../../enums';
 import { useGetCustomerByIdQuery, useGetCustomerLatestApplicantInfoQuery } from '../../redux/services/api';
+import { useAllCustomerReservations } from '../../redux/services/useAllCustomerReservations';
 import { Customer } from '../../types';
 import { usePageTitle } from '../../utils/usePageTitle';
 
@@ -23,6 +24,11 @@ const CustomerDetail = (): JSX.Element | null => {
   const { customerId } = useParams();
   const { data: customer, isLoading, isFetching, isError, isSuccess } = useGetCustomerByIdQuery(customerId || '0');
   const { data: applicant } = useGetCustomerLatestApplicantInfoQuery(customerId || '0');
+  const {
+    reservations,
+    isLoadingInitial: isLoadingReservations,
+    isLoadingMore: isLoadingMoreReservations,
+  } = useAllCustomerReservations(customerId);
 
   usePageTitle(customer?.id ? `${t('PAGES.customers')} - ${customer.id}` : t('PAGES.customers'));
 
@@ -112,10 +118,19 @@ const CustomerDetail = (): JSX.Element | null => {
               <Tab>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
             </TabList>
             <TabPanel className={styles.tabPanel}>
-              <CustomerReservations customer={customer} />
+              <CustomerReservations
+                customer={customer}
+                reservations={reservations}
+                isLoadingInitial={isLoadingReservations}
+                isLoadingMore={isLoadingMoreReservations}
+              />
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              <Installments customer={customer} />
+              <Installments
+                reservations={reservations}
+                isLoadingInitial={isLoadingReservations}
+                isLoadingMore={isLoadingMoreReservations}
+              />
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
               <CustomerComments customerId={customer.id} />

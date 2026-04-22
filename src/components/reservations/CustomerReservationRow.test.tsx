@@ -8,8 +8,8 @@ import { Customer, CustomerReservation } from '../../types';
 
 describe('CustomerReservationRow', () => {
   it('renders the component', () => {
-    const customer = dummyCustomer as Customer;
-    const apartmentReservations = customer.apartment_reservations as CustomerReservation[];
+    const customer = dummyCustomer as unknown as Customer;
+    const apartmentReservations = (dummyCustomer as any).apartment_reservations as CustomerReservation[];
     const reservations = groupReservationsByProject(apartmentReservations);
     const reservation = reservations[0][0];
 

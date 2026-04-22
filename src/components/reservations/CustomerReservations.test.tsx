@@ -6,16 +6,22 @@ import { renderWithProviders } from '../../test/test-utils';
 import { groupReservationsByProject } from '../../utils/mapReservationData';
 import { Customer, CustomerReservation } from '../../types';
 
-const customer = dummyCustomer as Customer;
-const customerReservations = customer.apartment_reservations as CustomerReservation[];
+const customer = dummyCustomer as unknown as Customer;
+const customerReservations = (dummyCustomer as any).apartment_reservations as CustomerReservation[];
 
 describe('CustomerReservations', () => {
   it('renders the component', () => {
-    renderWithProviders(<CustomerReservations customer={customer} />);
+    renderWithProviders(<CustomerReservations customer={customer} reservations={customerReservations} />);
 
     expect(screen.getAllByText('Asunto Oy Tuleva S', { exact: false })).toBeDefined();
 
     expect(screen.getAllByText('Haso Vanha Mylly', { exact: false })).toBeDefined();
+  });
+
+  it('shows the empty state when there are no reservations and loading is done', () => {
+    renderWithProviders(<CustomerReservations customer={customer} reservations={[]} />);
+
+    expect(screen.getByText('components.reservations.CustomerReservations.noReservations')).toBeDefined();
   });
 });
 

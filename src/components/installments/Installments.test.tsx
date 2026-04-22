@@ -4,19 +4,18 @@ import { render, screen } from '@testing-library/react';
 import ProjectName from '../../components/project/ProjectName';
 import Installments from './Installments';
 import mockCustomer from '../../mocks/customer.json';
-import { Customer } from '../../types';
+import { CustomerReservation } from '../../types';
 
-const customer = mockCustomer as Customer;
+const reservations = (mockCustomer as any).apartment_reservations as CustomerReservation[];
 
 describe('Installments', () => {
   it('renders the component', () => {
-    const wrapper = shallow(<Installments customer={customer} />);
+    const wrapper = shallow(<Installments reservations={reservations} />);
     expect(wrapper.find(ProjectName)).toHaveLength(2);
   });
 
   it('renders empty reservations message', () => {
-    const mockCustomerNoReservations = { ...mockCustomer, apartment_reservations: [] };
-    render(<Installments customer={mockCustomerNoReservations} />);
+    render(<Installments reservations={[]} />);
     expect(screen.getByText('components.installments.Installments.noReservations')).toBeDefined();
   });
 });
