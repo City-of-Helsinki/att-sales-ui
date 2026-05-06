@@ -3,6 +3,8 @@ import { Apartment, ApartmentReservationWithCustomer, Project } from '../../type
 
 interface ReservationEditModalContent {
   apartmentId: Apartment['uuid'];
+  apartment?: Apartment;
+  project?: Project;
   reservation: ApartmentReservationWithCustomer;
   projectId: Project['uuid'];
 }

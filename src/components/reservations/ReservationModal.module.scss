@@ -7,6 +7,116 @@
   font-weight: 500;
 }
 
+.editDialogContent {
+  display: flex;
+  gap: var(--spacing-l);
+  align-items: flex-start;
+}
+
+.editDialogFormColumn {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.inlineDialogActionButtons {
+  margin-top: var(--spacing-m);
+  display: flex;
+  gap: var(--spacing-2-xs);
+  flex-wrap: wrap;
+}
+
+.saveConfirmationText {
+  margin-top: var(--spacing-s);
+  color: var(--color-black-90);
+  font-weight: 600;
+}
+
+.editDialogPreviewColumn {
+  flex: 1 1 40%;
+  min-width: 280px;
+  border: 1px solid var(--color-black-20);
+  padding: var(--spacing-s);
+  background: var(--color-white);
+}
+
+.previewSectionsRow {
+  display: flex;
+  gap: var(--spacing-s);
+  align-items: flex-start;
+}
+
+.previewSectionColumn {
+  flex: 1 1 50%;
+  min-width: 0;
+}
+
+.previewSectionTitle {
+  margin-top: var(--spacing-s);
+  margin-bottom: var(--spacing-2-xs);
+  font-size: var(--fontsize-body-s);
+  font-weight: 700;
+  color: var(--color-black-90);
+}
+
+.previewRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  padding: var(--spacing-xs) 0;
+  border-top: 1px solid var(--color-black-20);
+}
+
+.previewRowChanged {
+  background: var(--color-coat-of-arms-light);
+}
+
+.previewRowEdited {
+  border-left: 4px solid var(--color-coat-of-arms);
+  padding-left: var(--spacing-2-xs);
+}
+
+.previewRow:first-of-type {
+  border-top: 0;
+}
+
+.previewRowPosition {
+  width: 6.5rem;
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--color-black-70);
+  text-align: left;
+}
+
+.previewRowName {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.previewPositionDiff {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-3-xs);
+}
+
+.previewEditedTag {
+  font-size: var(--fontsize-body-s);
+  color: var(--color-coat-of-arms-dark);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.reservationEditDialog {
+  @media (max-width: 1247px) {
+    width: 100% !important;
+  }
+
+  @media (min-width: 1248px) {
+    min-width: 1200px !important;
+    width: max-content !important;
+    max-width: 95vw !important;
+  }
+}
+
 .reservationAddDialog {
   @media (max-width: 1247px) {
     // --breakpoint-xl minus 1

@@ -130,6 +130,9 @@ export type Project = {
   virtual_presentation_url: string;
   zoning_info: string;
   zoning_status: string;
+  sold_apartment_count: number;
+  free_apartment_count: number;
+  reserved_apartment_count: number;
 };
 
 export type CustomerProfile = {
@@ -264,6 +267,7 @@ export type ApartmentReservation = {
   queue_position_before_cancelation?: number | null;
   state: `${ApartmentReservationStates}`;
   revaluation: ApartmentRevaluationWithId | null;
+  sold_timestamp?: string | null;
   submitted_late: boolean;
 };
 
@@ -364,6 +368,8 @@ export type AddEditCustomerFormFields = {
 export type ReservationEditFormData = {
   state: `${ApartmentReservationStates}`;
   comment: string;
+  queue_position?: number | null;
+  submitted_late?: boolean;
 };
 
 export type RevaluationFormData = {
@@ -386,6 +392,16 @@ export type ReservationCancelFormData = {
 export type ReservationAddFormData = {
   apartment_uuid: string;
   customer_id: string;
+  queue_position?: number | null;
+  submitted_late?: boolean;
+};
+
+export type QueuePreviewFormData = {
+  reservation_id?: number;
+  queue_position?: number | null;
+  state?: `${ApartmentReservationStates}`;
+  submitted_late?: boolean;
+  customer_id?: string;
 };
 
 export type Offer = {
