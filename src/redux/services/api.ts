@@ -469,6 +469,7 @@ export const api = createApi({
 
 export const {
   useGetProjectsQuery,
+  useLazyGetProjectsQuery,
   useGetSalesPersonsQuery,
   useGetSelectedProjectsQuery,
   useGetProjectByIdQuery,

@@ -1,48 +1,94 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useGetProjectsQuery } from './api';
+import { useLazyGetProjectsQuery } from './api';
 import { Project } from '../../types';
 
 /**
- * Fetches every page of `/projects/` sequentially and accumulates the
- * results so consumers see rows progressively stream in. We track the
- * last page that was merged into local state via a ref so the
- * accumulation effect only fires when a fresh page's results arrive,
- * regardless of how many times the parent component re-renders with
- * the same cached query result.
+ * Fetches every page of `/projects/` concurrently after page 1, while keeping
+ * the exposed `projects` array strictly ordered by page number.
  */
 export const useAllProjects = () => {
-  const [page, setPage] = useState(1);
-  const [projects, setProjects] = useState<Project[] | undefined>(undefined);
-  const lastMergedPage = useRef<number>(0);
+  const PAGE_SIZE = 10;
+  const [triggerGetProjects] = useLazyGetProjectsQuery();
 
-  const { currentData, data, isLoading, isFetching, isError } = useGetProjectsQuery({
-    page,
-    pageSize: 10,
-  });
+  const resultsByPageRef = useRef<Map<number, Project[]>>(new Map());
+  const [version, setVersion] = useState(0);
+  const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [isError, setIsError] = useState(false);
+
+  const projects = useMemo(() => {
+    void version;
+    const pages = Array.from(resultsByPageRef.current.keys()).sort((a, b) => a - b);
+    if (pages.length === 0) return undefined;
+    return pages.reduce<Project[]>((acc, page) => {
+      const pageResults = resultsByPageRef.current.get(page);
+      if (!pageResults) return acc;
+      acc.push(...pageResults);
+      return acc;
+    }, []);
+  }, [version]);
 
   useEffect(() => {
-    if (!currentData) return;
-    if (lastMergedPage.current === page) return;
-    lastMergedPage.current = page;
-    setProjects((prev) => {
-      if (page === 1 || !prev) return currentData.results;
-      return [...prev, ...currentData.results];
-    });
-  }, [currentData, page]);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (!currentData?.next) return;
-    if (page !== lastMergedPage.current) return;
-    setPage((p) => (p === page ? p + 1 : p));
-  }, [currentData?.next, page]);
+    const fetchAll = async () => {
+      resultsByPageRef.current = new Map();
+      setVersion((v) => v + 1);
+      setTotalCount(undefined);
+      setIsError(false);
+      setIsLoadingInitial(true);
+      setPendingCount(0);
+
+      try {
+        const first = await triggerGetProjects({ page: 1, pageSize: PAGE_SIZE }, true).unwrap();
+        if (cancelled) return;
+
+        resultsByPageRef.current.set(1, first.results);
+        setTotalCount(first.count);
+        setVersion((v) => v + 1);
+
+        const totalPages = Math.max(1, Math.ceil(first.count / PAGE_SIZE));
+        const pagesToFetch = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+
+        if (pagesToFetch.length === 0) return;
+
+        setPendingCount(pagesToFetch.length);
+        await Promise.all(
+          pagesToFetch.map(async (page) => {
+            try {
+              const res = await triggerGetProjects({ page, pageSize: PAGE_SIZE }, true).unwrap();
+              if (cancelled) return;
+              resultsByPageRef.current.set(page, res.results);
+              setVersion((v) => v + 1);
+            } catch (e) {
+              if (!cancelled) setIsError(true);
+            } finally {
+              if (!cancelled) setPendingCount((c) => Math.max(0, c - 1));
+            }
+          })
+        );
+      } catch (e) {
+        if (!cancelled) setIsError(true);
+      } finally {
+        if (!cancelled) setIsLoadingInitial(false);
+      }
+    };
+
+    void fetchAll();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [triggerGetProjects]);
 
   return {
     projects,
-    totalCount: data?.count,
-    isLoadingInitial: isLoading,
-    isLoadingMore: !!data?.next && isFetching,
-    isComplete: !!data && !data.next,
+    totalCount,
+    isLoadingInitial,
+    isLoadingMore: !isLoadingInitial && pendingCount > 0,
+    isComplete: totalCount !== undefined && (projects?.length ?? 0) >= totalCount && pendingCount === 0,
     isError,
   };
 };

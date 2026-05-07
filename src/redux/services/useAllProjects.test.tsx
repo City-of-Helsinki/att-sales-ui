@@ -1,48 +1,55 @@
 import { renderHook } from '@testing-library/react-hooks';
 
 import { useAllProjects } from './useAllProjects';
-import { useGetProjectsQuery } from './api';
+import { useLazyGetProjectsQuery } from './api';
 
 jest.mock('./api', () => ({
-  useGetProjectsQuery: jest.fn(),
+  useLazyGetProjectsQuery: jest.fn(),
 }));
 
-const mockedUseGetProjectsQuery = useGetProjectsQuery as unknown as jest.Mock;
+const mockedUseLazyGetProjectsQuery = useLazyGetProjectsQuery as unknown as jest.Mock;
 
 describe('useAllProjects', () => {
   beforeEach(() => {
-    mockedUseGetProjectsQuery.mockReset();
+    mockedUseLazyGetProjectsQuery.mockReset();
   });
 
-  it('auto-advances page while next is present', async () => {
-    mockedUseGetProjectsQuery.mockImplementation(({ page }: { page: number }) => {
-      if (page === 1) {
-        return {
-          currentData: { count: 3, next: '/api/projects/?page=2', previous: null, results: [{ uuid: 'p1' }] },
-          data: { count: 3, next: '/api/projects/?page=2', previous: null, results: [{ uuid: 'p1' }] },
-          isLoading: false,
-          isFetching: false,
-          isError: false,
-        };
-      }
+  it('loads pages concurrently but keeps order', async () => {
+    const trigger = jest.fn((args: { page: number; pageSize: number }) => {
+      const page = args.page;
+      const count = 3;
+
+      const resultsByPage: Record<number, { uuid: string }[]> = {
+        1: [{ uuid: 'p1' }],
+        2: [{ uuid: 'p2' }],
+        3: [{ uuid: 'p3' }],
+      };
+
+      // Resolve page 3 faster than page 2 to verify ordering logic.
+      const delayMs = page === 2 ? 20 : page === 3 ? 5 : 0;
+
       return {
-        currentData: { count: 2, next: null, previous: '/api/projects/?page=1', results: [{ uuid: 'p2' }] },
-        data: { count: 2, next: null, previous: '/api/projects/?page=1', results: [{ uuid: 'p2' }] },
-        isLoading: false,
-        isFetching: false,
-        isError: false,
+        unwrap: () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ count, results: resultsByPage[page], next: null, previous: null });
+            }, delayMs);
+          }),
       };
     });
 
+    mockedUseLazyGetProjectsQuery.mockReturnValue([trigger]);
+
     const { result, waitFor } = renderHook(() => useAllProjects());
 
-    expect(mockedUseGetProjectsQuery).toHaveBeenCalledWith({ page: 1, pageSize: 10 });
     await waitFor(() => {
-      expect(mockedUseGetProjectsQuery).toHaveBeenCalledWith({ page: 2, pageSize: 10 });
+      expect(result.current.isComplete).toBe(true);
     });
 
-    expect(mockedUseGetProjectsQuery).toHaveBeenCalledWith({ page: 2, pageSize: 10 });
-    expect(result.current.projects).toEqual([{ uuid: 'p1' }, { uuid: 'p2' }]);
-    expect(result.current.isComplete).toBe(true);
+    expect(trigger).toHaveBeenCalledWith({ page: 1, pageSize: 10 }, true);
+    expect(trigger).toHaveBeenCalledWith({ page: 2, pageSize: 10 }, true);
+    expect(trigger).toHaveBeenCalledWith({ page: 3, pageSize: 10 }, true);
+
+    expect(result.current.projects).toEqual([{ uuid: 'p1' }, { uuid: 'p2' }, { uuid: 'p3' }]);
   });
 });
