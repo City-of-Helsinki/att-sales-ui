@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
 import { Button, ButtonVariant, Checkbox, Dialog, TextInput } from 'hds-react';
 import { useTranslation } from 'react-i18next';
@@ -60,12 +60,33 @@ const ReservationAddModal = (): JSX.Element | null => {
     resolver: yupResolver(schema),
   });
 
+  const activeReservations = useMemo(
+    () =>
+      (currentReservations || []).filter((reservation) => reservation.state !== ApartmentReservationStates.CANCELED),
+    [currentReservations]
+  );
+  const maxExistingQueuePosition = Math.max(
+    0,
+    ...activeReservations.map((reservation) => reservation.queue_position ?? 0)
+  );
+  const suggestedQueuePosition = maxExistingQueuePosition + 1;
+
   useEffect(() => {
     if (apartment) {
       setValue('apartment_uuid', apartment.apartment_uuid);
       setValue('submitted_late', false);
     }
   }, [apartment, setValue]);
+
+  // Suggest max(existing queue_position among active reservations) + 1 once data
+  // has loaded. Only fires once per apartment so user edits are preserved across refetches.
+  const queuePositionInitializedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!apartment || !currentReservations) return;
+    if (queuePositionInitializedRef.current === apartment.apartment_uuid) return;
+    queuePositionInitializedRef.current = apartment.apartment_uuid;
+    setValue('queue_position', suggestedQueuePosition);
+  }, [apartment, currentReservations, suggestedQueuePosition, setValue]);
 
   const handleSelectCallback = (customerId: string) => {
     setValue('customer_id', customerId);
@@ -132,12 +153,6 @@ const ReservationAddModal = (): JSX.Element | null => {
   }
 
   const formId = `reservation-add-form-${apartment.apartment_uuid}`;
-  const maxQueuePosition = Math.max(
-    ...(currentReservations || [])
-      .filter((reservation) => reservation.state !== ApartmentReservationStates.CANCELED)
-      .map((reservation) => reservation.queue_position || 0),
-    1
-  );
   const rejectPreview = () => {
     setPendingFormData(null);
     setPreviewReservations([]);
@@ -171,7 +186,7 @@ const ReservationAddModal = (): JSX.Element | null => {
             invalid={Boolean(errors.queue_position)}
             errorText={errors.queue_position?.message}
             min={1}
-            max={maxQueuePosition}
+            max={suggestedQueuePosition}
             style={{ marginTop: '1rem' }}
             {...register('queue_position', {
               setValueAs: (value) => (value === '' ? null : Number(value)),

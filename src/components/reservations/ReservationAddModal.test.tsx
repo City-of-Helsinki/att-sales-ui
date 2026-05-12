@@ -1,11 +1,13 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 
 import ReservationAddModal from './ReservationAddModal';
+import { ApartmentReservationStates } from '../../enums';
 import { Apartment, Project } from '../../types';
 import { renderReservationAddModalOpened } from '../../test/reservationModalTestUtils';
 
 const mockPreviewMutation = jest.fn();
 const mockCreateMutation = jest.fn();
+let mockCurrentReservations: any = [];
 
 jest.mock('../customers/SelectCustomerDropdown', () => {
   return function MockSelectCustomerDropdown({
@@ -25,6 +27,7 @@ jest.mock('../../redux/services/api', () => {
   const actual = jest.requireActual('../../redux/services/api');
   return {
     ...actual,
+    useGetApartmentReservationsQuery: () => ({ data: mockCurrentReservations }),
     usePreviewApartmentQueueChangeMutation: () => [mockPreviewMutation, { isLoading: false }],
     useCreateApartmentReservationMutation: () => [mockCreateMutation, { isLoading: false }],
   };
@@ -49,6 +52,7 @@ describe('ReservationAddModal preview flow', () => {
   beforeEach(() => {
     mockPreviewMutation.mockReset();
     mockCreateMutation.mockReset();
+    mockCurrentReservations = [];
 
     mockPreviewMutation.mockReturnValue({
       unwrap: () =>
@@ -155,6 +159,109 @@ describe('ReservationAddModal preview flow', () => {
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({
         formData: expect.objectContaining({ submitted_late: false }),
+      })
+    );
+  });
+
+  it('suggests max existing queue position plus one when the queue is non-empty', async () => {
+    mockCurrentReservations = [
+      { id: 1, queue_position: 1, state: ApartmentReservationStates.RESERVED },
+      { id: 2, queue_position: 2, state: ApartmentReservationStates.RESERVED },
+      { id: 3, queue_position: 3, state: ApartmentReservationStates.RESERVED },
+      { id: 4, queue_position: null, state: ApartmentReservationStates.CANCELED },
+    ];
+
+    renderReservationAddModalOpened({ apartment, project });
+
+    const queuePositionInput = await screen.findByRole('spinbutton', {
+      name: 'components.reservations.ReservationAddModal.queuePosition',
+    });
+    await waitFor(() => {
+      expect(queuePositionInput).toHaveValue(4);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockPreviewMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formData: expect.objectContaining({ queue_position: 4 }),
+      })
+    );
+  });
+
+  it('suggests max queue plus one when positions have gaps (not length plus one)', async () => {
+    mockCurrentReservations = [
+      { id: 1, queue_position: 1, state: ApartmentReservationStates.RESERVED },
+      { id: 2, queue_position: 10, state: ApartmentReservationStates.RESERVED },
+    ];
+
+    renderReservationAddModalOpened({ apartment, project });
+
+    const queuePositionInput = await screen.findByRole('spinbutton', {
+      name: 'components.reservations.ReservationAddModal.queuePosition',
+    });
+    await waitFor(() => {
+      expect(queuePositionInput).toHaveValue(11);
+    });
+  });
+
+  it('suggests queue position 1 when the queue is empty', async () => {
+    mockCurrentReservations = [];
+
+    renderReservationAddModalOpened({ apartment, project });
+
+    const queuePositionInput = await screen.findByRole('spinbutton', {
+      name: 'components.reservations.ReservationAddModal.queuePosition',
+    });
+    await waitFor(() => {
+      expect(queuePositionInput).toHaveValue(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockPreviewMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formData: expect.objectContaining({ queue_position: 1 }),
+      })
+    );
+  });
+
+  it('lets the user override the suggested queue position', async () => {
+    mockCurrentReservations = [
+      { id: 1, queue_position: 1, state: ApartmentReservationStates.RESERVED },
+      { id: 2, queue_position: 10, state: ApartmentReservationStates.RESERVED },
+    ];
+
+    renderReservationAddModalOpened({ apartment, project });
+
+    const queuePositionInput = await screen.findByRole('spinbutton', {
+      name: 'components.reservations.ReservationAddModal.queuePosition',
+    });
+    await waitFor(() => {
+      expect(queuePositionInput).toHaveValue(11);
+    });
+
+    fireEvent.change(queuePositionInput, { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockPreviewMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formData: expect.objectContaining({ queue_position: 2 }),
       })
     );
   });
