@@ -3,6 +3,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLazyGetProjectsQuery } from './api';
 import { Project } from '../../types';
 
+function mergeProjectsByPage(resultsByPage: Map<number, Project[]>): Project[] | undefined {
+  const pages = Array.from(resultsByPage.keys()).sort((a, b) => a - b);
+  if (pages.length === 0) return undefined;
+  return pages.reduce<Project[]>((acc, page) => {
+    const pageResults = resultsByPage.get(page);
+    if (!pageResults) return acc;
+    acc.push(...pageResults);
+    return acc;
+  }, []);
+}
+
 /**
  * Fetches every page of `/projects/` concurrently after page 1, while keeping
  * the exposed `projects` array strictly ordered by page number.
@@ -18,20 +29,29 @@ export const useAllProjects = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [isError, setIsError] = useState(false);
 
-  const projects = useMemo(() => {
-    void version;
-    const pages = Array.from(resultsByPageRef.current.keys()).sort((a, b) => a - b);
-    if (pages.length === 0) return undefined;
-    return pages.reduce<Project[]>((acc, page) => {
-      const pageResults = resultsByPageRef.current.get(page);
-      if (!pageResults) return acc;
-      acc.push(...pageResults);
-      return acc;
-    }, []);
-  }, [version]);
+  // `version` bumps when `resultsByPageRef` is mutated; the ref is not a reactive dependency.
+  const projects = useMemo(
+    () => mergeProjectsByPage(resultsByPageRef.current),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional invalidation via bump counter
+    [version]
+  );
 
   useEffect(() => {
     let cancelled = false;
+
+    const fetchPageResults = async (page: number) => {
+      try {
+        const res = await triggerGetProjects({ page, pageSize: PAGE_SIZE }, true).unwrap();
+        if (cancelled) return;
+        resultsByPageRef.current.set(page, res.results);
+        setVersion((v) => v + 1);
+      } catch (error) {
+        console.error(error);
+        if (!cancelled) setIsError(true);
+      } finally {
+        if (!cancelled) setPendingCount((c) => Math.max(0, c - 1));
+      }
+    };
 
     const fetchAll = async () => {
       resultsByPageRef.current = new Map();
@@ -55,28 +75,19 @@ export const useAllProjects = () => {
         if (pagesToFetch.length === 0) return;
 
         setPendingCount(pagesToFetch.length);
-        await Promise.all(
-          pagesToFetch.map(async (page) => {
-            try {
-              const res = await triggerGetProjects({ page, pageSize: PAGE_SIZE }, true).unwrap();
-              if (cancelled) return;
-              resultsByPageRef.current.set(page, res.results);
-              setVersion((v) => v + 1);
-            } catch (e) {
-              if (!cancelled) setIsError(true);
-            } finally {
-              if (!cancelled) setPendingCount((c) => Math.max(0, c - 1));
-            }
-          })
-        );
-      } catch (e) {
+        await Promise.all(pagesToFetch.map((page) => fetchPageResults(page)));
+      } catch (error) {
+        console.error(error);
         if (!cancelled) setIsError(true);
       } finally {
         if (!cancelled) setIsLoadingInitial(false);
       }
     };
 
-    void fetchAll();
+    fetchAll().catch((error) => {
+      console.error(error);
+      if (!cancelled) setIsError(true);
+    });
 
     return () => {
       cancelled = true;

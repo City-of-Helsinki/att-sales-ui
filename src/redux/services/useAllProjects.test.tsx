@@ -28,7 +28,9 @@ describe('useAllProjects', () => {
       const page = args.page;
 
       // Resolve page 3 faster than page 2 to verify ordering logic.
-      const delayMs = page === 2 ? 20 : page === 3 ? 5 : 0;
+      let delayMs = 0;
+      if (page === 2) delayMs = 20;
+      else if (page === 3) delayMs = 5;
 
       return {
         unwrap: () =>
