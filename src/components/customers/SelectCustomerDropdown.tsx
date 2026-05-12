@@ -15,12 +15,40 @@ interface IProps {
   errorMessage?: string;
   hasError?: boolean;
   helpText?: string;
+  // Controls whether the search-results Select is forced open. Defaults to true
+  // to preserve the existing "search and pick" UX; the calling form can set
+  // it to false (e.g. once a preview is active) so the option list collapses.
+  isOpen?: boolean;
+  // Project ownership type from the calling context. When set to "haso" (case
+  // insensitive), customers without a right_of_residence number are filtered
+  // out because they cannot be placed in a HASO apartment queue.
+  ownershipType?: string;
 }
 
-const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, helpText }: IProps) => {
+export const filterCustomersForOwnershipType = (
+  customers: CustomerListItem[],
+  ownershipType?: string
+): CustomerListItem[] => {
+  if ((ownershipType || '').toLowerCase() !== 'haso') {
+    return customers;
+  }
+  return customers.filter(
+    (customer) => customer.right_of_residence !== null && customer.right_of_residence !== undefined
+  );
+};
+
+const SelectCustomerDropdown = ({
+  handleSelectCallback,
+  errorMessage,
+  hasError,
+  helpText,
+  isOpen = true,
+  ownershipType,
+}: IProps) => {
   const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState<string>('');
   const [options, setOptions] = useState<Option[]>([]);
+  const [selectedOption, setSelectedOption] = useState<Option | undefined>(undefined);
   const [didMount, setDidMount] = useState(false);
   const {
     data: customers,
@@ -102,10 +130,23 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
 
     // For successfull results, display found customers as dropdown options
     if (isSuccess && customers) {
-      const customerOptions = mapOptions(customers);
+      const eligibleCustomers = filterCustomersForOwnershipType(customers, ownershipType);
+      if (eligibleCustomers.length === 0) {
+        return setOptions([
+          {
+            label: t(`${T_PATH}.noResults`),
+            value: '',
+            disabled: true,
+            selected: true,
+            isGroupLabel: false,
+            visible: true,
+          },
+        ]);
+      }
+      const customerOptions = mapOptions(eligibleCustomers);
       setOptions(customerOptions);
     }
-  }, [customers, searchValue, isSuccess, isError, isLoading, isFetching, t]);
+  }, [customers, ownershipType, searchValue, isSuccess, isError, isLoading, isFetching, t]);
 
   // Use debounce to optimize the number of calls to the backend while typing rapidly
   const debouncedSearch = useMemo(
@@ -128,11 +169,27 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
     [debouncedSearch]
   );
 
-  // Set the selected customer's ID
-  const handleSelectChange = (selected: Option) => {
-    if (!selected) {
+  // Drop the locally tracked selection when it no longer matches a usable
+  // option (e.g. the user typed a new search and the option list changed).
+  useEffect(() => {
+    setSelectedOption((previous) => {
+      if (!previous) return previous;
+      const stillSelectable = options.some(
+        (option) => option.value === previous.value && !option.disabled && option.value !== ''
+      );
+      return stillSelectable ? previous : undefined;
+    });
+  }, [options]);
+
+  // Set the selected customer's ID, and track it locally so the Select keeps
+  // showing the selected option even after the parent re-renders (e.g. when
+  // pressing "Lisää" to enter the preview state).
+  const handleSelectChange = (selected: Option | undefined) => {
+    if (!selected || !selected.value) {
+      setSelectedOption(undefined);
       return handleSelectCallback('');
     }
+    setSelectedOption(selected);
     return handleSelectCallback(selected.value);
   };
 
@@ -156,6 +213,7 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
         id={'searchCustomer'}
         placeholder={t(`${T_PATH}.searchByName`)}
         label={t(`${T_PATH}.selectCustomer`)}
+        helperText={renderHelpText()}
         onChange={(e) => {
           handleSearch(e.target.value, options);
         }}
@@ -172,8 +230,8 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
           invalid={isError || hasError}
           options={options}
           onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
-          defaultValue={options.find((x: Option) => !x.disabled)?.value}
-          open={true}
+          value={selectedOption ? [selectedOption] : undefined}
+          open={isOpen}
           visibleOptions={8}
           clearable
         />

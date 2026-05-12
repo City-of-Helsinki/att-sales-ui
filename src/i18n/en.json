@@ -402,6 +402,7 @@
   "components.reservations.ReservationAddModal.customerRequired": "Customer selection is required",
   "components.reservations.ReservationAddModal.errorTitle": "Error",
   "components.reservations.ReservationAddModal.noApartmentOrProject": "Project or apartment data is not available",
+  "components.reservations.ReservationAddModal.previewAdded": "Being added",
   "components.reservations.ReservationAddModal.previewReady": "Queue preview is ready. Confirm to apply changes.",
   "components.reservations.ReservationAddModal.previewTitle": "Queue preview",
   "components.reservations.ReservationAddModal.queuePosition": "Queue position",

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useForm, SubmitHandler, get } from 'react-hook-form';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
 import { Button, ButtonVariant, Checkbox, Dialog, TextInput } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
@@ -7,6 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
 import ReservationApartmentDetails from './ReservationApartmentDetails';
+import ReservationQueuePreview from './ReservationQueuePreview';
 import SelectCustomerDropdown from '../customers/SelectCustomerDropdown';
 import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
@@ -51,13 +52,26 @@ const ReservationAddModal = (): JSX.Element | null => {
     submitted_late: yup.bool().optional(),
   });
   const {
+    control,
     handleSubmit,
     register,
+    reset,
     setValue,
     formState: { errors },
   } = useForm<ReservationAddFormData>({
     resolver: yupResolver(schema),
   });
+
+  const activeReservations = useMemo(
+    () =>
+      (currentReservations || []).filter((reservation) => reservation.state !== ApartmentReservationStates.CANCELED),
+    [currentReservations]
+  );
+  const maxExistingQueuePosition = Math.max(
+    0,
+    ...activeReservations.map((reservation) => reservation.queue_position ?? 0)
+  );
+  const suggestedQueuePosition = maxExistingQueuePosition + 1;
 
   useEffect(() => {
     if (apartment) {
@@ -66,11 +80,36 @@ const ReservationAddModal = (): JSX.Element | null => {
     }
   }, [apartment, setValue]);
 
+  // Suggest max(existing queue_position among active reservations) + 1 once data
+  // has loaded. Only fires once per apartment so user edits are preserved across refetches.
+  const queuePositionInitializedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!apartment || !currentReservations) return;
+    if (queuePositionInitializedRef.current === apartment.apartment_uuid) return;
+    queuePositionInitializedRef.current = apartment.apartment_uuid;
+    setValue('queue_position', suggestedQueuePosition);
+  }, [apartment, currentReservations, suggestedQueuePosition, setValue]);
+
   const handleSelectCallback = (customerId: string) => {
     setValue('customer_id', customerId);
   };
 
-  const closeDialog = () => dispatch(hideReservationAddModal());
+  // ReservationAddModal is always mounted in MainLayout and only returns null
+  // when closed, so internal state survives close/reopen unless explicitly
+  // cleared here.
+  const closeDialog = () => {
+    setPendingFormData(null);
+    setPreviewReservations([]);
+    setIsLoading(false);
+    queuePositionInitializedRef.current = null;
+    reset({
+      apartment_uuid: '',
+      customer_id: '',
+      queue_position: null,
+      submitted_late: false,
+    });
+    dispatch(hideReservationAddModal());
+  };
 
   const persistReservation = async (data: ReservationAddFormData) => {
     const projectId = project?.uuid || '';
@@ -131,12 +170,6 @@ const ReservationAddModal = (): JSX.Element | null => {
   }
 
   const formId = `reservation-add-form-${apartment.apartment_uuid}`;
-  const maxQueuePosition = Math.max(
-    ...(currentReservations || [])
-      .filter((reservation) => reservation.state !== ApartmentReservationStates.CANCELED)
-      .map((reservation) => reservation.queue_position || 0),
-    1
-  );
   const rejectPreview = () => {
     setPendingFormData(null);
     setPreviewReservations([]);
@@ -160,6 +193,8 @@ const ReservationAddModal = (): JSX.Element | null => {
             handleSelectCallback={handleSelectCallback}
             errorMessage={get(errors, 'customer_id')?.message}
             hasError={Boolean(get(errors, 'customer_id'))}
+            isOpen={!pendingFormData}
+            ownershipType={project.ownership_type}
           />
           <input {...register('customer_id')} readOnly hidden />
           <input {...register('apartment_uuid')} readOnly hidden />
@@ -170,32 +205,38 @@ const ReservationAddModal = (): JSX.Element | null => {
             invalid={Boolean(errors.queue_position)}
             errorText={errors.queue_position?.message}
             min={1}
-            max={maxQueuePosition}
+            max={suggestedQueuePosition}
             style={{ marginTop: '1rem' }}
             {...register('queue_position', {
               setValueAs: (value) => (value === '' ? null : Number(value)),
             })}
           />
-          <Checkbox
-            id="submittedLate"
-            label={t(`${T_PATH}.submittedLate`)}
-            style={{ marginTop: '1rem' }}
-            {...register('submitted_late')}
+          <Controller
+            name="submitted_late"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="submittedLate"
+                label={t(`${T_PATH}.submittedLate`)}
+                style={{ marginTop: '1rem' }}
+                checked={Boolean(field.value)}
+                onChange={(event) => field.onChange(event.target.checked)}
+              />
+            )}
           />
         </form>
         {pendingFormData && (
           <div style={{ marginTop: '1rem' }}>
-            <strong>{t(`${T_PATH}.previewTitle`)}</strong>
-            {/* New applicant placement decisions are made against active queue;
-                hiding canceled rows keeps the confirmation view focused. */}
-            {previewReservations
-              .filter((previewReservation) => previewReservation.state !== ApartmentReservationStates.CANCELED)
-              .map((previewReservation) => (
-                <div key={previewReservation.id}>
-                  {previewReservation.queue_position}. {previewReservation.customer.primary_profile.last_name}{' '}
-                  {previewReservation.customer.primary_profile.first_name}
-                </div>
-              ))}
+            <ReservationQueuePreview
+              title={t(`${T_PATH}.previewTitle`)}
+              rows={previewReservations}
+              currentReservations={currentReservations || []}
+              // The added reservation has no matching id among current reservations;
+              // treat it like the "edited" row in ReservationEditModal so it stands out.
+              isHighlightedRow={(row) => row.id === null || row.id === undefined}
+              highlightedTag={t(`${T_PATH}.previewAdded`)}
+              rowTestIdPrefix="preview-row"
+            />
           </div>
         )}
       </Dialog.Content>
