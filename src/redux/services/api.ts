@@ -178,7 +178,7 @@ export const api = createApi({
       Paginated<CustomerReservation>,
       { customerId: string; page: number; pageSize?: number }
     >({
-      query: ({ customerId, page, pageSize = 5 }) =>
+      query: ({ customerId, page, pageSize = 20 }) =>
         `customers/${customerId}/apartment_reservations/?page=${page}&page_size=${pageSize}`,
       providesTags: (result, error, arg) => [{ type: 'Customer', id: arg.customerId }],
     }),

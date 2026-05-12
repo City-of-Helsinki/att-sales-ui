@@ -24,7 +24,7 @@ export const useAllCustomerReservations = (customerId: string | undefined) => {
   }, [customerId]);
 
   const { currentData, data, isLoading, isFetching, isError } = useGetCustomerReservationsQuery(
-    { customerId: customerId || '0', page, pageSize: 5 },
+    { customerId: customerId || '0', page, pageSize: 20 },
     { skip: !customerId }
   );
 
