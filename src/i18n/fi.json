@@ -402,6 +402,7 @@
   "components.reservations.ReservationAddModal.customerRequired": "Asiakkaan valinta on pakollinen kenttä",
   "components.reservations.ReservationAddModal.errorTitle": "Virhe",
   "components.reservations.ReservationAddModal.noApartmentOrProject": "Projektin tai huoneiston tietoja ei saatavilla",
+  "components.reservations.ReservationAddModal.previewAdded": "Lisättävä",
   "components.reservations.ReservationAddModal.previewReady": "Jonoesikatselu on valmis. Vahvista muutokset tallentaaksesi.",
   "components.reservations.ReservationAddModal.previewTitle": "Jonon esikatselu",
   "components.reservations.ReservationAddModal.queuePosition": "Jonosijoitus",

@@ -1,6 +1,5 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 
-import ReservationAddModal from './ReservationAddModal';
 import { ApartmentReservationStates } from '../../enums';
 import { showReservationAddModal } from '../../redux/features/reservationAddModalSlice';
 import { Apartment, Project } from '../../types';
@@ -16,6 +15,7 @@ jest.mock('../customers/SelectCustomerDropdown', () => {
   return function MockSelectCustomerDropdown(props: {
     handleSelectCallback: (customerId: string) => void;
     ownershipType?: string;
+    isOpen?: boolean;
   }) {
     mockSelectCustomerDropdownProps(props);
     return (
@@ -240,6 +240,71 @@ describe('ReservationAddModal preview flow', () => {
     );
   });
 
+  it('renders preview rows with old → new position diffs and highlights the new applicant', async () => {
+    mockCurrentReservations = [
+      {
+        id: 1,
+        queue_position: 1,
+        state: ApartmentReservationStates.RESERVED,
+        customer: { primary_profile: { first_name: 'Foo', last_name: 'Foo' } },
+      },
+      {
+        id: 2,
+        queue_position: 2,
+        state: ApartmentReservationStates.RESERVED,
+        customer: { primary_profile: { first_name: 'Bar', last_name: 'Bar' } },
+      },
+    ];
+    mockPreviewMutation.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve([
+          {
+            id: null,
+            queue_position: 1,
+            state: ApartmentReservationStates.RESERVED,
+            customer: { primary_profile: { first_name: 'New', last_name: 'Applicant' } },
+          },
+          {
+            id: 1,
+            queue_position: 2,
+            state: ApartmentReservationStates.RESERVED,
+            customer: { primary_profile: { first_name: 'Foo', last_name: 'Foo' } },
+          },
+          {
+            id: 2,
+            queue_position: 3,
+            state: ApartmentReservationStates.RESERVED,
+            customer: { primary_profile: { first_name: 'Bar', last_name: 'Bar' } },
+          },
+        ]),
+    });
+
+    renderReservationAddModalOpened({ apartment, project });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(screen.getByText('components.reservations.ReservationAddModal.previewAdded')).toBeInTheDocument();
+
+    const newApplicantRow = screen.getByTestId('preview-row-new');
+    expect(within(newApplicantRow).getByText(/Applicant New/)).toBeInTheDocument();
+    expect(newApplicantRow.textContent).toContain('1.');
+
+    const fooRow = screen.getByTestId('preview-row-1');
+    expect(within(fooRow).getByText(/Foo Foo/)).toBeInTheDocument();
+    expect(fooRow.textContent).toContain('1');
+    expect(fooRow.textContent).toContain('2');
+
+    const barRow = screen.getByTestId('preview-row-2');
+    expect(within(barRow).getByText(/Bar Bar/)).toBeInTheDocument();
+    expect(barRow.textContent).toContain('2');
+    expect(barRow.textContent).toContain('3');
+  });
+
   it('forwards the project ownership type to the customer dropdown so HASO filtering can apply', () => {
     renderReservationAddModalOpened({ apartment, project });
 
@@ -251,6 +316,25 @@ describe('ReservationAddModal preview flow', () => {
     renderReservationAddModalOpened({ apartment, project: hitasProject });
 
     expect(mockSelectCustomerDropdownProps).toHaveBeenCalledWith(expect.objectContaining({ ownershipType: 'hitas' }));
+  });
+
+  it('keeps the customer dropdown closed while the preview is active', async () => {
+    renderReservationAddModalOpened({ apartment, project });
+
+    expect(mockSelectCustomerDropdownProps).toHaveBeenLastCalledWith(expect.objectContaining({ isOpen: true }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockSelectCustomerDropdownProps).toHaveBeenLastCalledWith(expect.objectContaining({ isOpen: false }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.reject' }));
+
+    expect(mockSelectCustomerDropdownProps).toHaveBeenLastCalledWith(expect.objectContaining({ isOpen: true }));
   });
 
   it('resets form state when the close (X) button is pressed and the modal is reopened', async () => {

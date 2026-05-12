@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
-import { Button, ButtonVariant, Checkbox, Dialog, TextInput } from 'hds-react';
+import { Button, ButtonVariant, Checkbox, Dialog, IconArrowRight, IconSize, TextInput } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -169,6 +169,9 @@ const ReservationAddModal = (): JSX.Element | null => {
   }
 
   const formId = `reservation-add-form-${apartment.apartment_uuid}`;
+  const currentPositionsById = new Map(
+    (currentReservations || []).map((current) => [current.id, current.queue_position])
+  );
   const rejectPreview = () => {
     setPendingFormData(null);
     setPreviewReservations([]);
@@ -192,6 +195,7 @@ const ReservationAddModal = (): JSX.Element | null => {
             handleSelectCallback={handleSelectCallback}
             errorMessage={get(errors, 'customer_id')?.message}
             hasError={Boolean(get(errors, 'customer_id'))}
+            isOpen={!pendingFormData}
             ownershipType={project.ownership_type}
           />
           <input {...register('customer_id')} readOnly hidden />
@@ -224,18 +228,53 @@ const ReservationAddModal = (): JSX.Element | null => {
           />
         </form>
         {pendingFormData && (
-          <div style={{ marginTop: '1rem' }}>
+          <div className={styles.editDialogPreviewColumn} style={{ marginTop: '1rem' }}>
             <strong>{t(`${T_PATH}.previewTitle`)}</strong>
-            {/* New applicant placement decisions are made against active queue;
-                hiding canceled rows keeps the confirmation view focused. */}
-            {previewReservations
-              .filter((previewReservation) => previewReservation.state !== ApartmentReservationStates.CANCELED)
-              .map((previewReservation) => (
-                <div key={previewReservation.id}>
-                  {previewReservation.queue_position}. {previewReservation.customer.primary_profile.last_name}{' '}
-                  {previewReservation.customer.primary_profile.first_name}
-                </div>
-              ))}
+            <div className={styles.previewSectionColumn}>
+              {/* New applicant placement decisions are made against active queue;
+                  hiding canceled rows keeps the confirmation view focused. */}
+              {previewReservations
+                .filter((previewReservation) => previewReservation.state !== ApartmentReservationStates.CANCELED)
+                .sort((a, b) => (a.queue_position || 0) - (b.queue_position || 0))
+                .map((previewReservation) => {
+                  const oldPosition = currentPositionsById.get(previewReservation.id);
+                  const newPosition = previewReservation.queue_position;
+                  // The added reservation has no matching id among current reservations;
+                  // treat it like the "edited" row in ReservationEditModal so it stands out.
+                  const isNewReservation = oldPosition === undefined;
+                  const showDiff =
+                    !isNewReservation && oldPosition !== null && newPosition !== undefined && newPosition !== null;
+                  const isChanged = showDiff && oldPosition !== newPosition;
+                  return (
+                    <div
+                      key={`${previewReservation.id ?? 'new'}-${newPosition ?? 'x'}`}
+                      data-testid={`preview-row-${previewReservation.id ?? 'new'}`}
+                      className={`${styles.previewRow} ${isChanged ? styles.previewRowChanged : ''} ${
+                        isNewReservation ? styles.previewRowEdited : ''
+                      }`}
+                    >
+                      <span className={styles.previewRowPosition}>
+                        {isChanged ? (
+                          <span className={styles.previewPositionDiff}>
+                            <span>{oldPosition}</span>
+                            <IconArrowRight size={IconSize.ExtraSmall} aria-hidden />
+                            <span>{newPosition}</span>
+                          </span>
+                        ) : (
+                          `${newPosition}.`
+                        )}
+                      </span>
+                      <span className={styles.previewRowName}>
+                        {previewReservation.customer.primary_profile.last_name}{' '}
+                        {previewReservation.customer.primary_profile.first_name}
+                        {isNewReservation && (
+                          <span className={styles.previewEditedTag}> {t(`${T_PATH}.previewAdded`)}</span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
         )}
       </Dialog.Content>
