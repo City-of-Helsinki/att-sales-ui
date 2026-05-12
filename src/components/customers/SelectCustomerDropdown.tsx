@@ -15,9 +15,25 @@ interface IProps {
   errorMessage?: string;
   hasError?: boolean;
   helpText?: string;
+  // Project ownership type from the calling context. When set to "haso" (case
+  // insensitive), customers without a right_of_residence number are filtered
+  // out because they cannot be placed in a HASO apartment queue.
+  ownershipType?: string;
 }
 
-const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, helpText }: IProps) => {
+export const filterCustomersForOwnershipType = (
+  customers: CustomerListItem[],
+  ownershipType?: string
+): CustomerListItem[] => {
+  if ((ownershipType || '').toLowerCase() !== 'haso') {
+    return customers;
+  }
+  return customers.filter(
+    (customer) => customer.right_of_residence !== null && customer.right_of_residence !== undefined
+  );
+};
+
+const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, helpText, ownershipType }: IProps) => {
   const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState<string>('');
   const [options, setOptions] = useState<Option[]>([]);
@@ -102,10 +118,23 @@ const SelectCustomerDropdown = ({ handleSelectCallback, errorMessage, hasError, 
 
     // For successfull results, display found customers as dropdown options
     if (isSuccess && customers) {
-      const customerOptions = mapOptions(customers);
+      const eligibleCustomers = filterCustomersForOwnershipType(customers, ownershipType);
+      if (eligibleCustomers.length === 0) {
+        return setOptions([
+          {
+            label: t(`${T_PATH}.noResults`),
+            value: '',
+            disabled: true,
+            selected: true,
+            isGroupLabel: false,
+            visible: true,
+          },
+        ]);
+      }
+      const customerOptions = mapOptions(eligibleCustomers);
       setOptions(customerOptions);
     }
-  }, [customers, searchValue, isSuccess, isError, isLoading, isFetching, t]);
+  }, [customers, ownershipType, searchValue, isSuccess, isError, isLoading, isFetching, t]);
 
   // Use debounce to optimize the number of calls to the backend while typing rapidly
   const debouncedSearch = useMemo(

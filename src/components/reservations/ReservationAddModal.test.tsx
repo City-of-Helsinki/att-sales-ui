@@ -1,7 +1,8 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 
 import ReservationAddModal from './ReservationAddModal';
 import { ApartmentReservationStates } from '../../enums';
+import { showReservationAddModal } from '../../redux/features/reservationAddModalSlice';
 import { Apartment, Project } from '../../types';
 import { renderReservationAddModalOpened } from '../../test/reservationModalTestUtils';
 
@@ -9,14 +10,16 @@ const mockPreviewMutation = jest.fn();
 const mockCreateMutation = jest.fn();
 let mockCurrentReservations: any = [];
 
+const mockSelectCustomerDropdownProps = jest.fn();
+
 jest.mock('../customers/SelectCustomerDropdown', () => {
-  return function MockSelectCustomerDropdown({
-    handleSelectCallback,
-  }: {
+  return function MockSelectCustomerDropdown(props: {
     handleSelectCallback: (customerId: string) => void;
+    ownershipType?: string;
   }) {
+    mockSelectCustomerDropdownProps(props);
     return (
-      <button type="button" onClick={() => handleSelectCallback('10')}>
+      <button type="button" onClick={() => props.handleSelectCallback('10')}>
         select-customer
       </button>
     );
@@ -52,6 +55,7 @@ describe('ReservationAddModal preview flow', () => {
   beforeEach(() => {
     mockPreviewMutation.mockReset();
     mockCreateMutation.mockReset();
+    mockSelectCustomerDropdownProps.mockReset();
     mockCurrentReservations = [];
 
     mockPreviewMutation.mockReturnValue({
@@ -232,6 +236,78 @@ describe('ReservationAddModal preview flow', () => {
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({
         formData: expect.objectContaining({ queue_position: 1 }),
+      })
+    );
+  });
+
+  it('forwards the project ownership type to the customer dropdown so HASO filtering can apply', () => {
+    renderReservationAddModalOpened({ apartment, project });
+
+    expect(mockSelectCustomerDropdownProps).toHaveBeenCalledWith(expect.objectContaining({ ownershipType: 'haso' }));
+  });
+
+  it('forwards a hitas ownership type to the customer dropdown without filtering', () => {
+    const hitasProject = { ...project, ownership_type: 'hitas' } as Project;
+    renderReservationAddModalOpened({ apartment, project: hitasProject });
+
+    expect(mockSelectCustomerDropdownProps).toHaveBeenCalledWith(expect.objectContaining({ ownershipType: 'hitas' }));
+  });
+
+  it('resets form state when the close (X) button is pressed and the modal is reopened', async () => {
+    mockCurrentReservations = [];
+
+    const { store } = renderReservationAddModalOpened({ apartment, project });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+
+    const lateCheckbox = screen.getByRole('checkbox', {
+      name: 'components.reservations.ReservationAddModal.submittedLate',
+    });
+    fireEvent.click(lateCheckbox);
+    expect(lateCheckbox).toBeChecked();
+
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByText('components.reservations.ReservationAddModal.previewTitle')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.closeDialog' }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('checkbox', { name: 'components.reservations.ReservationAddModal.submittedLate' })
+      ).toBeNull();
+    });
+
+    act(() => {
+      store.dispatch(showReservationAddModal({ apartment, project }));
+    });
+
+    expect(screen.queryByText('components.reservations.ReservationAddModal.previewTitle')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'components.reservations.ReservationAddModal.confirm' })).toBeNull();
+
+    const reopenedLateCheckbox = screen.getByRole('checkbox', {
+      name: 'components.reservations.ReservationAddModal.submittedLate',
+    });
+    expect(reopenedLateCheckbox).not.toBeChecked();
+
+    const reopenedQueueInput = screen.getByRole('spinbutton', {
+      name: 'components.reservations.ReservationAddModal.queuePosition',
+    });
+    expect(reopenedQueueInput).toHaveValue(1);
+
+    mockPreviewMutation.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+    expect(mockPreviewMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formData: expect.objectContaining({ submitted_late: false }),
       })
     );
   });

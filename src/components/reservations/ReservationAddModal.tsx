@@ -54,6 +54,7 @@ const ReservationAddModal = (): JSX.Element | null => {
     control,
     handleSubmit,
     register,
+    reset,
     setValue,
     formState: { errors },
   } = useForm<ReservationAddFormData>({
@@ -92,7 +93,22 @@ const ReservationAddModal = (): JSX.Element | null => {
     setValue('customer_id', customerId);
   };
 
-  const closeDialog = () => dispatch(hideReservationAddModal());
+  // ReservationAddModal is always mounted in MainLayout and only returns null
+  // when closed, so internal state survives close/reopen unless explicitly
+  // cleared here.
+  const closeDialog = () => {
+    setPendingFormData(null);
+    setPreviewReservations([]);
+    setIsLoading(false);
+    queuePositionInitializedRef.current = null;
+    reset({
+      apartment_uuid: '',
+      customer_id: '',
+      queue_position: null,
+      submitted_late: false,
+    });
+    dispatch(hideReservationAddModal());
+  };
 
   const persistReservation = async (data: ReservationAddFormData) => {
     const projectId = project?.uuid || '';
@@ -176,6 +192,7 @@ const ReservationAddModal = (): JSX.Element | null => {
             handleSelectCallback={handleSelectCallback}
             errorMessage={get(errors, 'customer_id')?.message}
             hasError={Boolean(get(errors, 'customer_id'))}
+            ownershipType={project.ownership_type}
           />
           <input {...register('customer_id')} readOnly hidden />
           <input {...register('apartment_uuid')} readOnly hidden />
