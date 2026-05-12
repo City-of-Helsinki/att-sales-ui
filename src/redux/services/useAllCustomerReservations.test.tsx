@@ -71,13 +71,13 @@ describe('useAllCustomerReservations', () => {
     const { result, waitFor } = renderHook(() => useAllCustomerReservations('42'));
 
     expect(mockedUseGetCustomerReservationsQuery).toHaveBeenCalledWith(
-      { customerId: '42', page: 1, pageSize: 5 },
+      { customerId: '42', page: 1, pageSize: 20 },
       { skip: false }
     );
 
     await waitFor(() => {
       expect(mockedUseGetCustomerReservationsQuery).toHaveBeenCalledWith(
-        { customerId: '42', page: 2, pageSize: 5 },
+        { customerId: '42', page: 2, pageSize: 20 },
         { skip: false }
       );
     });
