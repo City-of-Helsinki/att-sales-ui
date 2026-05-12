@@ -5,6 +5,26 @@ import { showReservationAddModal } from '../../redux/features/reservationAddModa
 import { Apartment, Project } from '../../types';
 import { renderReservationAddModalOpened } from '../../test/reservationModalTestUtils';
 
+const T = 'components.reservations.ReservationAddModal';
+
+const clickSelectCustomer = () => fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+const clickAddButton = () => fireEvent.click(screen.getByRole('button', { name: `${T}.addBtn` }));
+const getQueuePositionInput = () => screen.getByRole('spinbutton', { name: `${T}.queuePosition` });
+const findQueuePositionInput = () => screen.findByRole('spinbutton', { name: `${T}.queuePosition` });
+const getLateCheckbox = () => screen.getByRole('checkbox', { name: `${T}.submittedLate` });
+
+const submitAndWaitForPreview = async () => {
+  clickAddButton();
+  await waitFor(() => {
+    expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+  });
+};
+
+const selectCustomerAndPreview = async () => {
+  clickSelectCustomer();
+  await submitAndWaitForPreview();
+};
+
 const mockPreviewMutation = jest.fn();
 const mockCreateMutation = jest.fn();
 let mockCurrentReservations: any = [];
@@ -78,29 +98,18 @@ describe('ReservationAddModal preview flow', () => {
   it('previews add before persisting reservation', async () => {
     renderReservationAddModalOpened({ apartment, project });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.change(screen.getByLabelText('components.reservations.ReservationAddModal.queuePosition'), {
-      target: { value: '1' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+    clickSelectCustomer();
+    fireEvent.change(screen.getByLabelText(`${T}.queuePosition`), { target: { value: '1' } });
+    await submitAndWaitForPreview();
 
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
     expect(mockCreateMutation).not.toHaveBeenCalled();
   });
 
   it('creates reservation after preview confirmation', async () => {
     renderReservationAddModalOpened({ apartment, project });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.confirm' }));
+    await selectCustomerAndPreview();
+    fireEvent.click(screen.getByRole('button', { name: `${T}.confirm` }));
 
     await waitFor(() => {
       expect(mockCreateMutation).toHaveBeenCalledTimes(1);
@@ -110,38 +119,26 @@ describe('ReservationAddModal preview flow', () => {
   it('can reject add preview without creating reservation', async () => {
     renderReservationAddModalOpened({ apartment, project });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+    await selectCustomerAndPreview();
 
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    expect(screen.getByText(`${T}.previewTitle`)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: `${T}.reject` }));
 
-    expect(screen.getByText('components.reservations.ReservationAddModal.previewTitle')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.reject' }));
-
-    expect(screen.queryByRole('button', { name: 'components.reservations.ReservationAddModal.confirm' })).toBeNull();
+    expect(screen.queryByRole('button', { name: `${T}.confirm` })).toBeNull();
     expect(mockCreateMutation).not.toHaveBeenCalled();
   });
 
   it('sends submitted_late=true to the preview when the late application checkbox is toggled on', async () => {
     renderReservationAddModalOpened({ apartment, project });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    clickSelectCustomer();
 
-    const lateCheckbox = screen.getByRole('checkbox', {
-      name: 'components.reservations.ReservationAddModal.submittedLate',
-    });
+    const lateCheckbox = getLateCheckbox();
     expect(lateCheckbox).not.toBeChecked();
-
     fireEvent.click(lateCheckbox);
     expect(lateCheckbox).toBeChecked();
 
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await submitAndWaitForPreview();
 
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -153,12 +150,7 @@ describe('ReservationAddModal preview flow', () => {
   it('defaults submitted_late to false in the preview payload', async () => {
     renderReservationAddModalOpened({ apartment, project });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await selectCustomerAndPreview();
 
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -177,19 +169,12 @@ describe('ReservationAddModal preview flow', () => {
 
     renderReservationAddModalOpened({ apartment, project });
 
-    const queuePositionInput = await screen.findByRole('spinbutton', {
-      name: 'components.reservations.ReservationAddModal.queuePosition',
-    });
+    const queuePositionInput = await findQueuePositionInput();
     await waitFor(() => {
       expect(queuePositionInput).toHaveValue(4);
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await selectCustomerAndPreview();
 
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -206,9 +191,7 @@ describe('ReservationAddModal preview flow', () => {
 
     renderReservationAddModalOpened({ apartment, project });
 
-    const queuePositionInput = await screen.findByRole('spinbutton', {
-      name: 'components.reservations.ReservationAddModal.queuePosition',
-    });
+    const queuePositionInput = await findQueuePositionInput();
     await waitFor(() => {
       expect(queuePositionInput).toHaveValue(11);
     });
@@ -219,19 +202,12 @@ describe('ReservationAddModal preview flow', () => {
 
     renderReservationAddModalOpened({ apartment, project });
 
-    const queuePositionInput = await screen.findByRole('spinbutton', {
-      name: 'components.reservations.ReservationAddModal.queuePosition',
-    });
+    const queuePositionInput = await findQueuePositionInput();
     await waitFor(() => {
       expect(queuePositionInput).toHaveValue(1);
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await selectCustomerAndPreview();
 
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -281,14 +257,9 @@ describe('ReservationAddModal preview flow', () => {
 
     renderReservationAddModalOpened({ apartment, project });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+    await selectCustomerAndPreview();
 
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
-
-    expect(screen.getByText('components.reservations.ReservationAddModal.previewAdded')).toBeInTheDocument();
+    expect(screen.getByText(`${T}.previewAdded`)).toBeInTheDocument();
 
     const newApplicantRow = screen.getByTestId('preview-row-new');
     expect(within(newApplicantRow).getByText(/Applicant New/)).toBeInTheDocument();
@@ -323,16 +294,11 @@ describe('ReservationAddModal preview flow', () => {
 
     expect(mockSelectCustomerDropdownProps).toHaveBeenLastCalledWith(expect.objectContaining({ isOpen: true }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await selectCustomerAndPreview();
 
     expect(mockSelectCustomerDropdownProps).toHaveBeenLastCalledWith(expect.objectContaining({ isOpen: false }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.reject' }));
+    fireEvent.click(screen.getByRole('button', { name: `${T}.reject` }));
 
     expect(mockSelectCustomerDropdownProps).toHaveBeenLastCalledWith(expect.objectContaining({ isOpen: true }));
   });
@@ -342,53 +308,33 @@ describe('ReservationAddModal preview flow', () => {
 
     const { store } = renderReservationAddModalOpened({ apartment, project });
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    clickSelectCustomer();
 
-    const lateCheckbox = screen.getByRole('checkbox', {
-      name: 'components.reservations.ReservationAddModal.submittedLate',
-    });
+    const lateCheckbox = getLateCheckbox();
     fireEvent.click(lateCheckbox);
     expect(lateCheckbox).toBeChecked();
 
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+    await submitAndWaitForPreview();
+    expect(screen.getByText(`${T}.previewTitle`)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: `${T}.closeDialog` }));
 
     await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
-    expect(screen.getByText('components.reservations.ReservationAddModal.previewTitle')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.closeDialog' }));
-
-    await waitFor(() => {
-      expect(
-        screen.queryByRole('checkbox', { name: 'components.reservations.ReservationAddModal.submittedLate' })
-      ).toBeNull();
+      expect(screen.queryByRole('checkbox', { name: `${T}.submittedLate` })).toBeNull();
     });
 
     act(() => {
       store.dispatch(showReservationAddModal({ apartment, project }));
     });
 
-    expect(screen.queryByText('components.reservations.ReservationAddModal.previewTitle')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'components.reservations.ReservationAddModal.confirm' })).toBeNull();
+    expect(screen.queryByText(`${T}.previewTitle`)).toBeNull();
+    expect(screen.queryByRole('button', { name: `${T}.confirm` })).toBeNull();
 
-    const reopenedLateCheckbox = screen.getByRole('checkbox', {
-      name: 'components.reservations.ReservationAddModal.submittedLate',
-    });
-    expect(reopenedLateCheckbox).not.toBeChecked();
-
-    const reopenedQueueInput = screen.getByRole('spinbutton', {
-      name: 'components.reservations.ReservationAddModal.queuePosition',
-    });
-    expect(reopenedQueueInput).toHaveValue(1);
+    expect(getLateCheckbox()).not.toBeChecked();
+    expect(getQueuePositionInput()).toHaveValue(1);
 
     mockPreviewMutation.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await selectCustomerAndPreview();
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({
         formData: expect.objectContaining({ submitted_late: false }),
@@ -404,20 +350,13 @@ describe('ReservationAddModal preview flow', () => {
 
     renderReservationAddModalOpened({ apartment, project });
 
-    const queuePositionInput = await screen.findByRole('spinbutton', {
-      name: 'components.reservations.ReservationAddModal.queuePosition',
-    });
+    const queuePositionInput = await findQueuePositionInput();
     await waitFor(() => {
       expect(queuePositionInput).toHaveValue(11);
     });
 
     fireEvent.change(queuePositionInput, { target: { value: '2' } });
-    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
-
-    await waitFor(() => {
-      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
-    });
+    await selectCustomerAndPreview();
 
     expect(mockPreviewMutation).toHaveBeenCalledWith(
       expect.objectContaining({

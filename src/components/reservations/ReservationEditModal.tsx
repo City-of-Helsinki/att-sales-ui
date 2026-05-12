@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, ButtonVariant, Dialog, IconArrowRight, IconInfoCircle, IconSize } from 'hds-react';
+import { Button, ButtonVariant, Dialog, IconInfoCircle } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 
 import ReservationEditForm from './ReservationEditForm';
+import ReservationQueuePreview from './ReservationQueuePreview';
 import { ApartmentReservationStates } from '../../enums';
 import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
@@ -210,20 +211,11 @@ const ReservationEditModal = (): JSX.Element | null => {
       apartmentId: apartmentId,
     }).unwrap();
   };
-  const currentPositionsById = new Map(
-    (currentReservations || []).map((current) => [current.id, current.queue_position])
-  );
   const previewRows = previewReservations.length > 0 ? previewReservations : currentReservations || [];
-  // Sales users optimize active queue order; hiding canceled rows reduces noise
-  // and makes actual position changes easier to validate quickly.
-  const activeRows = previewRows
+  const activeQueuePositions = previewRows
     .filter((row) => row.state !== ApartmentReservationStates.CANCELED)
-    .sort((a, b) => (a.queue_position || 0) - (b.queue_position || 0));
-  const maxQueuePosition = Math.max(
-    ...activeRows.map((row) => row.queue_position || 0),
-    reservation.queue_position || 0,
-    1
-  );
+    .map((row) => row.queue_position || 0);
+  const maxQueuePosition = Math.max(...activeQueuePositions, reservation.queue_position || 0, 1);
 
   return (
     <Dialog
@@ -285,54 +277,17 @@ const ReservationEditModal = (): JSX.Element | null => {
             </div>
           </div>
           {previewRows.length > 0 && (
-            <div className={styles.editDialogPreviewColumn}>
-              <strong>{t(`${T_PATH}.previewTitle`)}</strong>
-              <div className={styles.previewSectionColumn}>
-                {activeRows.map((previewReservation) => {
-                  const oldPosition = currentPositionsById.get(previewReservation.id);
-                  const newPosition = previewReservation.queue_position;
-                  const showDiff =
-                    oldPosition !== undefined &&
-                    oldPosition !== null &&
-                    newPosition !== undefined &&
-                    newPosition !== null;
-                  const isChanged = Boolean(pendingFormData) && showDiff && oldPosition !== newPosition;
-                  const isEditedReservation = previewReservation.id === reservation.id;
-
-                  return (
-                    <div
-                      key={previewReservation.id}
-                      className={`${styles.previewRow} ${isChanged ? styles.previewRowChanged : ''} ${
-                        isEditedReservation ? styles.previewRowEdited : ''
-                      }`}
-                    >
-                      <span className={styles.previewRowPosition}>
-                        {showDiff ? (
-                          oldPosition !== newPosition ? (
-                            <span className={styles.previewPositionDiff}>
-                              <span>{oldPosition}</span>
-                              <IconArrowRight size={IconSize.ExtraSmall} aria-hidden />
-                              <span>{newPosition}</span>
-                            </span>
-                          ) : (
-                            `${newPosition}.`
-                          )
-                        ) : (
-                          `${newPosition}.`
-                        )}
-                      </span>
-                      <span className={styles.previewRowName}>
-                        {previewReservation.customer?.primary_profile?.last_name ?? ''}{' '}
-                        {previewReservation.customer?.primary_profile?.first_name ?? ''}
-                        {isEditedReservation && (
-                          <span className={styles.previewEditedTag}> {t(`${T_PATH}.previewEdited`)}</span>
-                        )}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <ReservationQueuePreview
+              title={t(`${T_PATH}.previewTitle`)}
+              rows={previewRows}
+              currentReservations={currentReservations || []}
+              isHighlightedRow={(row) => row.id === reservation.id}
+              highlightedTag={t(`${T_PATH}.previewEdited`)}
+              // The "row changed" background should only appear once the user
+              // has queued a save; while they are still actively editing the
+              // form fields, keep the diff arrow but not the highlight.
+              applyChangedRowStyle={Boolean(pendingFormData)}
+            />
           )}
         </div>
       </Dialog.Content>
