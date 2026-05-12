@@ -15,15 +15,17 @@ describe('useAllProjects', () => {
   });
 
   it('loads pages concurrently but keeps order', async () => {
+    // total item count drives page count (ceil(count / pageSize)); need 3 pages and
+    // enough rows that projects.length >= count for isComplete.
+    const totalItemCount = 22;
+    const resultsByPage: Record<number, { uuid: string }[]> = {
+      1: [{ uuid: 'p1' }, ...Array.from({ length: 9 }, (_, i) => ({ uuid: `p1x-${i}` }))],
+      2: [{ uuid: 'p2' }, ...Array.from({ length: 9 }, (_, i) => ({ uuid: `p2x-${i}` }))],
+      3: [{ uuid: 'p3' }, { uuid: 'p3x-0' }],
+    };
+
     const trigger = jest.fn((args: { page: number; pageSize: number }) => {
       const page = args.page;
-      const count = 3;
-
-      const resultsByPage: Record<number, { uuid: string }[]> = {
-        1: [{ uuid: 'p1' }],
-        2: [{ uuid: 'p2' }],
-        3: [{ uuid: 'p3' }],
-      };
 
       // Resolve page 3 faster than page 2 to verify ordering logic.
       const delayMs = page === 2 ? 20 : page === 3 ? 5 : 0;
@@ -32,7 +34,12 @@ describe('useAllProjects', () => {
         unwrap: () =>
           new Promise((resolve) => {
             setTimeout(() => {
-              resolve({ count, results: resultsByPage[page], next: null, previous: null });
+              resolve({
+                count: totalItemCount,
+                results: resultsByPage[page],
+                next: null,
+                previous: null,
+              });
             }, delayMs);
           }),
       };
@@ -42,14 +49,21 @@ describe('useAllProjects', () => {
 
     const { result, waitFor } = renderHook(() => useAllProjects());
 
-    await waitFor(() => {
-      expect(result.current.isComplete).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.isComplete).toBe(true);
+      },
+      { timeout: 3000 }
+    );
 
     expect(trigger).toHaveBeenCalledWith({ page: 1, pageSize: 10 }, true);
     expect(trigger).toHaveBeenCalledWith({ page: 2, pageSize: 10 }, true);
     expect(trigger).toHaveBeenCalledWith({ page: 3, pageSize: 10 }, true);
 
-    expect(result.current.projects).toEqual([{ uuid: 'p1' }, { uuid: 'p2' }, { uuid: 'p3' }]);
+    expect(result.current.projects?.map((p) => p.uuid)).toEqual([
+      ...resultsByPage[1].map((p) => p.uuid),
+      ...resultsByPage[2].map((p) => p.uuid),
+      ...resultsByPage[3].map((p) => p.uuid),
+    ]);
   });
 });
