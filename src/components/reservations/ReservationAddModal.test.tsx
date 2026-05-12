@@ -115,4 +115,47 @@ describe('ReservationAddModal preview flow', () => {
     expect(screen.queryByRole('button', { name: 'components.reservations.ReservationAddModal.confirm' })).toBeNull();
     expect(mockCreateMutation).not.toHaveBeenCalled();
   });
+
+  it('sends submitted_late=true to the preview when the late application checkbox is toggled on', async () => {
+    renderReservationAddModalOpened({ apartment, project });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+
+    const lateCheckbox = screen.getByRole('checkbox', {
+      name: 'components.reservations.ReservationAddModal.submittedLate',
+    });
+    expect(lateCheckbox).not.toBeChecked();
+
+    fireEvent.click(lateCheckbox);
+    expect(lateCheckbox).toBeChecked();
+
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockPreviewMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formData: expect.objectContaining({ submitted_late: true }),
+      })
+    );
+  });
+
+  it('defaults submitted_late to false in the preview payload', async () => {
+    renderReservationAddModalOpened({ apartment, project });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-customer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'components.reservations.ReservationAddModal.addBtn' }));
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockPreviewMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formData: expect.objectContaining({ submitted_late: false }),
+      })
+    );
+  });
 });
