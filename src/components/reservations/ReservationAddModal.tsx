@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useForm, SubmitHandler, get } from 'react-hook-form';
+import { Controller, useForm, SubmitHandler, get } from 'react-hook-form';
 import { Button, ButtonVariant, Checkbox, Dialog, TextInput } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
@@ -51,6 +51,7 @@ const ReservationAddModal = (): JSX.Element | null => {
     submitted_late: yup.bool().optional(),
   });
   const {
+    control,
     handleSubmit,
     register,
     setValue,
@@ -176,11 +177,18 @@ const ReservationAddModal = (): JSX.Element | null => {
               setValueAs: (value) => (value === '' ? null : Number(value)),
             })}
           />
-          <Checkbox
-            id="submittedLate"
-            label={t(`${T_PATH}.submittedLate`)}
-            style={{ marginTop: '1rem' }}
-            {...register('submitted_late')}
+          <Controller
+            name="submitted_late"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="submittedLate"
+                label={t(`${T_PATH}.submittedLate`)}
+                style={{ marginTop: '1rem' }}
+                checked={Boolean(field.value)}
+                onChange={(event) => field.onChange(event.target.checked)}
+              />
+            )}
           />
         </form>
         {pendingFormData && (
