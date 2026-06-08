@@ -239,14 +239,8 @@ const AddEditCustomer = ({ isEditMode }: IProps) => {
   // Fill form fields with customer data when in edit mode
   useEffect(() => {
     if (isEditMode && customer) {
-      // Omit apartment_reservations, customer ID and profile IDs from the customer
-      const omittedCustomer = omit(
-        customer,
-        'id',
-        'apartment_reservations',
-        'primary_profile.id',
-        'secondary_profile.id'
-      );
+      // Omit customer ID and profile IDs from the customer
+      const omittedCustomer = omit(customer, 'id', 'primary_profile.id', 'secondary_profile.id');
 
       // Convert visible dates into correct format
       if (omittedCustomer.primary_profile.date_of_birth) {

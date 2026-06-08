@@ -12,7 +12,8 @@ import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 import reportStyles from '../../pages/reports/Reports.module.scss';
 import styles from './SalesReport.module.scss';
 import { Project } from '../../types';
-import { useGetProjectsQuery, useGetSelectedProjectsQuery } from '../../redux/services/api';
+import { useGetSelectedProjectsQuery } from '../../redux/services/api';
+import { useAllProjects } from '../../redux/services/useAllProjects';
 
 const T_PATH = 'components.reports.SalesReport';
 
@@ -23,7 +24,7 @@ const SalesReport = (): JSX.Element => {
   const [endDate, setEndDate] = useState<string>('');
   const [params, setParams] = useState<URLSearchParams>();
 
-  const { data: projects } = useGetProjectsQuery();
+  const { projects } = useAllProjects();
   const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
 
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
@@ -37,7 +38,7 @@ const SalesReport = (): JSX.Element => {
     return date;
   }, []);
 
-  const getUrlParams = () => {
+  const getUrlParams = useCallback(() => {
     const params = {
       start_date: formattedDate(startDate),
       end_date: formattedDate(endDate),
@@ -45,20 +46,19 @@ const SalesReport = (): JSX.Element => {
     };
 
     return new URLSearchParams(params);
-  };
+  }, [endDate, formattedDate, selectedProjects, startDate]);
 
   useEffect(() => {
     const urlParams = getUrlParams();
     // Set new search params
     setParams(urlParams);
-  }, [formattedDate, startDate, endDate, selectedProjects]);
+  }, [getUrlParams]);
 
   useEffect(() => {
     if (!userSelectedProjects) return;
-    
+
     setSelectedProjects(userSelectedProjects.map((x) => x.uuid));
   }, [userSelectedProjects]);
-
 
   const preSalesReportDownloading = () => setIsLoadingSalesReport(true);
   const postSalesReportDownloading = () => setIsLoadingSalesReport(false);
@@ -75,7 +75,6 @@ const SalesReport = (): JSX.Element => {
     defaultOptions.sort((a: Option, b: Option) => a.label.localeCompare(b.label));
 
     return defaultOptions.map((x) => x.value);
-
   };
 
   const selectOptions = (): Option[] => {

@@ -16,6 +16,13 @@ export type AnyNonNullishValue = {};
 export type AnyValue = AnyNonNullishValue | undefined | null;
 export type AnyFunction = (props?: unknown) => unknown;
 
+export interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export type Apartment = {
   _language: string;
   additional_information: string;
@@ -162,7 +169,6 @@ export type Customer = {
   right_of_residence?: number | null;
   right_of_residence_is_old_batch?: boolean | null;
   secondary_profile?: CustomerProfile | null;
-  apartment_reservations?: CustomerReservation[] | null;
 };
 
 export type CustomerListItem = {

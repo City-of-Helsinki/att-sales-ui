@@ -1,15 +1,17 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Container from '../common/container/Container';
 import InstallmentsItem from './InstallmentsItem';
 import ProjectName from '../project/ProjectName';
+import Spinner from '../common/spinner/Spinner';
 import StatusText from '../common/statusText/StatusText';
 import {
   getReservationApartmentData,
   getReservationProjectData,
   groupReservationsByProject,
 } from '../../utils/mapReservationData';
-import { Customer } from '../../types';
+import { CustomerReservation } from '../../types';
 import { ApartmentReservationStates } from '../../enums';
 
 import styles from './Installments.module.scss';
@@ -17,18 +19,28 @@ import styles from './Installments.module.scss';
 const T_PATH = 'components.installments.Installments';
 
 interface IProps {
-  customer: Customer;
+  reservations: CustomerReservation[] | undefined;
+  isLoadingInitial?: boolean;
+  isLoadingMore?: boolean;
 }
 
-const Installments = ({ customer }: IProps): JSX.Element => {
+const Installments = ({ reservations, isLoadingInitial, isLoadingMore }: IProps): JSX.Element => {
   const { t } = useTranslation();
+
+  if (isLoadingInitial && !reservations) {
+    return (
+      <Container>
+        <Spinner />
+      </Container>
+    );
+  }
 
   // Filter reservations:
   // 1. All reservations that have saved installments
   // Or
   // 2. Reservation's state is not in a state "REVIEW" AND lottery is completed AND reservation's queue position is 1
   const visibleReservations =
-    customer.apartment_reservations?.filter(
+    reservations?.filter(
       (reservation) =>
         !!reservation.apartment_installments?.length ||
         (reservation.state !== ApartmentReservationStates.REVIEW &&
@@ -39,6 +51,13 @@ const Installments = ({ customer }: IProps): JSX.Element => {
   const reservationsByProject = groupReservationsByProject(visibleReservations);
 
   if (!reservationsByProject.length) {
+    if (isLoadingMore) {
+      return (
+        <Container>
+          <Spinner />
+        </Container>
+      );
+    }
     return <StatusText>{t(`${T_PATH}.noReservations`)}</StatusText>;
   }
 
@@ -63,6 +82,11 @@ const Installments = ({ customer }: IProps): JSX.Element => {
           ))}
         </div>
       ))}
+      {isLoadingMore && (
+        <Container>
+          <Spinner />
+        </Container>
+      )}
     </>
   );
 };

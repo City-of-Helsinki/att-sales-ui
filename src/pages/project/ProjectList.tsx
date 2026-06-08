@@ -23,7 +23,7 @@ import Spinner from '../../components/common/spinner/Spinner';
 import StatusText from '../../components/common/statusText/StatusText';
 import useLocalStorage from '../../utils/useLocalStorage';
 import { filterProjectsByEstateAgent } from '../../utils/filterProjectsByEstateAgent';
-import { useGetProjectsQuery } from '../../redux/services/api';
+import { useAllProjects } from '../../redux/services/useAllProjects';
 import { Project } from '../../types';
 import { StateOfSale } from '../../enums';
 import { usePageTitle } from '../../utils/usePageTitle';
@@ -35,7 +35,7 @@ const T_PATH = 'pages.project.ProjectList';
 const ProjectList = (): JSX.Element => {
   const { t } = useTranslation();
   const [showMyProjects, setShowMyProjects] = useLocalStorage({ defaultValue: true, key: `showMyProjects` });
-  const { data: projects, isLoading, isError, isSuccess } = useGetProjectsQuery();
+  const { projects, isLoadingInitial, isLoadingMore, isError } = useAllProjects();
   const { getUser } = useOidcClient();
   const user = getUser();
   const userFullName = user ? (user.profile.name as string) : '';
@@ -189,7 +189,7 @@ const ProjectList = (): JSX.Element => {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoadingInitial) {
       return (
         <Container>
           <Spinner />
@@ -197,7 +197,7 @@ const ProjectList = (): JSX.Element => {
       );
     }
 
-    if (!isLoading && isError) {
+    if (!isLoadingInitial && isError) {
       return (
         <Container>
           <Notification label={t(`${T_PATH}.errorTitle`)} type="error">
@@ -207,8 +207,17 @@ const ProjectList = (): JSX.Element => {
       );
     }
 
-    if (!isLoading && !isError && isSuccess) {
-      return renderProjects();
+    if (!isLoadingInitial && !isError) {
+      return (
+        <>
+          {renderProjects()}
+          {isLoadingMore && (
+            <Container>
+              <Spinner />
+            </Container>
+          )}
+        </>
+      );
     }
   };
 

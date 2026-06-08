@@ -4,7 +4,9 @@ import { Button, ButtonPresetTheme, ButtonVariant, IconAngleDown, IconAngleRight
 import { useTranslation } from 'react-i18next';
 
 import CustomerReservationRow from './CustomerReservationRow';
+import Container from '../common/container/Container';
 import ProjectName from '../project/ProjectName';
+import Spinner from '../common/spinner/Spinner';
 import StatusText from '../common/statusText/StatusText';
 import useSessionStorage from '../../utils/useSessionStorage';
 import { groupReservationsByProject, getReservationProjectData } from '../../utils/mapReservationData';
@@ -16,6 +18,9 @@ const T_PATH = 'components.reservations.CustomerReservations';
 
 interface CustomerReservationsProps {
   customer: Customer;
+  reservations: CustomerReservation[] | undefined;
+  isLoadingInitial?: boolean;
+  isLoadingMore?: boolean;
 }
 
 interface ReservationsByProjectProps {
@@ -23,11 +28,32 @@ interface ReservationsByProjectProps {
   reservations: CustomerReservation[];
 }
 
-const CustomerReservations = ({ customer }: CustomerReservationsProps): JSX.Element => {
+const CustomerReservations = ({
+  customer,
+  reservations,
+  isLoadingInitial,
+  isLoadingMore,
+}: CustomerReservationsProps): JSX.Element => {
   const { t } = useTranslation();
-  const reservationsByProject = groupReservationsByProject(customer.apartment_reservations || []);
+
+  if (isLoadingInitial && !reservations) {
+    return (
+      <Container>
+        <Spinner />
+      </Container>
+    );
+  }
+
+  const reservationsByProject = groupReservationsByProject(reservations || []);
 
   if (!reservationsByProject.length) {
+    if (isLoadingMore) {
+      return (
+        <Container>
+          <Spinner />
+        </Container>
+      );
+    }
     return (
       <div className={styles.singleProject}>
         <StatusText>{t(`${T_PATH}.noReservations`)}</StatusText>
@@ -44,6 +70,11 @@ const CustomerReservations = ({ customer }: CustomerReservationsProps): JSX.Elem
       {sortedReservationsByProject.map((projectReservations, index) => (
         <ReservationsByProject key={index} customer={customer} reservations={projectReservations} />
       ))}
+      {isLoadingMore && (
+        <Container>
+          <Spinner />
+        </Container>
+      )}
     </>
   );
 };

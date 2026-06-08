@@ -15,6 +15,7 @@ import {
   Customer,
   CustomerComment,
   CustomerListItem,
+  CustomerReservation,
   Offer,
   OfferFormData,
   OfferMessage,
@@ -26,6 +27,7 @@ import {
   ReservationCancelFormData,
   ReservationEditFormData,
   QueuePreviewFormData,
+  Paginated,
   SalesPerson,
 } from '../../types';
 import getApiBaseUrl from '../../utils/getApiBaseUrl';
@@ -61,8 +63,8 @@ export const api = createApi({
   ],
   endpoints: (builder) => ({
     // GET: Fetch all projects
-    getProjects: builder.query<Project[], void>({
-      query: () => 'projects/',
+    getProjects: builder.query<Paginated<Project>, { page: number; pageSize?: number }>({
+      query: ({ page, pageSize = 10 }) => `projects/?page=${page}&page_size=${pageSize}`,
     }),
 
     // GET: Fetch salespersons for Contract creation view
@@ -168,6 +170,17 @@ export const api = createApi({
     getCustomerById: builder.query<Customer, string>({
       query: (id) => `customers/${id}/`,
       providesTags: (result, error, arg) => [{ type: 'Customer', id: arg }],
+    }),
+
+    // GET: Fetch a single page of a customer's apartment reservations.
+    // Paginated because each row triggers a Drupal Search API lookup on the backend.
+    getCustomerReservations: builder.query<
+      Paginated<CustomerReservation>,
+      { customerId: string; page: number; pageSize?: number }
+    >({
+      query: ({ customerId, page, pageSize = 5 }) =>
+        `customers/${customerId}/apartment_reservations/?page=${page}&page_size=${pageSize}`,
+      providesTags: (result, error, arg) => [{ type: 'Customer', id: arg.customerId }],
     }),
 
     // GET: Fetch user latest applicant's details
@@ -467,6 +480,7 @@ export const {
   usePartialUpdateProjectExtraDataMutation,
   useGetCustomersQuery,
   useGetCustomerByIdQuery,
+  useGetCustomerReservationsQuery,
   useGetCustomerCommentsQuery,
   useAddCustomerCommentMutation,
   useGetCustomerLatestApplicantInfoQuery,
