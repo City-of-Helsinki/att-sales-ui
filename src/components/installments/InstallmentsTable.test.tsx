@@ -9,7 +9,7 @@ import { getReservationApartmentData, getReservationProjectData } from '../../ut
 
 const installments = dummyInstallments as ApartmentInstallment[];
 const emptyInstallments = [] as any; // One without installments
-const reservation = dummyCustomer.apartment_reservations[0] as CustomerReservation;
+const reservation = (dummyCustomer as any).apartment_reservations[0] as CustomerReservation;
 const apartment = getReservationApartmentData(reservation);
 const project = getReservationProjectData(reservation);
 

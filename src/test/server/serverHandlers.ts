@@ -21,6 +21,17 @@ const handlers = [
   rest.get(`${process.env.REACT_APP_API_BASE_URL}/customers/:customerId`, (_req, res, ctx) => {
     return res(ctx.json(mockCustomer));
   }),
+  rest.get(`${process.env.REACT_APP_API_BASE_URL}/customers/:customerId/apartment_reservations/`, (_req, res, ctx) => {
+    const results = (mockCustomer as any).apartment_reservations ?? [];
+    return res(
+      ctx.json({
+        count: results.length,
+        next: null,
+        previous: null,
+        results,
+      })
+    );
+  }),
   rest.get(`${process.env.REACT_APP_API_BASE_URL}/customers`, (_req, res, ctx) => {
     return res(ctx.json(mockCustomers));
   }),
