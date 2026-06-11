@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
@@ -7,6 +8,7 @@ import Container from '../../components/common/container/Container';
 import Spinner from '../../components/common/spinner/Spinner';
 import CustomerComments from '../../components/customers/CustomerComments';
 import CustomerInfo from '../../components/customers/CustomerInfo';
+import CustomerReservationMessages from '../../components/customers/CustomerReservationMessages';
 import Installments from '../../components/installments/Installments';
 import CustomerReservations from '../../components/reservations/CustomerReservations';
 import { ROUTES } from '../../enums';
@@ -19,8 +21,11 @@ import styles from './CustomerDetail.module.scss';
 
 const T_PATH = 'pages.customers.CustomerDetail';
 
+type CustomerDetailTabKey = 'reservations' | 'installments' | 'comments' | 'messages';
+
 const CustomerDetail = (): JSX.Element | null => {
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<CustomerDetailTabKey>('reservations');
   const { customerId } = useParams();
   const { data: customer, isLoading, isFetching, isError, isSuccess } = useGetCustomerByIdQuery(customerId || '0');
   const { data: applicant } = useGetCustomerLatestApplicantInfoQuery(customerId || '0');
@@ -113,27 +118,40 @@ const CustomerDetail = (): JSX.Element | null => {
         <div className={styles.tabsWrapper}>
           <Tabs>
             <TabList className={styles.tabs}>
-              <Tab>{t(`${T_PATH}.tabReservations`)}</Tab>
-              <Tab>{t(`${T_PATH}.tabInstallments`)}</Tab>
-              <Tab>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
+              <Tab onClick={() => setActiveTab('reservations')}>{t(`${T_PATH}.tabReservations`)}</Tab>
+              <Tab onClick={() => setActiveTab('installments')}>{t(`${T_PATH}.tabInstallments`)}</Tab>
+              <Tab onClick={() => setActiveTab('comments')}>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
+              <Tab onClick={() => setActiveTab('messages')}>{t(`${T_PATH}.messagesTab`)}</Tab>
             </TabList>
             <TabPanel className={styles.tabPanel}>
-              <CustomerReservations
-                customer={customer}
-                reservations={reservations}
-                isLoadingInitial={isLoadingReservations}
-                isLoadingMore={isLoadingMoreReservations}
-              />
+              {activeTab === 'reservations' ? (
+                <CustomerReservations
+                  customer={customer}
+                  reservations={reservations}
+                  isLoadingInitial={isLoadingReservations}
+                  isLoadingMore={isLoadingMoreReservations}
+                />
+              ) : null}
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              <Installments
-                reservations={reservations}
-                isLoadingInitial={isLoadingReservations}
-                isLoadingMore={isLoadingMoreReservations}
-              />
+              {activeTab === 'installments' ? (
+                <Installments
+                  reservations={reservations}
+                  isLoadingInitial={isLoadingReservations}
+                  isLoadingMore={isLoadingMoreReservations}
+                />
+              ) : null}
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              <CustomerComments customerId={customer.id} />
+              {activeTab === 'comments' ? <CustomerComments customerId={customer.id} /> : null}
+            </TabPanel>
+            <TabPanel className={styles.tabPanel}>
+              {activeTab === 'messages' ? (
+                <CustomerReservationMessages
+                  reservations={reservations}
+                  isLoadingReservations={isLoadingReservations || isLoadingMoreReservations}
+                />
+              ) : null}
             </TabPanel>
           </Tabs>
         </div>
