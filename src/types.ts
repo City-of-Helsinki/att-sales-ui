@@ -498,6 +498,26 @@ export type CustomerComment = {
   created_at: string;
 };
 
+export type ApartmentReservationMessageSenderRole = 'applicant' | 'sales';
+
+export type ApartmentReservationMessage = {
+  id: number;
+  application_id: number;
+  project_id: number;
+  sender_role: ApartmentReservationMessageSenderRole;
+  sender_uid: number | null;
+  salesperson_uid: number | null;
+  recipient_mail: string;
+  body: string;
+  created: number;
+};
+
+export type ApartmentReservationMessagesResponse = {
+  application_id: number;
+  count: number;
+  items: ApartmentReservationMessage[];
+};
+
 export type SalesPerson = {
   uuid: string;
   first_name: string;

@@ -1,0 +1,106 @@
+.messagesRoot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.controlRow {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--spacing-s);
+}
+
+.selectLabel {
+  font-weight: 600;
+}
+
+.select {
+  min-width: 22rem;
+  max-width: 100%;
+  border: 1px solid var(--color-black-20);
+  border-radius: 0;
+  padding: var(--spacing-2-xs) var(--spacing-s);
+  background-color: var(--color-white);
+}
+
+.applicationInfo {
+  border: 1px solid var(--color-black-20);
+  background-color: var(--color-black-5);
+  padding: var(--spacing-s) var(--spacing-m);
+}
+
+.applicationTitle {
+  font-weight: 600;
+  margin-bottom: var(--spacing-3-xs);
+}
+
+.applicationMeta {
+  color: var(--color-black-80);
+  margin-bottom: var(--spacing-4-xs);
+}
+
+.applicationMeta:last-child {
+  margin-bottom: 0;
+}
+
+.messagesListWrap {
+  border: 1px solid var(--color-black-20);
+  background-color: var(--color-white);
+  padding: var(--spacing-m);
+  min-height: 8rem;
+}
+
+.noMessages {
+  color: var(--color-black-60);
+}
+
+.messagesList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.messageItem {
+  border-bottom: 1px solid var(--color-black-10);
+  padding-bottom: var(--spacing-s);
+}
+
+.messageItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.messageMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-2-xs);
+}
+
+.messageBody {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--color-black-90);
+}
+
+.formWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+@media (max-width: 768px) {
+  .select {
+    min-width: 100%;
+  }
+
+  .messageMeta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
