@@ -1,14 +1,40 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import { Select, Option, SearchResult, TextInput, IconSearch } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { CustomerListItem } from '../../types';
-import { useGetCustomersQuery } from '../../redux/services/api';
+import { useLazyGetCustomersQuery } from '../../redux/services/api';
 import styles from './SelectCustomerDropdown.module.scss';
 
 const T_PATH = 'components.customers.SelectCustomerDropdown';
 const SEARCH_KEYWORD_MIN_LENGTH = 2;
+const NAME_SEARCH_FIELDS = ['last_name', 'first_name'] as const;
+const HETU_REGEXP = /^\d{6}[+\-A]\d{3}[0-9A-Y]$/i;
+const DATE_OF_BIRTH_REGEXP = /^\d{1,2}\.\d{1,2}\.\d{4}$/;
+
+const getSearchParam = (field: 'last_name' | 'first_name' | 'hetu' | 'date_of_birth', value: string): string =>
+  `${field}=${encodeURIComponent(value)}`;
+
+const isCustomerListItem = (customer: unknown): customer is CustomerListItem => {
+  return Boolean(
+    customer && typeof customer === 'object' && 'id' in customer && (customer as { id?: unknown }).id != null
+  );
+};
+
+const getSearchRequests = (
+  keyword: string
+): Array<{ field: 'last_name' | 'first_name' | 'hetu' | 'date_of_birth'; value: string }> => {
+  if (HETU_REGEXP.test(keyword)) {
+    return [{ field: 'hetu', value: keyword }];
+  }
+
+  if (DATE_OF_BIRTH_REGEXP.test(keyword)) {
+    return [{ field: 'date_of_birth', value: keyword }];
+  }
+
+  return NAME_SEARCH_FIELDS.map((field) => ({ field, value: keyword }));
+};
 
 interface IProps {
   handleSelectCallback: (customerId: string) => void;
@@ -47,22 +73,91 @@ const SelectCustomerDropdown = ({
 }: IProps) => {
   const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState<string>('');
+  const [customers, setCustomers] = useState<CustomerListItem[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<Option | undefined>(undefined);
-  const [didMount, setDidMount] = useState(false);
-  const {
-    data: customers,
-    isSuccess,
-    isError,
-    isLoading,
-    isFetching,
-  } = useGetCustomersQuery(`last_name=${searchValue}`, { skip: searchValue.length < SEARCH_KEYWORD_MIN_LENGTH });
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+  const [hasSearchError, setHasSearchError] = useState(false);
+  const latestSearchRef = useRef(0);
+  const trimmedSearchValue = searchValue.trim();
+  const [triggerGetCustomersByLastName] = useLazyGetCustomersQuery();
+  const [triggerGetCustomersByFirstName] = useLazyGetCustomersQuery();
+  const [triggerGetCustomersByHetu] = useLazyGetCustomersQuery();
+  const [triggerGetCustomersByDateOfBirth] = useLazyGetCustomersQuery();
 
-  // Update component mount state
-  useEffect(() => {
-    setDidMount(true);
-    return () => setDidMount(false);
-  }, []);
+  const searchCustomers = useCallback(
+    async (keyword: string) => {
+      const trimmedKeyword = keyword.trim();
+
+      if (trimmedKeyword.length < SEARCH_KEYWORD_MIN_LENGTH) {
+        setCustomers([]);
+        setHasSearchError(false);
+        setIsLoadingCustomers(false);
+        return;
+      }
+
+      const searchId = latestSearchRef.current + 1;
+      latestSearchRef.current = searchId;
+      setIsLoadingCustomers(true);
+      setHasSearchError(false);
+      const searchRequests = getSearchRequests(trimmedKeyword);
+
+      try {
+        const responses = await Promise.allSettled(
+          searchRequests.map(({ field, value }) => {
+            const searchParam = getSearchParam(field, value);
+
+            if (field === 'last_name') {
+              return triggerGetCustomersByLastName(searchParam).unwrap();
+            }
+
+            if (field === 'first_name') {
+              return triggerGetCustomersByFirstName(searchParam).unwrap();
+            }
+
+            if (field === 'hetu') {
+              return triggerGetCustomersByHetu(searchParam).unwrap();
+            }
+
+            return triggerGetCustomersByDateOfBirth(searchParam).unwrap();
+          })
+        );
+
+        if (latestSearchRef.current !== searchId) {
+          return;
+        }
+
+        const successfulResponses = responses
+          .filter((response): response is PromiseFulfilledResult<CustomerListItem[]> => response.status === 'fulfilled')
+          .flatMap((response) => (Array.isArray(response.value) ? response.value : []))
+          .filter(isCustomerListItem);
+
+        const uniqueCustomers = successfulResponses.filter(
+          (customer, index, array) => array.findIndex((entry) => entry.id === customer.id) === index
+        );
+
+        setCustomers(uniqueCustomers);
+        setHasSearchError(responses.every((response) => response.status === 'rejected'));
+      } catch {
+        if (latestSearchRef.current !== searchId) {
+          return;
+        }
+
+        setCustomers([]);
+        setHasSearchError(true);
+      } finally {
+        if (latestSearchRef.current === searchId) {
+          setIsLoadingCustomers(false);
+        }
+      }
+    },
+    [
+      triggerGetCustomersByDateOfBirth,
+      triggerGetCustomersByFirstName,
+      triggerGetCustomersByHetu,
+      triggerGetCustomersByLastName,
+    ]
+  );
 
   useEffect(() => {
     // Construct label that is visible as a single dropdown option
@@ -93,7 +188,7 @@ const SelectCustomerDropdown = ({
     };
 
     // Show one disabled option with label "loading" while fetching the customers
-    if (isLoading || isFetching) {
+    if (isLoadingCustomers) {
       return setOptions([
         {
           label: t(`${T_PATH}.loading`),
@@ -110,12 +205,12 @@ const SelectCustomerDropdown = ({
     // - The search keyword is too short
     // - There's an error while fetching customers
     // - No success state in customer fetching
-    if (searchValue.length < SEARCH_KEYWORD_MIN_LENGTH || isError || !isSuccess) {
+    if (trimmedSearchValue.length < SEARCH_KEYWORD_MIN_LENGTH || hasSearchError) {
       return setOptions([]);
     }
 
     // Show one disabled option with label "no results" when there's no results from the query
-    if (isSuccess && customers?.length === 0) {
+    if (customers.length === 0) {
       return setOptions([
         {
           label: t(`${T_PATH}.noResults`),
@@ -129,40 +224,41 @@ const SelectCustomerDropdown = ({
     }
 
     // For successfull results, display found customers as dropdown options
-    if (isSuccess && customers) {
-      const eligibleCustomers = filterCustomersForOwnershipType(customers, ownershipType);
-      if (eligibleCustomers.length === 0) {
-        return setOptions([
-          {
-            label: t(`${T_PATH}.noResults`),
-            value: '',
-            disabled: true,
-            selected: true,
-            isGroupLabel: false,
-            visible: true,
-          },
-        ]);
-      }
-      const customerOptions = mapOptions(eligibleCustomers);
-      setOptions(customerOptions);
+    const eligibleCustomers = filterCustomersForOwnershipType(customers, ownershipType);
+    if (eligibleCustomers.length === 0) {
+      const noEligibleHasoCustomers = (ownershipType || '').toLowerCase() === 'haso' && customers.length > 0;
+
+      return setOptions([
+        {
+          label: noEligibleHasoCustomers ? t(`${T_PATH}.noEligibleHasoResults`) : t(`${T_PATH}.noResults`),
+          value: '',
+          disabled: true,
+          selected: true,
+          isGroupLabel: false,
+          visible: true,
+        },
+      ]);
     }
-  }, [customers, ownershipType, searchValue, isSuccess, isError, isLoading, isFetching, t]);
+
+    const customerOptions = mapOptions(eligibleCustomers);
+    setOptions(customerOptions);
+  }, [customers, ownershipType, trimmedSearchValue, hasSearchError, isLoadingCustomers, t]);
 
   // Use debounce to optimize the number of calls to the backend while typing rapidly
   const debouncedSearch = useMemo(
     () =>
       debounce((searchKeyword: string) => {
-        // Wait for the component to mount before trying to update it's state
-        if (didMount) {
-          setSearchValue(searchKeyword);
-        }
+        searchCustomers(searchKeyword);
       }, 500),
-    [setSearchValue, didMount]
+    [searchCustomers]
   );
+
+  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch]);
 
   // Use debounced search keyword setting for the backend and return all of the found options
   const handleSearch = useCallback(
     async (searchKeyword: string, selectOptions: Option[]): Promise<SearchResult> => {
+      setSearchValue(searchKeyword);
       debouncedSearch(searchKeyword);
       return { options: selectOptions };
     },
@@ -195,10 +291,10 @@ const SelectCustomerDropdown = ({
 
   const renderHelpText = () => {
     if (helpText) {
-      return helpText + ' ' + t(`${T_PATH}.searchByLastNameOnly`);
+      return helpText + ' ' + t(`${T_PATH}.searchByMultipleFields`);
     }
 
-    return t(`${T_PATH}.searchByLastNameOnly`);
+    return t(`${T_PATH}.searchByMultipleFields`);
   };
 
   return (
@@ -227,7 +323,7 @@ const SelectCustomerDropdown = ({
           required
           id="selectCustomer"
           placeholder={t(`${T_PATH}.searchByName`)}
-          invalid={isError || hasError}
+          invalid={hasSearchError || hasError}
           options={options}
           onChange={(selected: Option[], clickedOption: Option) => handleSelectChange(clickedOption)}
           value={selectedOption ? [selectedOption] : undefined}
