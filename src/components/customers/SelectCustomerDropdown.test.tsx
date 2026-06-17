@@ -66,8 +66,8 @@ describe('SelectCustomerDropdown', () => {
 
     expect(trigger).toHaveBeenCalledWith('last_name=Matti');
     expect(trigger).toHaveBeenCalledWith('first_name=Matti');
-    expect(trigger).toHaveBeenCalledWith('hetu=Matti');
-    expect(trigger).toHaveBeenCalledWith('date_of_birth=Matti');
+    expect(trigger).not.toHaveBeenCalledWith('hetu=Matti');
+    expect(trigger).not.toHaveBeenCalledWith('date_of_birth=Matti');
     expect(screen.getByText('Korhonen, Maija - maija@example.com - ID: 2')).toBeInTheDocument();
     expect(screen.getAllByText('Virtanen, Matti - matti@example.com - ID: 1')).toHaveLength(1);
   });
