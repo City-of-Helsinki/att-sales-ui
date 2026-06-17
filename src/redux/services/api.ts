@@ -510,6 +510,7 @@ export const {
   useGetProjectExtraDataQuery,
   usePartialUpdateProjectExtraDataMutation,
   useGetCustomersQuery,
+  useLazyGetCustomersQuery,
   useGetCustomerByIdQuery,
   useGetCustomerReservationsQuery,
   useGetCustomerCommentsQuery,
