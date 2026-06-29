@@ -162,9 +162,13 @@ const SelectCustomerDropdown = ({
   useEffect(() => {
     // Construct label that is visible as a single dropdown option
     const getLabel = (customer: CustomerListItem) => {
-      let label = `${customer.primary_last_name}, ${customer.primary_first_name} - ${customer.primary_email}`;
-      if (customer.secondary_last_name) {
-        label = `${label}; ${customer.secondary_last_name}, ${customer.secondary_first_name}`;
+      const nameParts = (ln: string | null | undefined, fn: string | null | undefined) =>
+        [ln, fn].filter((v) => v && v.trim() !== '-').join(', ');
+      const primaryName = nameParts(customer.primary_last_name, customer.primary_first_name) || '-';
+      const secondaryName = nameParts(customer.secondary_last_name, customer.secondary_first_name);
+      let label = `${primaryName} - ${customer.primary_email}`;
+      if (secondaryName) {
+        label = `${label}; ${secondaryName}`;
       }
       return label.concat(` - ID: ${customer.id}`);
     };
