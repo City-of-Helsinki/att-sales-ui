@@ -12,7 +12,7 @@ import SelectCustomerDropdown from '../customers/SelectCustomerDropdown';
 import { RootState } from '../../redux/store';
 import { toast } from '../common/toast/ToastManager';
 import { hideReservationAddModal } from '../../redux/features/reservationAddModalSlice';
-import { ApartmentReservationWithCustomer, ReservationAddFormData } from '../../types';
+import { ApartmentReservationWithCustomer, QueuePreviewFormData, ReservationAddFormData } from '../../types';
 import { ApartmentReservationStates } from '../../enums';
 import {
   useCreateApartmentReservationMutation,
@@ -43,12 +43,21 @@ const ReservationAddModal = (): JSX.Element | null => {
   const schema = yup.object({
     apartment_uuid: yup.string().required(t(`${T_PATH}.apartmentRequired`)),
     customer_id: yup.string().required(t(`${T_PATH}.customerRequired`)),
-    queue_position: yup
-      .number()
-      .nullable()
-      .transform((value, originalValue) => (originalValue === '' ? null : value))
-      .integer(t(`${T_PATH}.queuePositionInteger`))
-      .min(1, t(`${T_PATH}.queuePositionMin`)),
+    queue_position: yup.number().when('submitted_late', {
+      is: true,
+      then: (rule) =>
+        rule
+          .nullable()
+          .notRequired()
+          .transform(() => null),
+      otherwise: (rule) =>
+        rule
+          .nullable()
+          .notRequired()
+          .transform((value, originalValue) => (originalValue === '' ? null : value))
+          .integer(t(`${T_PATH}.queuePositionInteger`))
+          .min(1, t(`${T_PATH}.queuePositionMin`)),
+    }),
     submitted_late: yup.bool().optional(),
   });
   const {
@@ -57,10 +66,13 @@ const ReservationAddModal = (): JSX.Element | null => {
     register,
     reset,
     setValue,
+    watch,
+    clearErrors,
     formState: { errors },
   } = useForm<ReservationAddFormData>({
     resolver: yupResolver(schema),
   });
+  const isSubmittedLate = watch('submitted_late');
 
   const activeReservations = useMemo(
     () =>
@@ -114,12 +126,28 @@ const ReservationAddModal = (): JSX.Element | null => {
   const persistReservation = async (data: ReservationAddFormData) => {
     const projectId = project?.uuid || '';
     const apartmentId = apartment?.apartment_uuid || '';
-    await createApartmentReservation({ formData: data, projectId: projectId, apartmentId: apartmentId }).unwrap();
+    const createFormData: ReservationAddFormData = {
+      apartment_uuid: data.apartment_uuid,
+      customer_id: data.customer_id,
+      submitted_late: data.submitted_late,
+      ...(data.queue_position !== null && data.queue_position !== undefined
+        ? { queue_position: data.queue_position }
+        : {}),
+    };
+    await createApartmentReservation({
+      formData: createFormData,
+      projectId: projectId,
+      apartmentId: apartmentId,
+    }).unwrap();
   };
 
   const handleFormSubmit = async (data: ReservationAddFormData) => {
     if (!postCreateReservationLoading && !previewLoading) {
       setIsLoading(true);
+      const normalizedFormData: ReservationAddFormData = {
+        ...data,
+        queue_position: data.submitted_late ? null : data.queue_position,
+      };
 
       try {
         if (pendingFormData) {
@@ -132,15 +160,19 @@ const ReservationAddModal = (): JSX.Element | null => {
           return;
         }
 
+        const previewFormData: QueuePreviewFormData = {
+          customer_id: normalizedFormData.customer_id,
+          submitted_late: normalizedFormData.submitted_late,
+          ...(normalizedFormData.queue_position !== null && normalizedFormData.queue_position !== undefined
+            ? { queue_position: normalizedFormData.queue_position }
+            : {}),
+        };
+
         const previewData = await previewApartmentQueueChange({
           apartmentId: apartment?.apartment_uuid || '',
-          formData: {
-            customer_id: data.customer_id,
-            queue_position: data.queue_position,
-            submitted_late: data.submitted_late,
-          },
+          formData: previewFormData,
         }).unwrap();
-        setPendingFormData(data);
+        setPendingFormData(normalizedFormData);
         setPreviewReservations(previewData);
         toast.show({ type: 'success', content: t(`${T_PATH}.previewReady`) });
         setIsLoading(false);
@@ -198,19 +230,21 @@ const ReservationAddModal = (): JSX.Element | null => {
           />
           <input {...register('customer_id')} readOnly hidden />
           <input {...register('apartment_uuid')} readOnly hidden />
-          <TextInput
-            id="queuePosition"
-            type="number"
-            label={t(`${T_PATH}.queuePosition`)}
-            invalid={Boolean(errors.queue_position)}
-            errorText={errors.queue_position?.message}
-            min={1}
-            max={suggestedQueuePosition}
-            style={{ marginTop: '1rem' }}
-            {...register('queue_position', {
-              setValueAs: (value) => (value === '' ? null : Number(value)),
-            })}
-          />
+          {!isSubmittedLate && (
+            <TextInput
+              id="queuePosition"
+              type="number"
+              label={t(`${T_PATH}.queuePosition`)}
+              invalid={Boolean(errors.queue_position)}
+              errorText={errors.queue_position?.message}
+              min={1}
+              max={suggestedQueuePosition}
+              style={{ marginTop: '1rem' }}
+              {...register('queue_position', {
+                setValueAs: (value) => (value === '' ? null : Number(value)),
+              })}
+            />
+          )}
           <Controller
             name="submitted_late"
             control={control}
@@ -220,7 +254,14 @@ const ReservationAddModal = (): JSX.Element | null => {
                 label={t(`${T_PATH}.submittedLate`)}
                 style={{ marginTop: '1rem' }}
                 checked={Boolean(field.value)}
-                onChange={(event) => field.onChange(event.target.checked)}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  field.onChange(checked);
+                  if (checked) {
+                    setValue('queue_position', null);
+                    clearErrors('queue_position');
+                  }
+                }}
               />
             )}
           />
