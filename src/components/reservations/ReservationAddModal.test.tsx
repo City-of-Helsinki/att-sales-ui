@@ -140,11 +140,9 @@ describe('ReservationAddModal preview flow', () => {
 
     await submitAndWaitForPreview();
 
-    expect(mockPreviewMutation).toHaveBeenCalledWith(
-      expect.objectContaining({
-        formData: expect.objectContaining({ submitted_late: true }),
-      })
-    );
+    const callArg = mockPreviewMutation.mock.calls[0][0];
+    expect(callArg.formData).toEqual(expect.objectContaining({ submitted_late: true }));
+    expect(callArg.formData).not.toHaveProperty('queue_position');
   });
 
   it('defaults submitted_late to false in the preview payload', async () => {
@@ -157,6 +155,53 @@ describe('ReservationAddModal preview flow', () => {
         formData: expect.objectContaining({ submitted_late: false }),
       })
     );
+  });
+
+  it('allows regular application submit with empty queue position', async () => {
+    renderReservationAddModalOpened({ apartment, project });
+
+    clickSelectCustomer();
+    fireEvent.change(getQueuePositionInput(), { target: { value: '' } });
+    await submitAndWaitForPreview();
+
+    const callArg = mockPreviewMutation.mock.calls[0][0];
+    expect(callArg.formData).toEqual(expect.objectContaining({ submitted_late: false }));
+    expect(callArg.formData).not.toHaveProperty('queue_position');
+  });
+
+  it('hides queue position field when late application is selected', () => {
+    renderReservationAddModalOpened({ apartment, project });
+
+    expect(getQueuePositionInput()).toBeInTheDocument();
+
+    fireEvent.click(getLateCheckbox());
+    expect(screen.queryByRole('spinbutton', { name: `${T}.queuePosition` })).toBeNull();
+
+    fireEvent.click(getLateCheckbox());
+    expect(getQueuePositionInput()).toBeInTheDocument();
+  });
+
+  it('clears queue position validation error when late application is selected', async () => {
+    renderReservationAddModalOpened({ apartment, project });
+
+    clickSelectCustomer();
+    fireEvent.change(getQueuePositionInput(), { target: { value: '0' } });
+    clickAddButton();
+
+    await waitFor(() => {
+      expect(screen.getByText(`${T}.queuePositionMin`)).toBeInTheDocument();
+    });
+
+    fireEvent.click(getLateCheckbox());
+    clickAddButton();
+
+    await waitFor(() => {
+      expect(mockPreviewMutation).toHaveBeenCalledTimes(1);
+    });
+    const callArg = mockPreviewMutation.mock.calls[0][0];
+    expect(callArg.formData).toEqual(expect.objectContaining({ submitted_late: true }));
+    expect(callArg.formData).not.toHaveProperty('queue_position');
+    expect(screen.queryByText(`${T}.queuePositionMin`)).toBeNull();
   });
 
   it('suggests max existing queue position plus one when the queue is non-empty', async () => {
