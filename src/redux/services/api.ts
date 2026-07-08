@@ -7,10 +7,10 @@ import {
   Apartment,
   ApartmentHASOPayment,
   ApartmentInstallment,
-  ApartmentReservationWithCustomer,
-  ApartmentReservationWithInstallments,
   ApartmentReservationMessage,
   ApartmentReservationMessagesResponse,
+  ApartmentReservationWithCustomer,
+  ApartmentReservationWithInstallments,
   ApartmentRevaluation,
   Applicant,
   CostIndex,
@@ -61,8 +61,8 @@ export const api = createApi({
     'OfferMessage',
     'Project',
     'ProjectExtraData',
-    'ReservationMessages',
     'Reservation',
+    'ReservationMessages',
   ],
   endpoints: (builder) => ({
     // GET: Fetch all projects
@@ -295,33 +295,6 @@ export const api = createApi({
       providesTags: (result, error, arg) => [{ type: 'Reservation', id: arg }],
     }),
 
-    // GET: Fetch reservation message thread
-    getApartmentReservationMessages: builder.query<
-      ApartmentReservationMessagesResponse,
-      { reservationId: number; projectUuid: string }
-    >({
-      query: ({ reservationId, projectUuid }) =>
-        `apartment_reservations/${reservationId}/messages/?project_uuid=${encodeURIComponent(projectUuid)}`,
-      providesTags: (result, error, { reservationId, projectUuid }) => [
-        { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
-      ],
-    }),
-
-    // POST: Send reservation message reply
-    addApartmentReservationMessage: builder.mutation<
-      ApartmentReservationMessage,
-      { reservationId: number; projectUuid: string; body: string }
-    >({
-      query: ({ reservationId, projectUuid, body }) => ({
-        url: `apartment_reservations/${reservationId}/messages/?project_uuid=${encodeURIComponent(projectUuid)}`,
-        method: 'POST',
-        body: { body },
-      }),
-      invalidatesTags: (result, error, { reservationId, projectUuid }) => [
-        { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
-      ],
-    }),
-
     // POST: Create new apartment reservation
     createApartmentReservation: builder.mutation<
       any,
@@ -494,6 +467,33 @@ export const api = createApi({
       query: (params) => `apartment_reservations/${params.id}/offer_message/?valid_until=${params.valid_until}`,
       providesTags: [{ type: 'OfferMessage' }],
     }),
+
+    // GET: Fetch reservation message thread
+    getApartmentReservationMessages: builder.query<
+      ApartmentReservationMessagesResponse,
+      { reservationId: number; projectUuid: string }
+    >({
+      query: ({ reservationId, projectUuid }) =>
+        `apartment_reservations/${reservationId}/messages/?project_uuid=${encodeURIComponent(projectUuid)}`,
+      providesTags: (result, error, { reservationId, projectUuid }) => [
+        { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
+      ],
+    }),
+
+    // POST: Add message to reservation thread
+    addApartmentReservationMessage: builder.mutation<
+      ApartmentReservationMessage,
+      { reservationId: number; projectUuid: string; body: string }
+    >({
+      query: ({ reservationId, projectUuid, body }) => ({
+        url: `apartment_reservations/${reservationId}/messages/?project_uuid=${encodeURIComponent(projectUuid)}`,
+        method: 'POST',
+        body: { body },
+      }),
+      invalidatesTags: (result, error, { reservationId, projectUuid }) => [
+        { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
+      ],
+    }),
   }),
 });
 
@@ -522,9 +522,6 @@ export const {
   useGetApartmentReservationsQuery,
   usePreviewApartmentQueueChangeMutation,
   useGetApartmentReservationByIdQuery,
-  useGetApartmentReservationMessagesQuery,
-  useLazyGetApartmentReservationMessagesQuery,
-  useAddApartmentReservationMessageMutation,
   useSetApartmentReservationStateMutation,
   useSetApartmentReservationToOfferedMutation,
   useCancelApartmentReservationMutation,
@@ -534,6 +531,9 @@ export const {
   useCreateOfferMutation,
   useUpdateOfferByIdMutation,
   useGetOfferMessageQuery,
+  useGetApartmentReservationMessagesQuery,
+  useLazyGetApartmentReservationMessagesQuery,
+  useAddApartmentReservationMessageMutation,
   useGetCostIndexesQuery,
   useAddCostIndexMutation,
   useGetApartmentHASOPaymentQuery,

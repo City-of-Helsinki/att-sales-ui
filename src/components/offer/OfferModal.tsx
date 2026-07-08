@@ -330,6 +330,8 @@ const OfferModal = (): JSX.Element | null => {
         offer={isNewOffer ? undefined : offer}
         ownershipType={project.ownership_type}
         reservationId={reservation.id}
+        customerId={customer.id}
+        projectUuid={project.uuid}
       />
 
       <hr />
