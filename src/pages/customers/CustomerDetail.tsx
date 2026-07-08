@@ -20,12 +20,11 @@ import { usePageTitle } from '../../utils/usePageTitle';
 import styles from './CustomerDetail.module.scss';
 
 const T_PATH = 'pages.customers.CustomerDetail';
-
-type CustomerDetailTabKey = 'reservations' | 'installments' | 'comments' | 'messages';
+const OFFER_MESSAGE_DRAFT_KEY = 'offerMessageDraft';
 
 const CustomerDetail = (): JSX.Element | null => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<CustomerDetailTabKey>('reservations');
+  const [activeTab, setActiveTab] = useState<number>(() => (sessionStorage.getItem(OFFER_MESSAGE_DRAFT_KEY) ? 3 : 0));
   const { customerId } = useParams();
   const { data: customer, isLoading, isFetching, isError, isSuccess } = useGetCustomerByIdQuery(customerId || '0');
   const { data: applicant } = useGetCustomerLatestApplicantInfoQuery(customerId || '0');
@@ -116,15 +115,15 @@ const CustomerDetail = (): JSX.Element | null => {
         </div>
         <CustomerInfo customer={customer} applicant={applicant} />
         <div className={styles.tabsWrapper}>
-          <Tabs>
+          <Tabs initiallyActiveTab={activeTab}>
             <TabList className={styles.tabs}>
-              <Tab onClick={() => setActiveTab('reservations')}>{t(`${T_PATH}.tabReservations`)}</Tab>
-              <Tab onClick={() => setActiveTab('installments')}>{t(`${T_PATH}.tabInstallments`)}</Tab>
-              <Tab onClick={() => setActiveTab('comments')}>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
-              <Tab onClick={() => setActiveTab('messages')}>{t(`${T_PATH}.messagesTab`)}</Tab>
+              <Tab onClick={() => setActiveTab(0)}>{t(`${T_PATH}.tabReservations`)}</Tab>
+              <Tab onClick={() => setActiveTab(1)}>{t(`${T_PATH}.tabInstallments`)}</Tab>
+              <Tab onClick={() => setActiveTab(2)}>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
+              <Tab onClick={() => setActiveTab(3)}>{t(`${T_PATH}.messagesTab`)}</Tab>
             </TabList>
             <TabPanel className={styles.tabPanel}>
-              {activeTab === 'reservations' ? (
+              {activeTab === 0 ? (
                 <CustomerReservations
                   customer={customer}
                   reservations={reservations}
@@ -134,7 +133,7 @@ const CustomerDetail = (): JSX.Element | null => {
               ) : null}
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              {activeTab === 'installments' ? (
+              {activeTab === 1 ? (
                 <Installments
                   reservations={reservations}
                   isLoadingInitial={isLoadingReservations}
@@ -143,10 +142,10 @@ const CustomerDetail = (): JSX.Element | null => {
               ) : null}
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              {activeTab === 'comments' ? <CustomerComments customerId={customer.id} /> : null}
+              {activeTab === 2 ? <CustomerComments customerId={customer.id} /> : null}
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              {activeTab === 'messages' ? (
+              {activeTab === 3 ? (
                 <CustomerReservationMessages
                   reservations={reservations}
                   isLoadingReservations={isLoadingReservations || isLoadingMoreReservations}

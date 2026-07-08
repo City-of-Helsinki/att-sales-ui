@@ -18,6 +18,7 @@ import formatDateTime from '../../utils/formatDateTime';
 import styles from './CustomerReservationMessages.module.scss';
 
 const T_PATH = 'components.customers.CustomerReservationMessages';
+const OFFER_MESSAGE_DRAFT_KEY = 'offerMessageDraft';
 
 type ApplicationOption = {
   key: string;
@@ -27,6 +28,12 @@ type ApplicationOption = {
   apartmentNumbers: string[];
   reservationStates: string[];
   lastMessageCreated?: number;
+};
+
+type OfferMessageDraft = {
+  message: string;
+  projectUuid: string;
+  reservationId: number;
 };
 
 const isDevEnvironment = process.env.NODE_ENV !== 'production';
@@ -57,7 +64,7 @@ interface IProps {
 
 const CustomerReservationMessages = ({ reservations, isLoadingReservations = false }: IProps): JSX.Element => {
   const { t } = useTranslation();
-  const reservationList = reservations || [];
+  const reservationList = useMemo(() => reservations || [], [reservations]);
   const projectsByUuid = useMemo(() => {
     const map = new Map<string, string>();
     reservationList.forEach((res) => {
@@ -255,7 +262,7 @@ const CustomerReservationMessages = ({ reservations, isLoadingReservations = fal
     return () => {
       isCancelled = true;
     };
-  }, [reservationDiscoveryKey, selectedProjectUuid]);
+  }, [discoverApplication, reservationDiscoveryKey, selectedProjectUuid, uniqueReservationsForDiscovery]);
 
   const selectedApplication = useMemo(() => {
     if (!selectedApplicationKey) {
@@ -296,6 +303,43 @@ const CustomerReservationMessages = ({ reservations, isLoadingReservations = fal
     setInputError('');
     setProjectMismatchError(false);
   }, [selectedApplicationKey, selectedProjectUuid]);
+
+  useEffect(() => {
+    const rawDraft = sessionStorage.getItem(OFFER_MESSAGE_DRAFT_KEY);
+    if (!rawDraft || !selectedProjectUuid || !selectedApplicationKey) {
+      return;
+    }
+
+    let parsed: OfferMessageDraft | null = null;
+    try {
+      parsed = JSON.parse(rawDraft) as OfferMessageDraft;
+    } catch {
+      sessionStorage.removeItem(OFFER_MESSAGE_DRAFT_KEY);
+      return;
+    }
+
+    if (!parsed || !parsed.message?.trim() || !parsed.projectUuid) {
+      sessionStorage.removeItem(OFFER_MESSAGE_DRAFT_KEY);
+      return;
+    }
+
+    if (parsed.projectUuid !== selectedProjectUuid && availableProjectUuids.includes(parsed.projectUuid)) {
+      setSelectedProjectUuid(parsed.projectUuid);
+      return;
+    }
+
+    const parsedDraft = parsed;
+    const matchingOption = applicationOptions.find(
+      (option) => option.representativeReservationId === parsedDraft.reservationId
+    );
+    if (matchingOption && selectedApplicationKey !== matchingOption.key) {
+      setSelectedApplicationKey(matchingOption.key);
+      return;
+    }
+
+    setNewMessage(parsedDraft.message);
+    sessionStorage.removeItem(OFFER_MESSAGE_DRAFT_KEY);
+  }, [applicationOptions, availableProjectUuids, selectedApplicationKey, selectedProjectUuid]);
 
   const {
     data,
