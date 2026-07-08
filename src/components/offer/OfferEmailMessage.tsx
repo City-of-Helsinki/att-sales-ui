@@ -10,13 +10,16 @@ import { useGetOfferMessageQuery } from '../../redux/services/api';
 import styles from './OfferEmailMessage.module.scss';
 
 const T_PATH = 'components.offer.OfferEmailMessage';
+const OFFER_MESSAGE_DRAFT_KEY = 'offerMessageDraft';
 
 interface IProps {
   reservationId: OfferModalReservationData['id'];
   validUntil: Offer['valid_until'];
+  customerId: number;
+  projectUuid: string;
 }
 
-const OfferEmailMessage = ({ reservationId, validUntil }: IProps): JSX.Element => {
+const OfferEmailMessage = ({ reservationId, validUntil, customerId, projectUuid }: IProps): JSX.Element => {
   const { t } = useTranslation();
   const isCorrectValidUntil = moment(validUntil, 'D.M.YYYY', true).isValid();
   const formattedValidUntil = isCorrectValidUntil ? moment(validUntil, 'D.M.YYYY', true).format('YYYY-MM-DD') : '';
@@ -48,12 +51,24 @@ const OfferEmailMessage = ({ reservationId, validUntil }: IProps): JSX.Element =
 
   const mailtoLink = `mailto:${email.to}?subject=${email.subject}&body=${email.body}`;
 
+  const openInMessagingSystem = () => {
+    sessionStorage.setItem(
+      OFFER_MESSAGE_DRAFT_KEY,
+      JSON.stringify({
+        message: data.body,
+        projectUuid,
+        reservationId,
+      })
+    );
+    window.location.assign(`/customers/${customerId}`);
+  };
+
   return (
     <>
       <div className={styles.textarea}>
         <TextArea id="offerMessage" label={t(`${T_PATH}.offerIntroLabel`)} disabled value={data.body} />
       </div>
-      <div>
+      <div style={{ display: 'flex', gap: 'var(--spacing-s)', alignItems: 'center', flexWrap: 'wrap' }}>
         <a
           href={mailtoLink}
           target="_blank"
@@ -65,6 +80,18 @@ const OfferEmailMessage = ({ reservationId, validUntil }: IProps): JSX.Element =
           </div>
           <span className="hds-button__label">{t(`${T_PATH}.openInEmailApp`)}</span>
         </a>
+        <button
+          type="button"
+          onClick={openInMessagingSystem}
+          className={`${styles.link} hds-button hds-button--supplementary`}
+        >
+          <div className="Button-module_icon" style={{ marginLeft: 'var(--spacing-s)' }}>
+            <IconArrowRight aria-hidden />
+          </div>
+          <span className="hds-button__label">
+            {t(`${T_PATH}.openInMessagingSystem`, { defaultValue: 'Avaa viestijarjestelmassa' })}
+          </span>
+        </button>
       </div>
     </>
   );
