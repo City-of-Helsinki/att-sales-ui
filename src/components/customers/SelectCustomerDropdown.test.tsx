@@ -47,9 +47,6 @@ describe('SelectCustomerDropdown', () => {
         if (params.startsWith('first_name=')) {
           return [firstCustomer, secondCustomer];
         }
-        if (params.startsWith('hetu=')) {
-          return [secondCustomer];
-        }
         return [];
       },
     }));
@@ -68,8 +65,71 @@ describe('SelectCustomerDropdown', () => {
     expect(trigger).toHaveBeenCalledWith('first_name=Matti');
     expect(trigger).not.toHaveBeenCalledWith('hetu=Matti');
     expect(trigger).not.toHaveBeenCalledWith('date_of_birth=Matti');
+    expect(trigger).not.toHaveBeenCalledWith('email=Matti');
     expect(screen.getByText('Korhonen, Maija - maija@example.com - ID: 2')).toBeInTheDocument();
     expect(screen.getAllByText('Virtanen, Matti - matti@example.com - ID: 1')).toHaveLength(1);
+  });
+
+  it('searches email-like input only with email parameter', async () => {
+    const customer: CustomerListItem = {
+      id: 9,
+      primary_first_name: 'Matti',
+      primary_last_name: 'Mailbox',
+      primary_email: 'matti@example.com',
+      primary_phone_number: '',
+    };
+
+    const trigger = jest.fn((params: string) => ({
+      unwrap: async () => {
+        if (params === 'email=matti%40example.com') {
+          return [customer];
+        }
+
+        return [];
+      },
+    }));
+
+    mockedUseLazyGetCustomersQuery.mockReturnValue([trigger]);
+
+    renderWithProviders(<SelectCustomerDropdown handleSelectCallback={() => null} />);
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'matti@example.com' } });
+
+    await waitFor(() => {
+      expect(trigger).toHaveBeenCalledWith('email=matti%40example.com');
+    });
+
+    expect(trigger).not.toHaveBeenCalledWith('last_name=matti@example.com');
+    expect(trigger).not.toHaveBeenCalledWith('first_name=matti@example.com');
+    expect(trigger).not.toHaveBeenCalledWith('hetu=matti@example.com');
+    expect(trigger).not.toHaveBeenCalledWith('date_of_birth=matti@example.com');
+  });
+
+  it('searches partial email input with email parameter', async () => {
+    const trigger = jest.fn((params: string) => ({
+      unwrap: async () => {
+        if (params === 'email=baklanov.andrey%40') {
+          return [];
+        }
+
+        return [];
+      },
+    }));
+
+    mockedUseLazyGetCustomersQuery.mockReturnValue([trigger]);
+
+    renderWithProviders(<SelectCustomerDropdown handleSelectCallback={() => null} />);
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'baklanov.andrey@' } });
+
+    await waitFor(() => {
+      expect(trigger).toHaveBeenCalledWith('email=baklanov.andrey%40');
+    });
+
+    expect(trigger).not.toHaveBeenCalledWith('last_name=baklanov.andrey@');
+    expect(trigger).not.toHaveBeenCalledWith('first_name=baklanov.andrey@');
+    expect(trigger).not.toHaveBeenCalledWith('hetu=baklanov.andrey@');
+    expect(trigger).not.toHaveBeenCalledWith('date_of_birth=baklanov.andrey@');
   });
 
   it('searches hetu input only with hetu parameter', async () => {

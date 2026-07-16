@@ -12,9 +12,12 @@ const SEARCH_KEYWORD_MIN_LENGTH = 2;
 const NAME_SEARCH_FIELDS = ['last_name', 'first_name'] as const;
 const HETU_REGEXP = /^\d{6}[+\-A]\d{3}[0-9A-Y]$/i;
 const DATE_OF_BIRTH_REGEXP = /^\d{1,2}\.\d{1,2}\.\d{4}$/;
+const EMAIL_REGEXP = /^\S+@\S*$/;
 
-const getSearchParam = (field: 'last_name' | 'first_name' | 'hetu' | 'date_of_birth', value: string): string =>
-  `${field}=${encodeURIComponent(value)}`;
+const getSearchParam = (
+  field: 'last_name' | 'first_name' | 'hetu' | 'date_of_birth' | 'email',
+  value: string
+): string => `${field}=${encodeURIComponent(value)}`;
 
 const isCustomerListItem = (customer: unknown): customer is CustomerListItem => {
   return Boolean(
@@ -24,7 +27,11 @@ const isCustomerListItem = (customer: unknown): customer is CustomerListItem => 
 
 const getSearchRequests = (
   keyword: string
-): Array<{ field: 'last_name' | 'first_name' | 'hetu' | 'date_of_birth'; value: string }> => {
+): Array<{ field: 'last_name' | 'first_name' | 'hetu' | 'date_of_birth' | 'email'; value: string }> => {
+  if (EMAIL_REGEXP.test(keyword)) {
+    return [{ field: 'email', value: keyword }];
+  }
+
   if (HETU_REGEXP.test(keyword)) {
     return [{ field: 'hetu', value: keyword }];
   }
@@ -84,6 +91,7 @@ const SelectCustomerDropdown = ({
   const [triggerGetCustomersByFirstName] = useLazyGetCustomersQuery();
   const [triggerGetCustomersByHetu] = useLazyGetCustomersQuery();
   const [triggerGetCustomersByDateOfBirth] = useLazyGetCustomersQuery();
+  const [triggerGetCustomersByEmail] = useLazyGetCustomersQuery();
 
   const searchCustomers = useCallback(
     async (keyword: string) => {
@@ -117,6 +125,10 @@ const SelectCustomerDropdown = ({
 
             if (field === 'hetu') {
               return triggerGetCustomersByHetu(searchParam).unwrap();
+            }
+
+            if (field === 'email') {
+              return triggerGetCustomersByEmail(searchParam).unwrap();
             }
 
             return triggerGetCustomersByDateOfBirth(searchParam).unwrap();
@@ -153,6 +165,7 @@ const SelectCustomerDropdown = ({
     },
     [
       triggerGetCustomersByDateOfBirth,
+      triggerGetCustomersByEmail,
       triggerGetCustomersByFirstName,
       triggerGetCustomersByHetu,
       triggerGetCustomersByLastName,
