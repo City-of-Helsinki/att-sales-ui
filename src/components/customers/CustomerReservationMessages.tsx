@@ -306,7 +306,7 @@ const CustomerReservationMessages = ({ reservations, isLoadingReservations = fal
 
   useEffect(() => {
     const rawDraft = sessionStorage.getItem(OFFER_MESSAGE_DRAFT_KEY);
-    if (!rawDraft || !selectedProjectUuid || !selectedApplicationKey) {
+    if (!rawDraft || !selectedProjectUuid) {
       return;
     }
 
@@ -336,10 +336,36 @@ const CustomerReservationMessages = ({ reservations, isLoadingReservations = fal
       setSelectedApplicationKey(matchingOption.key);
       return;
     }
-
-    setNewMessage(parsedDraft.message);
-    sessionStorage.removeItem(OFFER_MESSAGE_DRAFT_KEY);
   }, [applicationOptions, availableProjectUuids, selectedApplicationKey, selectedProjectUuid]);
+
+  useEffect(() => {
+    const rawDraft = sessionStorage.getItem(OFFER_MESSAGE_DRAFT_KEY);
+    if (!rawDraft || !selectedProjectUuid || !selectedApplicationKey) {
+      return;
+    }
+
+    let parsed: OfferMessageDraft | null = null;
+    try {
+      parsed = JSON.parse(rawDraft) as OfferMessageDraft;
+    } catch {
+      return;
+    }
+
+    if (!parsed || !parsed.message?.trim() || !parsed.projectUuid) {
+      return;
+    }
+
+    if (parsed.projectUuid === selectedProjectUuid) {
+      const parsedDraft = parsed;
+      const matchingOption = applicationOptions.find(
+        (option) => option.representativeReservationId === parsedDraft.reservationId
+      );
+      if (matchingOption && selectedApplicationKey === matchingOption.key) {
+        setNewMessage(parsedDraft.message);
+        sessionStorage.removeItem(OFFER_MESSAGE_DRAFT_KEY);
+      }
+    }
+  }, [applicationOptions, selectedApplicationKey, selectedProjectUuid]);
 
   const {
     data,
