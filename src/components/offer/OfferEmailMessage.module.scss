@@ -10,6 +10,12 @@
   }
 }
 
+.sentNote {
+  margin: 0 0 var(--spacing-s);
+  color: var(--color-black-70);
+  font-size: var(--fontsize-body-s);
+}
+
 .link {
   text-decoration: none !important;
 
