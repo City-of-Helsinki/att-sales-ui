@@ -299,6 +299,7 @@
   "components.offer.OfferEmailMessage.errorLoadingEmailMessage": "Error while loading the email message",
   "components.offer.OfferEmailMessage.offerIntroLabel": "Email message",
   "components.offer.OfferEmailMessage.openInEmailApp": "Open in email client",
+  "components.offer.OfferEmailMessage.sentToCustomerAutomatically": "This message will be sent to the customer automatically after the offer is created.",
   "components.offer.OfferForm.dateFormatHelpText": "Use format D.M.YYYY",
   "components.offer.OfferForm.offerAccepted": "Offer accepted",
   "components.offer.OfferForm.offerComment": "Salesperson notes",

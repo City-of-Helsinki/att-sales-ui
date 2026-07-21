@@ -300,6 +300,7 @@
   "components.offer.OfferEmailMessage.errorLoadingEmailMessage": "Virhe ladattaessa sähköpostiviestiä",
   "components.offer.OfferEmailMessage.offerIntroLabel": "Sähköpostiviesti",
   "components.offer.OfferEmailMessage.openInEmailApp": "Avaa sähköpostiohjelmassa",
+  "components.offer.OfferEmailMessage.sentToCustomerAutomatically": "Tämä viesti lähetetään asiakkaalle automaattisesti tarjouksen luonnin jälkeen.",
   "components.offer.OfferForm.dateFormatHelpText": "Käytä päivämääräformaattia D.M.YYYY",
   "components.offer.OfferForm.offerAccepted": "Tarjous hyväksytty",
   "components.offer.OfferForm.offerComment": "Myyjän muistiinpanot",
