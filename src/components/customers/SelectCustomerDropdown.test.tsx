@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 
 import SelectCustomerDropdown from './SelectCustomerDropdown';
+import { CustomerListItem } from '../../types';
 import { renderWithProviders } from '../../test/test-utils';
 import { useLazyGetCustomersQuery } from '../../redux/services/api';
 
