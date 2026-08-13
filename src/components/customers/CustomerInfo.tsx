@@ -60,8 +60,8 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
 
     if (!profile) return null;
 
-    const effFirstName = isPrimary ? pick(profile.first_name, applicant?.first_name) : profile.first_name;
-    const effLastName = isPrimary ? pick(profile.last_name, applicant?.last_name) : profile.last_name;
+    const effFirstName = pick(profile.first_name, isPrimary ? applicant?.first_name : null);
+    const effLastName = pick(profile.last_name, isPrimary ? applicant?.last_name : null);
     const effEmail = pick(profile.email, applicant?.email);
     const effPhone = pick(profile.phone_number, applicant?.phone_number);
     const effStreet = pick(profile.street_address, applicant?.street_address);
@@ -69,7 +69,7 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
     const effPostal = pick(profile.postal_code, applicant?.postal_code);
 
     const nameParts = [effLastName, effFirstName].filter(Boolean);
-    const displayName = nameParts.length === 2 ? `${nameParts[0]}, ${nameParts[1]}` : nameParts[0] || '—';
+    const displayName = nameParts.length === 2 ? `${nameParts[0]}, ${nameParts[1]}` : nameParts[0] || '-';
 
     return (
       <>
@@ -89,8 +89,8 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
                 {effStreet && `${effStreet}, `}
                 {effPostal} {effCity}
               </div>
-              <div>{effPhone || '—'}</div>
-              <div>{effEmail || '—'}</div>
+              <div>{effPhone || '-'}</div>
+              <div>{effEmail || '-'}</div>
             </>
           </InfoItem>
           <InfoItem label={t(`${T_PATH}.contactLanguage`)}>
@@ -115,10 +115,16 @@ const CustomerInfo: React.FC<IProps> = ({ customer, applicant }) => {
   const renderApplicantInfo = (applicant: Applicant | undefined) => {
     if (!applicant) return null;
 
+    const applicantNameParts = [applicant.last_name, applicant.first_name].filter((v) => v && v.trim() !== '-');
+    const applicantDisplayName =
+      applicantNameParts.length === 2
+        ? `${applicantNameParts[0]}, ${applicantNameParts[1]}`
+        : applicantNameParts[0] || '-';
+
     return (
       <div className={styles.customerInfoColumn}>
         <InfoItem label={t(`${T_PATH}.name`)} largeFont>
-          {applicant.last_name}, {applicant.first_name}
+          {applicantDisplayName}
         </InfoItem>
         <InfoItem label={t(`${T_PATH}.email`)}>{applicant.email || '-'}</InfoItem>
         <InfoItem label={t(`${T_PATH}.phoneNumber`)}>{applicant.phone_number || '-'}</InfoItem>
