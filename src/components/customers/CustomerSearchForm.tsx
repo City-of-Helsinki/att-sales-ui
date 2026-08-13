@@ -20,6 +20,7 @@ const CustomerSearchForm = ({ searchParams, handleFormCallback }: IProps): JSX.E
     last_name: searchParams.get('last_name') || '',
     phone_number: searchParams.get('phone_number') || '',
     email: searchParams.get('email') || '',
+    hetu: searchParams.get('hetu') || '',
   });
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -66,6 +67,14 @@ const CustomerSearchForm = ({ searchParams, handleFormCallback }: IProps): JSX.E
           label={t(`${T_PATH}.email`)}
           placeholder={t(`${T_PATH}.email`)}
           value={formValues.email}
+          onChange={(e) => handleInputChange(e)}
+        />
+        <TextInput
+          id="customerSearchFormHetu"
+          name="hetu"
+          label={t(`${T_PATH}.hetu`)}
+          placeholder={t(`${T_PATH}.hetu`)}
+          value={formValues.hetu}
           onChange={(e) => handleInputChange(e)}
         />
       </div>

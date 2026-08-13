@@ -354,6 +354,7 @@ export type CustomerSearchFormFields = {
   last_name: string;
   phone_number: string;
   email: string;
+  hetu: string;
 };
 
 export type AddEditCustomerFormFields = {
