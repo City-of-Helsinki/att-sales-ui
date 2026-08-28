@@ -672,5 +672,6 @@
     "logout": "Logout",
     "projects": "Projects",
     "reports": "Reports"
-  }
+  },
+  "components.apartment.ApartmentStateFilterSelect.activeApartments": "Active"
 }
