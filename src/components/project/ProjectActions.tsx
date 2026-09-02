@@ -32,6 +32,11 @@ interface DownloadLotteryResultsButtonProps {
   projectUuid: Project['uuid'];
 }
 
+interface DownloadUnsoldApartmentsButtonProps {
+  housingCompany: Project['housing_company'];
+  projectUuid: Project['uuid'];
+}
+
 const DownloadApplicantsListButton = ({
   housingCompany,
   projectUuid,
@@ -80,7 +85,7 @@ const DownloadApplicantsListButton = ({
         onClick={download}
         disabled={isLoadingApplicantsList}
       >
-        {t(`${T_PATH}.downloadApplicantList`)}
+        {t(`${T_PATH}.applicantListShort`, { defaultValue: 'Hakijalistaus' })}
       </Button>
       <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
         {t(`${T_PATH}.download`)}
@@ -117,7 +122,6 @@ const OpenApplicantsMailingListDialogButton = ({
   const applicantExportApiUrl = `/projects/${projectUuid}/export_applicants_mailing_list/${export_type}`;
 
   const {
-    download,
     ref: fileRef,
     url: fileUrl,
     name: fileName,
@@ -138,7 +142,7 @@ const OpenApplicantsMailingListDialogButton = ({
         onClick={handleOpenMailingListDialog}
         disabled={isLoadingApplicantsList}
       >
-        {t(`${T_PATH}.downloadApplicantMailingList`)}
+        {t(`${T_PATH}.mailingListShort`, { defaultValue: 'Postituslista' })}
       </Button>
       <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
         {t(`${T_PATH}.download`)}
@@ -195,7 +199,63 @@ const DownloadLotteryResultsButton = ({
         onClick={download}
         disabled={isLoadingLotteryResults}
       >
-        {t(`${T_PATH}.downloadLotteryResults`)}
+        {t(`${T_PATH}.lotteryResultsShort`, { defaultValue: 'Arvontatulokset' })}
+      </Button>
+      <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
+        {t(`${T_PATH}.download`)}
+      </a>
+    </>
+  );
+};
+
+const DownloadUnsoldApartmentsButton = ({
+  housingCompany,
+  projectUuid,
+}: DownloadUnsoldApartmentsButtonProps): JSX.Element => {
+  const { t } = useTranslation();
+  const [isLoadingUnsoldApartments, setIsLoadingUnsoldApartments] = useState<boolean>(false);
+
+  const preUnsoldApartmentsDownloading = () => setIsLoadingUnsoldApartments(true);
+  const postUnsoldApartmentsDownloading = () => setIsLoadingUnsoldApartments(false);
+
+  const onUnsoldApartmentsLoadError = () => {
+    setIsLoadingUnsoldApartments(false);
+    toast.show({ type: 'error' });
+  };
+
+  const getUnsoldApartmentsFileName = (): string => {
+    const projectName = housingCompany.replace(/\s/g, '-').toLocaleLowerCase();
+    const prefix = 'myymattomat-asunnot';
+    const fileFormat = 'csv';
+
+    return `${prefix}-${projectName}-${new Date().toJSON().slice(0, 10)}.${fileFormat}`;
+  };
+
+  const exportUnsoldApartmentsApiUrl = `/projects/${projectUuid}/export_unsold_apartments/`;
+
+  const {
+    download,
+    ref: fileRef,
+    url: fileUrl,
+    name: fileName,
+  } = useDownloadFile({
+    apiDefinition: useFileDownloadApi(exportUnsoldApartmentsApiUrl),
+    getFileName: getUnsoldApartmentsFileName,
+    onError: onUnsoldApartmentsLoadError,
+    postDownloading: postUnsoldApartmentsDownloading,
+    preDownloading: preUnsoldApartmentsDownloading,
+  });
+
+  return (
+    <>
+      <Button
+        variant={ButtonVariant.Secondary}
+        iconEnd={<IconDownload />}
+        theme={ButtonPresetTheme.Black}
+        onClick={download}
+        disabled={isLoadingUnsoldApartments}
+      >
+        {t(`${T_PATH}.unsoldApartmentsShort`, { defaultValue: 'Myymattomat' })}
       </Button>
       <a href={fileUrl} download={fileName} className="visually-hidden" ref={fileRef}>
         {t(`${T_PATH}.download`)}
@@ -215,6 +275,9 @@ const ProjectActions = ({ project, handleOpenMailingListDialog }: ProjectActions
         projectUuid={project.uuid}
         handleOpenMailingListDialog={handleOpenMailingListDialog}
       />
+    </span>
+    <span className={styles.action}>
+      <DownloadUnsoldApartmentsButton housingCompany={project.housing_company} projectUuid={project.uuid} />
     </span>
     {!!project.lottery_completed_at && (
       <span className={styles.action}>
