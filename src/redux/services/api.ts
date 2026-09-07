@@ -66,8 +66,9 @@ export const api = createApi({
   ],
   endpoints: (builder) => ({
     // GET: Fetch all projects
-    getProjects: builder.query<Paginated<Project>, { page: number; pageSize?: number }>({
-      query: ({ page, pageSize = 10 }) => `projects/?page=${page}&page_size=${pageSize}`,
+    getProjects: builder.query<Paginated<Project>, { page: number; pageSize?: number; includeArchived?: boolean }>({
+      query: ({ page, pageSize = 10, includeArchived = false }) =>
+        `projects/?page=${page}&page_size=${pageSize}${includeArchived ? '&include_archived=true' : ''}`,
     }),
 
     // GET: Fetch salespersons for Contract creation view
