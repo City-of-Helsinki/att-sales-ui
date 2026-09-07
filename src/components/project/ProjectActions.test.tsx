@@ -16,18 +16,23 @@ describe('ProjectActions', () => {
         handleOpenMailingListDialog={() => {}}
       />
     );
-    expect(screen.getByText('components.project.ProjectActions.downloadLotteryResults')).toBeDefined();
+    expect(screen.getByText('components.project.ProjectActions.lotteryResultsShort')).toBeDefined();
   });
 
   it('does not render download lottery results button when lottery is not yet completed', () => {
     renderWithProviders(
       <ProjectActions project={{ ...project, lottery_completed_at: null }} handleOpenMailingListDialog={() => {}} />
     );
-    expect(screen.queryByText('components.project.ProjectActions.downloadLotteryResults')).toBeNull();
+    expect(screen.queryByText('components.project.ProjectActions.lotteryResultsShort')).toBeNull();
   });
 
   it('renders download applicant list button', () => {
     renderWithProviders(<ProjectActions project={project} handleOpenMailingListDialog={() => {}} />);
-    expect(screen.getByText('components.project.ProjectActions.downloadApplicantList')).toBeDefined();
+    expect(screen.getByText('components.project.ProjectActions.applicantListShort')).toBeDefined();
+  });
+
+  it('renders download unsold apartments button', () => {
+    renderWithProviders(<ProjectActions project={project} handleOpenMailingListDialog={() => {}} />);
+    expect(screen.getByText('components.project.ProjectActions.unsoldApartmentsShort')).toBeDefined();
   });
 });

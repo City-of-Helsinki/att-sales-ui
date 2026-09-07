@@ -1,7 +1,8 @@
-import { Select, Option } from 'hds-react';
+import { Option, Select } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
 import { ApartmentState } from '../../enums';
+import { ACTIVE_APARTMENTS_STATE_FILTER, ALL_APARTMENTS_STATE_FILTER } from '../../utils/filterApartmentsByState';
 
 const T_PATH = 'components.apartment.ApartmentStateFilterSelect';
 
@@ -23,7 +24,15 @@ const ApartmentStateFilterSelect = ({ activeFilter, handleFilterChangeCallback }
       {
         label: t(`${T_PATH}.allApartments`),
         // name: 'ApartmentState',
-        value: '-', // if this is empty string, gets replaced with label when selected
+        value: ALL_APARTMENTS_STATE_FILTER, // if this is empty string, gets replaced with label when selected
+        disabled: false,
+        visible: true,
+        selected: false,
+        isGroupLabel: false,
+      },
+      {
+        label: t(`${T_PATH}.activeApartments`),
+        value: ACTIVE_APARTMENTS_STATE_FILTER,
         disabled: false,
         visible: true,
         selected: false,

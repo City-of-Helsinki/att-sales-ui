@@ -649,5 +649,6 @@
     "logout": "Kirjaudu ulos",
     "projects": "Kohteet",
     "reports": "Raportit"
-  }
+  },
+  "components.apartment.ApartmentStateFilterSelect.activeApartments": "Aktiivinen"
 }
