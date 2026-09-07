@@ -3,6 +3,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLazyGetProjectsQuery } from './api';
 import { Project } from '../../types';
 
+type UseAllProjectsOptions = {
+  includeArchived?: boolean;
+};
+
 function mergeProjectsByPage(resultsByPage: Map<number, Project[]>): Project[] | undefined {
   const pages = Array.from(resultsByPage.keys()).sort((a, b) => a - b);
   if (pages.length === 0) return undefined;
@@ -18,7 +22,7 @@ function mergeProjectsByPage(resultsByPage: Map<number, Project[]>): Project[] |
  * Fetches every page of `/projects/` concurrently after page 1, while keeping
  * the exposed `projects` array strictly ordered by page number.
  */
-export const useAllProjects = () => {
+export const useAllProjects = ({ includeArchived = false }: UseAllProjectsOptions = {}) => {
   const PAGE_SIZE = 10;
   const [triggerGetProjects] = useLazyGetProjectsQuery();
 
@@ -41,7 +45,7 @@ export const useAllProjects = () => {
 
     const fetchPageResults = async (page: number) => {
       try {
-        const res = await triggerGetProjects({ page, pageSize: PAGE_SIZE }, true).unwrap();
+        const res = await triggerGetProjects({ page, pageSize: PAGE_SIZE, includeArchived }, true).unwrap();
         if (cancelled) return;
         resultsByPageRef.current.set(page, res.results);
         setVersion((v) => v + 1);
@@ -62,7 +66,7 @@ export const useAllProjects = () => {
       setPendingCount(0);
 
       try {
-        const first = await triggerGetProjects({ page: 1, pageSize: PAGE_SIZE }, true).unwrap();
+        const first = await triggerGetProjects({ page: 1, pageSize: PAGE_SIZE, includeArchived }, true).unwrap();
         if (cancelled) return;
 
         resultsByPageRef.current.set(1, first.results);
@@ -92,7 +96,7 @@ export const useAllProjects = () => {
     return () => {
       cancelled = true;
     };
-  }, [triggerGetProjects]);
+  }, [includeArchived, triggerGetProjects]);
 
   return {
     projects,
