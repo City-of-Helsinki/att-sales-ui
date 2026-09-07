@@ -58,14 +58,36 @@ describe('useAllProjects', () => {
       { timeout: 3000 }
     );
 
-    expect(trigger).toHaveBeenCalledWith({ page: 1, pageSize: 10 }, true);
-    expect(trigger).toHaveBeenCalledWith({ page: 2, pageSize: 10 }, true);
-    expect(trigger).toHaveBeenCalledWith({ page: 3, pageSize: 10 }, true);
+    expect(trigger).toHaveBeenCalledWith({ page: 1, pageSize: 10, includeArchived: false }, true);
+    expect(trigger).toHaveBeenCalledWith({ page: 2, pageSize: 10, includeArchived: false }, true);
+    expect(trigger).toHaveBeenCalledWith({ page: 3, pageSize: 10, includeArchived: false }, true);
 
     expect(result.current.projects?.map((p) => p.uuid)).toEqual([
       ...resultsByPage[1].map((p) => p.uuid),
       ...resultsByPage[2].map((p) => p.uuid),
       ...resultsByPage[3].map((p) => p.uuid),
     ]);
+  });
+
+  it('requests archived projects when includeArchived option is enabled', async () => {
+    const trigger = jest.fn(() => ({
+      unwrap: () =>
+        Promise.resolve({
+          count: 1,
+          results: [{ uuid: 'p1' }],
+          next: null,
+          previous: null,
+        }),
+    }));
+
+    mockedUseLazyGetProjectsQuery.mockReturnValue([trigger]);
+
+    const { result, waitFor } = renderHook(() => useAllProjects({ includeArchived: true }));
+
+    await waitFor(() => {
+      expect(result.current.isComplete).toBe(true);
+    });
+
+    expect(trigger).toHaveBeenCalledWith({ page: 1, pageSize: 10, includeArchived: true }, true);
   });
 });
