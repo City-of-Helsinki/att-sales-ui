@@ -1,0 +1,95 @@
+.header {
+  margin-bottom: var(--spacing-l);
+}
+
+.subTitle {
+  color: var(--color-black-60);
+  margin-bottom: var(--spacing-l);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-s);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cardButton {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--color-black-20);
+  border-radius: 8px;
+  background: var(--color-white);
+  padding: var(--spacing-m);
+  cursor: pointer;
+}
+
+.cardButton:hover {
+  border-color: var(--color-coat-of-arms);
+}
+
+.cardHeader {
+  align-items: baseline;
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: space-between;
+  margin-bottom: var(--spacing-2-xs);
+}
+
+.customerName {
+  font-weight: 600;
+}
+
+.projectName {
+  font-size: var(--fontsize-heading-s);
+  font-weight: 600;
+}
+
+.applicantName {
+  color: var(--color-black-80);
+  font-size: var(--fontsize-body-s);
+  margin-bottom: var(--spacing-2-xs);
+}
+
+.unreadBadge {
+  color: var(--color-white);
+  background: var(--color-coat-of-arms);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 var(--spacing-2-xs);
+  font-size: var(--fontsize-body-s);
+  line-height: 1;
+}
+
+.preview {
+  margin: 0 0 var(--spacing-2-xs) 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.meta {
+  color: var(--color-black-60);
+  font-size: var(--fontsize-body-s);
+}
+
+.empty {
+  margin-top: var(--spacing-m);
+}
+
+.errorWrap {
+  margin-top: var(--spacing-m);
+}

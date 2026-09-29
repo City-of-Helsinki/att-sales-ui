@@ -101,6 +101,34 @@ const handlers = [
       );
     }
   ),
+  rest.get(`${process.env.REACT_APP_API_BASE_URL}/messages/unread-counts/`, (_req, res, ctx) => {
+    return res(
+      ctx.json({
+        counts: {
+          '42': 2,
+        },
+        total: 2,
+      })
+    );
+  }),
+  rest.get(`${process.env.REACT_APP_API_BASE_URL}/messages/inbox-summary/`, (_req, res, ctx) => {
+    return res(
+      ctx.json({
+        total_unread: 2,
+        items: [
+          {
+            application_id: 42,
+            unread_count: 2,
+            has_unread: true,
+            last_message_at: '2024-05-06T11:13:20Z',
+            last_message_preview: 'Hello, I have a question about the contract.',
+            applicant_name: 'Matti Meikalainen',
+            project_name: 'Asunto Oy Tuleva S',
+          },
+        ],
+      })
+    );
+  }),
   rest.get(`${process.env.REACT_APP_API_BASE_URL}/salespersons`, (_req, res, ctx) => {
     return res(ctx.json(mockSalesPersons));
   }),

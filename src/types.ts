@@ -524,3 +524,27 @@ export type ApartmentReservationMessagesResponse = {
   count: number;
   items: ApartmentReservationMessage[];
 };
+
+export type UnreadMessageCountsResponse = {
+  counts: Record<string, number>;
+  total: number;
+};
+
+export type MessagesInboxSummaryItem = {
+  application_id: number;
+  unread_count: number;
+  has_unread: boolean;
+  last_message_at: string | null;
+  last_message_preview: string;
+  applicant_name: string;
+  project_name: string;
+  project_id?: number;
+  project_uuid?: string;
+  customer_id?: number;
+  reservation_id?: number;
+};
+
+export type MessagesInboxSummaryResponse = {
+  total_unread: number;
+  items: MessagesInboxSummaryItem[];
+};

@@ -8,6 +8,7 @@ export enum ROUTES {
   LOGOUT = 'logout',
   NOT_FOUND = '404',
   PROJECTS = 'projects',
+  MESSAGES = 'messages',
   REPORTS = 'reports',
   COST_INDEX = 'reports/cost-index',
   CALLBACK = '/callback',

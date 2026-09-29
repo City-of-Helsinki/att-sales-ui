@@ -12,6 +12,7 @@ import Logout from './pages/auth/Logout';
 import AddEditCustomer from './pages/customers/AddEditCustomer';
 import CustomerDetail from './pages/customers/CustomerDetail';
 import CustomerSearch from './pages/customers/CustomerSearch';
+import MessagesInbox from './pages/messages';
 import NotFound from './pages/NotFound';
 import ProjectDetail from './pages/project/ProjectDetail';
 import ProjectList from './pages/project/ProjectList';
@@ -28,6 +29,7 @@ const Authenticated = (): JSX.Element => (
         <Route path={`${ROUTES.PROJECTS}/:projectId`} element={<ProjectDetail />} />
         <Route path={ROUTES.CUSTOMERS} element={<CustomerSearch />} />
         <Route path={`${ROUTES.CUSTOMERS}/:customerId`} element={<CustomerDetail />} />
+        <Route path={ROUTES.MESSAGES} element={<MessagesInbox />} />
         <Route path={`${ROUTES.ADD_CUSTOMER}`} element={<AddEditCustomer isEditMode={false} />} />
         <Route path={`${ROUTES.EDIT_CUSTOMER}/:customerId`} element={<AddEditCustomer isEditMode />} />
         <Route path={ROUTES.REPORTS} element={<Reports />} />
