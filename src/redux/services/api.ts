@@ -21,6 +21,7 @@ import {
   Offer,
   OfferFormData,
   OfferMessage,
+  MessagesInboxSummaryResponse,
   Project,
   ProjectExtraData,
   ProjectInstallment,
@@ -31,6 +32,7 @@ import {
   QueuePreviewFormData,
   Paginated,
   SalesPerson,
+  UnreadMessageCountsResponse,
 } from '../../types';
 import getApiBaseUrl from '../../utils/getApiBaseUrl';
 import { waitForApiToken } from './common';
@@ -63,6 +65,7 @@ export const api = createApi({
     'ProjectExtraData',
     'Reservation',
     'ReservationMessages',
+    'UnreadMessages',
   ],
   endpoints: (builder) => ({
     // GET: Fetch all projects
@@ -495,6 +498,18 @@ export const api = createApi({
         { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
       ],
     }),
+
+    // GET: Fetch unread message counters grouped by application id
+    getUnreadMessageCounts: builder.query<UnreadMessageCountsResponse, void>({
+      query: () => 'messages/unread-counts/',
+      providesTags: [{ type: 'UnreadMessages' }],
+    }),
+
+    // GET: Fetch messages inbox cards summary
+    getMessagesInboxSummary: builder.query<MessagesInboxSummaryResponse, void>({
+      query: () => 'messages/inbox-summary/',
+      providesTags: [{ type: 'UnreadMessages' }],
+    }),
   }),
 });
 
@@ -504,7 +519,9 @@ export const {
   useGetSalesPersonsQuery,
   useGetSelectedProjectsQuery,
   useGetProjectByIdQuery,
+  useLazyGetProjectByIdQuery,
   useGetApartmentsByProjectQuery,
+  useLazyGetApartmentsByProjectQuery,
   useStartLotteryForProjectMutation,
   useGetProjectInstallmentsQuery,
   useSetProjectInstallmentsMutation,
@@ -535,6 +552,8 @@ export const {
   useGetApartmentReservationMessagesQuery,
   useLazyGetApartmentReservationMessagesQuery,
   useAddApartmentReservationMessageMutation,
+  useGetUnreadMessageCountsQuery,
+  useGetMessagesInboxSummaryQuery,
   useGetCostIndexesQuery,
   useAddCostIndexMutation,
   useGetApartmentHASOPaymentQuery,
