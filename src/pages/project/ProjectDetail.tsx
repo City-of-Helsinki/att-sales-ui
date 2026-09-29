@@ -27,6 +27,7 @@ import ProjectCard from '../../components/project/ProjectCard';
 import { ApplicantMailingListExportType, ROUTES } from '../../enums';
 import { useGetProjectByIdQuery, useStartLotteryForProjectMutation } from '../../redux/services/api';
 import { Project } from '../../types';
+import { ALL_APARTMENTS_STATE_FILTER, filterApartmentsByState } from '../../utils/filterApartmentsByState';
 import { usePageTitle } from '../../utils/usePageTitle';
 import useSessionStorage from '../../utils/useSessionStorage';
 
@@ -49,10 +50,10 @@ const ProjectDetail = (): JSX.Element | null => {
   } = useGetProjectByIdQuery(projectId || '0');
   const [startLotteryForProject, { isLoading: startLotterIsLoading }] = useStartLotteryForProjectMutation();
   const [apartmentStateFilter, setApartmentStateFilter] = useSessionStorage({
-    defaultValue: '-',
+    defaultValue: ALL_APARTMENTS_STATE_FILTER,
     key: `apartmentStateFilter-${projectId || project?.id}`,
   });
-  const hasActiveFilters = apartmentStateFilter !== '-';
+  const hasActiveFilters = apartmentStateFilter !== ALL_APARTMENTS_STATE_FILTER;
 
   const [isMailingListDialogOpen, setIsMailingListDialogOpen] = useState(false);
   const [mailingListReservationType, setMailingListReservationType] = useState(ApplicantMailingListExportType.RESERVED);
@@ -136,10 +137,7 @@ const ProjectDetail = (): JSX.Element | null => {
   if (!isSuccess || !project) return null;
 
   const getFilteredProjects = (): Project['apartments'] => {
-    if (hasActiveFilters) {
-      return project.apartments.filter((p) => p.state === apartmentStateFilter);
-    }
-    return project.apartments;
+    return filterApartmentsByState(project.apartments, apartmentStateFilter);
   };
 
   const downloadApplicantMailingList = () => {

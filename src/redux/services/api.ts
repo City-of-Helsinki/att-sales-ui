@@ -69,8 +69,9 @@ export const api = createApi({
   ],
   endpoints: (builder) => ({
     // GET: Fetch all projects
-    getProjects: builder.query<Paginated<Project>, { page: number; pageSize?: number }>({
-      query: ({ page, pageSize = 10 }) => `projects/?page=${page}&page_size=${pageSize}`,
+    getProjects: builder.query<Paginated<Project>, { page: number; pageSize?: number; includeArchived?: boolean }>({
+      query: ({ page, pageSize = 10, includeArchived = false }) =>
+        `projects/?page=${page}&page_size=${pageSize}${includeArchived ? '&include_archived=true' : ''}`,
     }),
 
     // GET: Fetch salespersons for Contract creation view
@@ -184,7 +185,7 @@ export const api = createApi({
       Paginated<CustomerReservation>,
       { customerId: string; page: number; pageSize?: number }
     >({
-      query: ({ customerId, page, pageSize = 5 }) =>
+      query: ({ customerId, page, pageSize = 20 }) =>
         `customers/${customerId}/apartment_reservations/?page=${page}&page_size=${pageSize}`,
       providesTags: (result, error, arg) => [{ type: 'Customer', id: arg.customerId }],
     }),
@@ -514,6 +515,7 @@ export const api = createApi({
 
 export const {
   useGetProjectsQuery,
+  useLazyGetProjectsQuery,
   useGetSalesPersonsQuery,
   useGetSelectedProjectsQuery,
   useGetProjectByIdQuery,
@@ -526,6 +528,7 @@ export const {
   useGetProjectExtraDataQuery,
   usePartialUpdateProjectExtraDataMutation,
   useGetCustomersQuery,
+  useLazyGetCustomersQuery,
   useGetCustomerByIdQuery,
   useGetCustomerReservationsQuery,
   useGetCustomerCommentsQuery,

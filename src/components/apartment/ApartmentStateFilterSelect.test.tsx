@@ -12,4 +12,9 @@ describe('ApartmentStateFilterSelect', () => {
     render(<ApartmentStateFilterSelect activeFilter="free" handleFilterChangeCallback={() => null} />);
     expect(screen.getByText('ENUMS.ApartmentState.free')).toBeDefined();
   });
+
+  it('renders ApartmentStateFilterSelect active apartments option', () => {
+    render(<ApartmentStateFilterSelect activeFilter="active" handleFilterChangeCallback={() => null} />);
+    expect(screen.getByText('components.apartment.ApartmentStateFilterSelect.activeApartments')).toBeDefined();
+  });
 });

@@ -16,13 +16,18 @@ interface IProps {
 
 const CustomerTableRow = ({ customer }: IProps): JSX.Element => {
   const { t } = useTranslation();
+  const displayName =
+    [customer?.primary_last_name, customer?.primary_first_name].filter((v) => v && v.trim() !== '-').join(', ') || '-';
+  const secondaryDisplayName =
+    [customer?.secondary_last_name, customer?.secondary_first_name].filter((v) => v && v.trim() !== '-').join(', ') ||
+    '-';
 
   return (
     <tr className={styles.customerTableRow}>
       <td className={cx(`${styles.customerTableCell} ${styles.nameCell}`)}>
         <Link to={`/${ROUTES.CUSTOMERS}/${customer?.id}`}>
           <span className="visually-hidden">{t(`${T_PATH}.customer`)}:</span>
-          {customer?.primary_last_name}, {customer?.primary_first_name}
+          {displayName}
         </Link>
       </td>
       <td className={styles.customerTableCell}>
@@ -37,7 +42,7 @@ const CustomerTableRow = ({ customer }: IProps): JSX.Element => {
         {customer?.secondary_last_name && customer?.secondary_first_name && (
           <>
             <span className="visually-hidden">{t(`${T_PATH}.coApplicant`)}:</span>
-            {customer.secondary_last_name}, {customer.secondary_first_name}
+            {secondaryDisplayName}
           </>
         )}
       </td>

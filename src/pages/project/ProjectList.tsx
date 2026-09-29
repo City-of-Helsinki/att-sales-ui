@@ -35,11 +35,18 @@ const T_PATH = 'pages.project.ProjectList';
 const ProjectList = (): JSX.Element => {
   const { t } = useTranslation();
   const [showMyProjects, setShowMyProjects] = useLocalStorage({ defaultValue: true, key: `showMyProjects` });
-  const { projects, isLoadingInitial, isLoadingMore, isError } = useAllProjects();
+  const [activeTab, setActiveTab] = useState(0);
+  const [includeArchivedProjects, setIncludeArchivedProjects] = useState(false);
+  const { projects, isLoadingInitial, isLoadingMore, isError } = useAllProjects({
+    includeArchived: includeArchivedProjects,
+  });
   const { getUser } = useOidcClient();
   const user = getUser();
   const userFullName = user ? (user.profile.name as string) : '';
   const [searchTerm, setSearchTerm] = useState('');
+  const loadArchivedProjectsLabel = t(`${T_PATH}.btnLoadArchivedProjects`, {
+    defaultValue: `${t(`${T_PATH}.searchbtnAriaLabel`)} ${t(`${T_PATH}.tabArchived`)}`,
+  });
 
   usePageTitle(t('PAGES.homepage'));
 
@@ -164,25 +171,40 @@ const ProjectList = (): JSX.Element => {
 
     return (
       <Container wide>
-        <Tabs>
+        <Tabs initiallyActiveTab={activeTab}>
           <TabList className={styles.tabLinks} style={{ marginBottom: 'var(--spacing-m)' }}>
-            <Tab>
+            <Tab onClick={() => setActiveTab(0)}>
               {t(`${T_PATH}.tabPublished`)} ({publishedProjects.length})
             </Tab>
-            <Tab>
+            <Tab onClick={() => setActiveTab(1)}>
               {t(`${T_PATH}.tabUpcoming`)} ({upomingProjects.length})
             </Tab>
-            <Tab>
+            <Tab onClick={() => setActiveTab(2)}>
               {t(`${T_PATH}.tabUnpublished`)} ({unpublishedProjects.length})
             </Tab>
-            <Tab>
+            <Tab onClick={() => setActiveTab(3)}>
               {t(`${T_PATH}.tabArchived`)} ({archivedProjects.length})
             </Tab>
           </TabList>
           <TabPanel>{renderProjectList(publishedProjects)}</TabPanel>
           <TabPanel>{renderProjectList(upomingProjects)}</TabPanel>
           <TabPanel>{renderProjectList(unpublishedProjects)}</TabPanel>
-          <TabPanel>{renderProjectList(archivedProjects)}</TabPanel>
+          <TabPanel>
+            {!includeArchivedProjects ? (
+              <div className={styles.noProjectsText}>
+                <Button
+                  onClick={() => {
+                    setActiveTab(3);
+                    setIncludeArchivedProjects(true);
+                  }}
+                >
+                  {loadArchivedProjectsLabel}
+                </Button>
+              </div>
+            ) : (
+              renderProjectList(archivedProjects)
+            )}
+          </TabPanel>
         </Tabs>
       </Container>
     );

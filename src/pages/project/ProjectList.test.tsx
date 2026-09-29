@@ -1,10 +1,10 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import ProjectList from './ProjectList';
 
 jest.mock('hds-react', () => ({
-  Button: ({ children }: any) => <button>{children}</button>,
+  Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
   IconGroup: () => null,
   IconPlus: () => null,
   IconUser: () => null,
@@ -42,6 +42,10 @@ jest.mock('../../redux/services/useAllProjects', () => ({
 const { useAllProjects } = jest.requireMock('../../redux/services/useAllProjects');
 
 describe('ProjectList', () => {
+  beforeEach(() => {
+    useAllProjects.mockReset();
+  });
+
   it('renders projects incrementally (shows loading-more spinner)', () => {
     useAllProjects.mockReturnValue({
       projects: [
@@ -62,5 +66,30 @@ describe('ProjectList', () => {
 
     expect(screen.getByText('Housing Company 1')).toBeInTheDocument();
     expect(screen.getByTestId('spinner')).toBeInTheDocument();
+  });
+
+  it('loads archived projects only after clicking the archived button', () => {
+    useAllProjects.mockReturnValue({
+      projects: [
+        {
+          uuid: 'p1',
+          housing_company: 'Housing Company 1',
+          archived: false,
+          published: true,
+          state_of_sale: 'for_sale',
+        },
+      ],
+      isLoadingInitial: false,
+      isLoadingMore: false,
+      isError: false,
+    });
+
+    render(<ProjectList />);
+
+    expect(useAllProjects).toHaveBeenCalledWith({ includeArchived: false });
+
+    fireEvent.click(screen.getByText('pages.project.ProjectList.btnLoadArchivedProjects'));
+
+    expect(useAllProjects).toHaveBeenLastCalledWith({ includeArchived: true });
   });
 });
