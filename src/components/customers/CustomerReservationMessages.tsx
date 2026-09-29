@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { Button, ButtonVariant, Notification, NotificationSize, TextArea } from 'hds-react';
@@ -60,10 +60,18 @@ const getStateLabel = (state: string, t: (key: string) => string): string => {
 interface IProps {
   reservations?: CustomerReservation[];
   isLoadingReservations?: boolean;
+  initialProjectUuid?: string | null;
+  initialReservationId?: number | null;
 }
 
-const CustomerReservationMessages = ({ reservations, isLoadingReservations = false }: IProps): JSX.Element => {
+const CustomerReservationMessages = ({
+  reservations,
+  isLoadingReservations = false,
+  initialProjectUuid = null,
+  initialReservationId = null,
+}: IProps): JSX.Element => {
   const { t } = useTranslation();
+  const hasAppliedInitialSelection = useRef(false);
   const reservationList = useMemo(() => reservations || [], [reservations]);
   const projectsByUuid = useMemo(() => {
     const map = new Map<string, string>();
@@ -81,13 +89,24 @@ const CustomerReservationMessages = ({ reservations, isLoadingReservations = fal
       setSelectedProjectUuid(null);
       return;
     }
+
+    if (
+      !hasAppliedInitialSelection.current &&
+      initialProjectUuid &&
+      availableProjectUuids.includes(initialProjectUuid)
+    ) {
+      hasAppliedInitialSelection.current = true;
+      setSelectedProjectUuid(initialProjectUuid);
+      return;
+    }
+
     setSelectedProjectUuid((prev) => {
       if (prev && availableProjectUuids.includes(prev)) {
         return prev;
       }
       return availableProjectUuids[0];
     });
-  }, [availableProjectUuids]);
+  }, [availableProjectUuids, initialProjectUuid]);
 
   const reservationListForCurrentProject = useMemo(() => {
     if (!selectedProjectUuid) {
@@ -297,6 +316,19 @@ const CustomerReservationMessages = ({ reservations, isLoadingReservations = fal
       };
     });
   }, [applicationOptions, t]);
+
+  useEffect(() => {
+    if (!initialReservationId || !applicationOptions.length) {
+      return;
+    }
+
+    const matchingOption = applicationOptions.find(
+      (option) => option.representativeReservationId === initialReservationId
+    );
+    if (matchingOption && matchingOption.key !== selectedApplicationKey) {
+      setSelectedApplicationKey(matchingOption.key);
+    }
+  }, [applicationOptions, initialReservationId, selectedApplicationKey]);
 
   useEffect(() => {
     setNewMessage('');

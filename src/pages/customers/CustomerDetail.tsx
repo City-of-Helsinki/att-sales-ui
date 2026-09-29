@@ -1,7 +1,7 @@
 import cx from 'classnames';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
 import Breadcrumbs, { BreadcrumbItem } from '../../components/common/breadcrumbs/Breadcrumbs';
 import Container from '../../components/common/container/Container';
@@ -24,7 +24,15 @@ const OFFER_MESSAGE_DRAFT_KEY = 'offerMessageDraft';
 
 const CustomerDetail = (): JSX.Element | null => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<number>(() => (sessionStorage.getItem(OFFER_MESSAGE_DRAFT_KEY) ? 3 : 0));
+  const [searchParams] = useSearchParams();
+  const shouldOpenMessagesTab =
+    searchParams.get('tab') === 'messages' || !!sessionStorage.getItem(OFFER_MESSAGE_DRAFT_KEY);
+  const [activeTab, setActiveTab] = useState<number>(() => (shouldOpenMessagesTab ? 3 : 0));
+  const initialProjectUuid = searchParams.get('projectUuid');
+  const initialReservationId = useMemo(() => {
+    const value = Number(searchParams.get('reservationId'));
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }, [searchParams]);
   const { customerId } = useParams();
   const { data: customer, isLoading, isFetching, isError, isSuccess } = useGetCustomerByIdQuery(customerId || '0');
   const { data: applicant } = useGetCustomerLatestApplicantInfoQuery(customerId || '0');
@@ -33,6 +41,12 @@ const CustomerDetail = (): JSX.Element | null => {
     isLoadingInitial: isLoadingReservations,
     isLoadingMore: isLoadingMoreReservations,
   } = useAllCustomerReservations(customerId);
+
+  useEffect(() => {
+    if (searchParams.get('tab') === 'messages') {
+      setActiveTab(3);
+    }
+  }, [searchParams]);
 
   usePageTitle(customer?.id ? `${t('PAGES.customers')} - ${customer.id}` : t('PAGES.customers'));
 
@@ -149,6 +163,8 @@ const CustomerDetail = (): JSX.Element | null => {
                 <CustomerReservationMessages
                   reservations={reservations}
                   isLoadingReservations={isLoadingReservations || isLoadingMoreReservations}
+                  initialProjectUuid={initialProjectUuid}
+                  initialReservationId={initialReservationId}
                 />
               ) : null}
             </TabPanel>
