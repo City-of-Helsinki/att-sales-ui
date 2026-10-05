@@ -20,9 +20,12 @@ const NavBar = (): JSX.Element => {
   });
   const unreadTotal = inboxSummary?.total_unread || 0;
 
-  const messagesLabel = unreadTotal
-    ? `${t(`${T_PATH}.messages`)} (${unreadTotal > 99 ? '99+' : unreadTotal})`
-    : t(`${T_PATH}.messages`);
+  const messagesBaseLabel = t(`${T_PATH}.messages`);
+  let messagesLabel = messagesBaseLabel;
+  if (unreadTotal > 0) {
+    const unreadLabel = unreadTotal > 99 ? '99+' : String(unreadTotal);
+    messagesLabel = `${messagesBaseLabel} (${unreadLabel})`;
+  }
 
   const languages: LanguageOption[] = [
     { label: 'Suomi', value: 'fi', isPrimary: true },

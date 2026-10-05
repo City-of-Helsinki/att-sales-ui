@@ -64,13 +64,13 @@ interface IProps {
   initialReservationId?: number | null;
 }
 
-// NOSONAR: Stateful container with many guarded side effects; refactor after release.
 const CustomerReservationMessages = ({
   reservations,
   isLoadingReservations = false,
   initialProjectUuid = null,
   initialReservationId = null,
 }: IProps): JSX.Element => {
+  // NOSONAR
   const { t } = useTranslation();
   const hasAppliedInitialSelection = useRef(false);
   const reservationList = useMemo(() => reservations || [], [reservations]);
@@ -277,7 +277,7 @@ const CustomerReservationMessages = ({
       setIsDiscoveringApplications(false);
     };
 
-    discoverApplications();
+    void discoverApplications();
 
     return () => {
       isCancelled = true;
@@ -309,11 +309,12 @@ const CustomerReservationMessages = ({
         ? formatMessageDateTime(option.lastMessageCreated)
         : t(`${T_PATH}.noMessagesShort`);
 
+      const optionPrefix = t(`${T_PATH}.applicationOptionPrefix`);
+      const label = `${optionPrefix} #${option.applicationId} - ${option.projectHousingCompany} - ${lastMessageLabel}`;
+
       return {
         value: option.key,
-        label: `${t(`${T_PATH}.applicationOptionPrefix`)} #${option.applicationId} - ${
-          option.projectHousingCompany
-        } - ${lastMessageLabel}`,
+        label,
       };
     });
   }, [applicationOptions, t]);
@@ -367,7 +368,6 @@ const CustomerReservationMessages = ({
     );
     if (matchingOption && selectedApplicationKey !== matchingOption.key) {
       setSelectedApplicationKey(matchingOption.key);
-      return;
     }
   }, [applicationOptions, availableProjectUuids, selectedApplicationKey, selectedProjectUuid]);
 
@@ -501,7 +501,7 @@ const CustomerReservationMessages = ({
     }
   }, [currentThreadKey, data, selectedProjectUuid, selectedReservationId]);
 
-  const messages = currentThreadKey ? messagesByThread[currentThreadKey] || [] : [];
+  const messages = currentThreadKey ? messagesByThread[currentThreadKey] ?? [] : [];
 
   const handleApplicationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setInputError('');
@@ -568,7 +568,7 @@ const CustomerReservationMessages = ({
       if (currentThreadKey) {
         setMessagesByThread((prev) => ({
           ...prev,
-          [currentThreadKey]: [...(prev[currentThreadKey] || []), createdMessage],
+          [currentThreadKey]: [...(prev[currentThreadKey] ?? []), createdMessage],
         }));
       }
       setNewMessage('');
@@ -608,7 +608,7 @@ const CustomerReservationMessages = ({
             return;
           }
 
-          if (Array.isArray(data && (data as any).body)) {
+          if (Array.isArray((data as any)?.body)) {
             setInputError(t(`${T_PATH}.emptyMessageError`));
             return;
           }
@@ -661,6 +661,42 @@ const CustomerReservationMessages = ({
   const applicationStateLabel = selectedApplication
     ? selectedApplication.reservationStates.map((state) => getStateLabel(state, t)).join(', ')
     : '';
+
+  const renderMessagesContent = () => {
+    if ((isLoading || isFetching) && !messages.length) {
+      return <Spinner />;
+    }
+
+    if (isFetchBaseQueryError(queryError) && queryError.status === 404) {
+      return <div className={styles.noMessages}>{t(`${T_PATH}.errorNotFound`)}</div>;
+    }
+
+    if (isError) {
+      return (
+        <Notification type="error" size={NotificationSize.Small}>
+          {t(`${T_PATH}.errorLoading`)}
+        </Notification>
+      );
+    }
+
+    if (!messages.length) {
+      return <div className={styles.noMessages}>{t(`${T_PATH}.noMessages`)}</div>;
+    }
+
+    return (
+      <ul className={styles.messagesList}>
+        {messages.map((message) => (
+          <li key={message.id} className={styles.messageItem}>
+            <div className={styles.messageMeta}>
+              <strong>{t(getSenderLabelKey(message.sender_role))}</strong>
+              <span>{formatMessageDateTime(message.created)}</span>
+            </div>
+            <div className={cx('hds-text-input__helper-text', styles.messageBody)}>{message.body}</div>
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   return (
     <div className={styles.messagesRoot}>
@@ -744,31 +780,7 @@ const CustomerReservationMessages = ({
         </Notification>
       )}
 
-      <div className={styles.messagesListWrap}>
-        {(isLoading || isFetching) && !messages.length ? (
-          <Spinner />
-        ) : isFetchBaseQueryError(queryError) && queryError.status === 404 ? (
-          <div className={styles.noMessages}>{t(`${T_PATH}.errorNotFound`)}</div>
-        ) : isError ? (
-          <Notification type="error" size={NotificationSize.Small}>
-            {t(`${T_PATH}.errorLoading`)}
-          </Notification>
-        ) : !messages.length ? (
-          <div className={styles.noMessages}>{t(`${T_PATH}.noMessages`)}</div>
-        ) : (
-          <ul className={styles.messagesList}>
-            {messages.map((message) => (
-              <li key={message.id} className={styles.messageItem}>
-                <div className={styles.messageMeta}>
-                  <strong>{t(getSenderLabelKey(message.sender_role))}</strong>
-                  <span>{formatMessageDateTime(message.created)}</span>
-                </div>
-                <div className={cx('hds-text-input__helper-text', styles.messageBody)}>{message.body}</div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <div className={styles.messagesListWrap}>{renderMessagesContent()}</div>
 
       <div className={styles.formWrap}>
         {(!isError || !isFetchBaseQueryError(queryError) || queryError.status !== 404) && (

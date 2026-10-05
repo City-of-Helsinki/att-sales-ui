@@ -77,7 +77,7 @@ const handlers = [
   ),
   rest.post(
     `${process.env.REACT_APP_API_BASE_URL}/apartment_reservations/:reservationId/messages/`,
-    async (req, res, ctx) => {
+    (req, res, ctx) => {
       const payload = req.body as { body?: string } | null;
       const body = typeof payload?.body === 'string' ? payload.body.trim() : '';
 

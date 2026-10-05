@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Button, ButtonVariant, Notification, NotificationSize, useOidcClient } from 'hds-react';
+import React, { useEffect, useMemo } from 'react';
+import { Button, ButtonVariant, Notification, NotificationSize } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -122,7 +122,7 @@ const MessagesInbox = (): JSX.Element => {
     );
   };
 
-  const handleOpenThread = async (item: InboxItem) => {
+  const handleOpenThread = (item: InboxItem) => {
     if (item.customerId && item.projectUuid && item.reservationId) {
       const directTarget = {
         customerId: item.customerId,
