@@ -210,11 +210,7 @@
   "components.customers.SelectCustomerDropdown.loading": "Loading...",
   "components.customers.SelectCustomerDropdown.noEligibleHasoResults": "Search found customers, but they do not have a right-of-residence number",
   "components.customers.SelectCustomerDropdown.noResults": "No search results",
-<<<<<<< HEAD
-  "components.customers.SelectCustomerDropdown.searchByMultipleFields": "You can search by customer's last name, first name, personal identity code, or date of birth",
-=======
   "components.customers.SelectCustomerDropdown.searchByMultipleFields": "You can search by customer's last name, first name, national identification number, date of birth, or email",
->>>>>>> ffa3ac1 (Mark read functionality)
   "components.customers.SelectCustomerDropdown.searchByName": "Search by name",
   "components.customers.SelectCustomerDropdown.selectCustomer": "Select customer",
   "components.customers.SelectCustomerDropdown.toggleMenu": "Toggle menu",
