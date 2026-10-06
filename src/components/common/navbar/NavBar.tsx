@@ -1,16 +1,31 @@
-import React from 'react';
-import { Header, Logo, logoFi, LanguageOption, WithAuthentication, useOidcClient } from 'hds-react';
+import { Header, LanguageOption, Logo, WithAuthentication, logoFi, useOidcClient } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 
+import { ROUTES } from '../../../enums';
+import { useGetMessagesInboxSummaryQuery } from '../../../redux/services/api';
 import Login from '../auth/Login';
 import Logout from '../auth/Logout';
-import { ROUTES } from '../../../enums';
 
 const T_PATH = 'components.common.navbar.Navbar';
 
 const NavBar = (): JSX.Element => {
   const { t, i18n } = useTranslation();
   const { isAuthenticated } = useOidcClient();
+  const isUserAuthenticated = isAuthenticated();
+
+  const { data: inboxSummary } = useGetMessagesInboxSummaryQuery(undefined, {
+    skip: !isUserAuthenticated,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
+  const unreadTotal = inboxSummary?.total_unread || 0;
+
+  const messagesBaseLabel = t(`${T_PATH}.messages`);
+  let messagesLabel = messagesBaseLabel;
+  if (unreadTotal > 0) {
+    const unreadLabel = unreadTotal > 99 ? '99+' : String(unreadTotal);
+    messagesLabel = `${messagesBaseLabel} (${unreadLabel})`;
+  }
 
   const languages: LanguageOption[] = [
     { label: 'Suomi', value: 'fi', isPrimary: true },
@@ -36,10 +51,11 @@ const NavBar = (): JSX.Element => {
         <WithAuthentication AuthorisedComponent={Logout} UnauthorisedComponent={Login} />
       </Header.ActionBar>
 
-      {isAuthenticated() && (
+      {isUserAuthenticated && (
         <Header.NavigationMenu>
           <Header.Link href={`/${ROUTES.PROJECTS}`} label={t(`${T_PATH}.projects`)} />
           <Header.Link href={`/${ROUTES.CUSTOMERS}`} label={t(`${T_PATH}.customers`)} />
+          <Header.Link href={`/${ROUTES.MESSAGES}`} label={messagesLabel} />
           <Header.Link href={`/${ROUTES.REPORTS}`} label={t(`${T_PATH}.reports`)} />
         </Header.NavigationMenu>
       )}

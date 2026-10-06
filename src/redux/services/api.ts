@@ -7,6 +7,8 @@ import {
   Apartment,
   ApartmentHASOPayment,
   ApartmentInstallment,
+  ApartmentReservationMessage,
+  ApartmentReservationMessagesResponse,
   ApartmentReservationWithCustomer,
   ApartmentReservationWithInstallments,
   ApartmentRevaluation,
@@ -19,6 +21,7 @@ import {
   Offer,
   OfferFormData,
   OfferMessage,
+  MessagesInboxSummaryResponse,
   Project,
   ProjectExtraData,
   ProjectInstallment,
@@ -29,6 +32,7 @@ import {
   QueuePreviewFormData,
   Paginated,
   SalesPerson,
+  UnreadMessageCountsResponse,
 } from '../../types';
 import getApiBaseUrl from '../../utils/getApiBaseUrl';
 import { waitForApiToken } from './common';
@@ -60,6 +64,8 @@ export const api = createApi({
     'Project',
     'ProjectExtraData',
     'Reservation',
+    'ReservationMessages',
+    'UnreadMessages',
   ],
   endpoints: (builder) => ({
     // GET: Fetch all projects
@@ -465,6 +471,45 @@ export const api = createApi({
       query: (params) => `apartment_reservations/${params.id}/offer_message/?valid_until=${params.valid_until}`,
       providesTags: [{ type: 'OfferMessage' }],
     }),
+
+    // GET: Fetch reservation message thread
+    getApartmentReservationMessages: builder.query<
+      ApartmentReservationMessagesResponse,
+      { reservationId: number; projectUuid: string }
+    >({
+      query: ({ reservationId, projectUuid }) =>
+        `apartment_reservations/${reservationId}/messages/?project_uuid=${encodeURIComponent(projectUuid)}`,
+      providesTags: (result, error, { reservationId, projectUuid }) => [
+        { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
+      ],
+    }),
+
+    // POST: Add message to reservation thread
+    addApartmentReservationMessage: builder.mutation<
+      ApartmentReservationMessage,
+      { reservationId: number; projectUuid: string; body: string }
+    >({
+      query: ({ reservationId, projectUuid, body }) => ({
+        url: `apartment_reservations/${reservationId}/messages/?project_uuid=${encodeURIComponent(projectUuid)}`,
+        method: 'POST',
+        body: { body },
+      }),
+      invalidatesTags: (result, error, { reservationId, projectUuid }) => [
+        { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
+      ],
+    }),
+
+    // GET: Fetch unread message counters grouped by application id
+    getUnreadMessageCounts: builder.query<UnreadMessageCountsResponse, void>({
+      query: () => 'messages/unread-counts/',
+      providesTags: [{ type: 'UnreadMessages' }],
+    }),
+
+    // GET: Fetch messages inbox cards summary
+    getMessagesInboxSummary: builder.query<MessagesInboxSummaryResponse, void>({
+      query: () => 'messages/inbox-summary/',
+      providesTags: [{ type: 'UnreadMessages' }],
+    }),
   }),
 });
 
@@ -474,7 +519,9 @@ export const {
   useGetSalesPersonsQuery,
   useGetSelectedProjectsQuery,
   useGetProjectByIdQuery,
+  useLazyGetProjectByIdQuery,
   useGetApartmentsByProjectQuery,
+  useLazyGetApartmentsByProjectQuery,
   useStartLotteryForProjectMutation,
   useGetProjectInstallmentsQuery,
   useSetProjectInstallmentsMutation,
@@ -502,6 +549,11 @@ export const {
   useCreateOfferMutation,
   useUpdateOfferByIdMutation,
   useGetOfferMessageQuery,
+  useGetApartmentReservationMessagesQuery,
+  useLazyGetApartmentReservationMessagesQuery,
+  useAddApartmentReservationMessageMutation,
+  useGetUnreadMessageCountsQuery,
+  useGetMessagesInboxSummaryQuery,
   useGetCostIndexesQuery,
   useAddCostIndexMutation,
   useGetApartmentHASOPaymentQuery,

@@ -1,12 +1,14 @@
 import cx from 'classnames';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { IconPenLine, Notification, Tabs, TabList, Tab, TabPanel, NotificationSize } from 'hds-react';
 import Breadcrumbs, { BreadcrumbItem } from '../../components/common/breadcrumbs/Breadcrumbs';
 import Container from '../../components/common/container/Container';
 import Spinner from '../../components/common/spinner/Spinner';
 import CustomerComments from '../../components/customers/CustomerComments';
 import CustomerInfo from '../../components/customers/CustomerInfo';
+import CustomerReservationMessages from '../../components/customers/CustomerReservationMessages';
 import Installments from '../../components/installments/Installments';
 import CustomerReservations from '../../components/reservations/CustomerReservations';
 import { ROUTES } from '../../enums';
@@ -18,9 +20,19 @@ import { usePageTitle } from '../../utils/usePageTitle';
 import styles from './CustomerDetail.module.scss';
 
 const T_PATH = 'pages.customers.CustomerDetail';
+const OFFER_MESSAGE_DRAFT_KEY = 'offerMessageDraft';
 
 const CustomerDetail = (): JSX.Element | null => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const shouldOpenMessagesTab =
+    searchParams.get('tab') === 'messages' || !!sessionStorage.getItem(OFFER_MESSAGE_DRAFT_KEY);
+  const [activeTab, setActiveTab] = useState<number>(() => (shouldOpenMessagesTab ? 3 : 0));
+  const initialProjectUuid = searchParams.get('projectUuid');
+  const initialReservationId = useMemo(() => {
+    const value = Number(searchParams.get('reservationId'));
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }, [searchParams]);
   const { customerId } = useParams();
   const { data: customer, isLoading, isFetching, isError, isSuccess } = useGetCustomerByIdQuery(customerId || '0');
   const { data: applicant } = useGetCustomerLatestApplicantInfoQuery(customerId || '0');
@@ -29,6 +41,12 @@ const CustomerDetail = (): JSX.Element | null => {
     isLoadingInitial: isLoadingReservations,
     isLoadingMore: isLoadingMoreReservations,
   } = useAllCustomerReservations(customerId);
+
+  useEffect(() => {
+    if (searchParams.get('tab') === 'messages') {
+      setActiveTab(3);
+    }
+  }, [searchParams]);
 
   usePageTitle(customer?.id ? `${t('PAGES.customers')} - ${customer.id}` : t('PAGES.customers'));
 
@@ -111,29 +129,44 @@ const CustomerDetail = (): JSX.Element | null => {
         </div>
         <CustomerInfo customer={customer} applicant={applicant} />
         <div className={styles.tabsWrapper}>
-          <Tabs>
+          <Tabs initiallyActiveTab={activeTab}>
             <TabList className={styles.tabs}>
-              <Tab>{t(`${T_PATH}.tabReservations`)}</Tab>
-              <Tab>{t(`${T_PATH}.tabInstallments`)}</Tab>
-              <Tab>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
+              <Tab onClick={() => setActiveTab(0)}>{t(`${T_PATH}.tabReservations`)}</Tab>
+              <Tab onClick={() => setActiveTab(1)}>{t(`${T_PATH}.tabInstallments`)}</Tab>
+              <Tab onClick={() => setActiveTab(2)}>{t('pages.customers.CustomerDetail.commentsTab')}</Tab>
+              <Tab onClick={() => setActiveTab(3)}>{t(`${T_PATH}.messagesTab`)}</Tab>
             </TabList>
             <TabPanel className={styles.tabPanel}>
-              <CustomerReservations
-                customer={customer}
-                reservations={reservations}
-                isLoadingInitial={isLoadingReservations}
-                isLoadingMore={isLoadingMoreReservations}
-              />
+              {activeTab === 0 ? (
+                <CustomerReservations
+                  customer={customer}
+                  reservations={reservations}
+                  isLoadingInitial={isLoadingReservations}
+                  isLoadingMore={isLoadingMoreReservations}
+                />
+              ) : null}
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              <Installments
-                reservations={reservations}
-                isLoadingInitial={isLoadingReservations}
-                isLoadingMore={isLoadingMoreReservations}
-              />
+              {activeTab === 1 ? (
+                <Installments
+                  reservations={reservations}
+                  isLoadingInitial={isLoadingReservations}
+                  isLoadingMore={isLoadingMoreReservations}
+                />
+              ) : null}
             </TabPanel>
             <TabPanel className={styles.tabPanel}>
-              <CustomerComments customerId={customer.id} />
+              {activeTab === 2 ? <CustomerComments customerId={customer.id} /> : null}
+            </TabPanel>
+            <TabPanel className={styles.tabPanel}>
+              {activeTab === 3 ? (
+                <CustomerReservationMessages
+                  reservations={reservations}
+                  isLoadingReservations={isLoadingReservations || isLoadingMoreReservations}
+                  initialProjectUuid={initialProjectUuid}
+                  initialReservationId={initialReservationId}
+                />
+              ) : null}
             </TabPanel>
           </Tabs>
         </div>

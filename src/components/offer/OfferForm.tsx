@@ -23,9 +23,19 @@ interface IProps {
   offer?: Offer;
   ownershipType: Project['ownership_type'];
   reservationId: Offer['apartment_reservation_id'];
+  customerId: number;
+  projectUuid: string;
 }
 
-const OfferForm = ({ formId, handleFormCallback, offer, ownershipType, reservationId }: IProps) => {
+const OfferForm = ({
+  formId,
+  handleFormCallback,
+  offer,
+  ownershipType,
+  reservationId,
+  customerId,
+  projectUuid,
+}: IProps) => {
   const { t } = useTranslation();
 
   const offerStateSchema = !!offer
@@ -126,7 +136,12 @@ const OfferForm = ({ formId, handleFormCallback, offer, ownershipType, reservati
     <div className={styles.offerGrid}>
       <div className={cx(styles.textareaColumn, styles.fullHeightColumn)}>
         <div className={styles.inputWrapper}>
-          <OfferEmailMessage reservationId={reservationId} validUntil={validUntilDate} />
+          <OfferEmailMessage
+            reservationId={reservationId}
+            validUntil={validUntilDate}
+            customerId={customerId}
+            projectUuid={projectUuid}
+          />
         </div>
       </div>
       <div className={styles.textareaColumn}>
