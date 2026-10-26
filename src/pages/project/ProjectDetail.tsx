@@ -36,6 +36,7 @@ import { useFileDownloadApi } from '../../utils/useFileDownloadApi';
 import styles from './ProjectDetail.module.scss';
 
 const T_PATH = 'pages.project.ProjectDetail';
+type ApplicantMailingListType = 'short' | 'full';
 
 const ProjectDetail = (): JSX.Element | null => {
   const { t } = useTranslation();
@@ -57,6 +58,7 @@ const ProjectDetail = (): JSX.Element | null => {
 
   const [isMailingListDialogOpen, setIsMailingListDialogOpen] = useState(false);
   const [mailingListReservationType, setMailingListReservationType] = useState(ApplicantMailingListExportType.RESERVED);
+  const [mailingListType, setMailingListType] = useState<ApplicantMailingListType>('full');
 
   const [isLoadingApplicantsList, setIsLoadingApplicantsList] = useState(false);
 
@@ -76,7 +78,8 @@ const ProjectDetail = (): JSX.Element | null => {
     setIsLoadingApplicantsList(false);
     toast.show({ type: 'error' });
   };
-  const applicantExportApiUrl = `/projects/${project?.uuid}/export_applicants_mailing_list/${mailingListReservationType}`;
+  const listTypeQuery = mailingListType === 'short' ? '?list_type=short' : '';
+  const applicantExportApiUrl = `/projects/${project?.uuid}/export_applicants_mailing_list/${mailingListReservationType}${listTypeQuery}`;
   const {
     download,
     ref: fileRef,
@@ -250,6 +253,20 @@ const ProjectDetail = (): JSX.Element | null => {
                 label={t(`${T_PATH}.mailingListSold`)}
                 onChange={() => setMailingListReservationType(ApplicantMailingListExportType.SOLD)}
                 checked={mailingListReservationType === ApplicantMailingListExportType.SOLD}
+              />
+            </SelectionGroup>
+            <SelectionGroup label={t(`${T_PATH}.createApplicantMailingListListType`)} required>
+              <RadioButton
+                id="mailingListTypeShort"
+                label={t(`${T_PATH}.mailingListTypeShort`)}
+                onChange={() => setMailingListType('short')}
+                checked={mailingListType === 'short'}
+              />
+              <RadioButton
+                id="mailingListTypeFull"
+                label={t(`${T_PATH}.mailingListTypeFull`)}
+                onChange={() => setMailingListType('full')}
+                checked={mailingListType === 'full'}
               />
             </SelectionGroup>
           </div>
