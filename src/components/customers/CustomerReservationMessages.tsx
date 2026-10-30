@@ -11,8 +11,9 @@ import {
   useAddApartmentReservationMessageMutation,
   useGetApartmentReservationMessagesQuery,
   useLazyGetApartmentReservationMessagesQuery,
+  useUploadApartmentReservationMessageAttachmentMutation,
 } from '../../redux/services/api';
-import { ApartmentReservationMessage, CustomerReservation } from '../../types';
+import { ApartmentReservationMessage, CreateReservationMessagePayload, CustomerReservation } from '../../types';
 import formatDateTime from '../../utils/formatDateTime';
 
 import styles from './CustomerReservationMessages.module.scss';
@@ -36,6 +37,13 @@ type OfferMessageDraft = {
   reservationId: number;
 };
 
+type NewAttachmentDraft = {
+  file_id: number;
+  display_name?: string;
+  mime_type?: string;
+  size_bytes?: number;
+};
+
 const isDevEnvironment = process.env.NODE_ENV !== 'production';
 
 const buildMessagesUrl = (reservationId: number, projectUuid: string): string =>
@@ -55,6 +63,29 @@ const getSenderLabelKey = (senderRole: ApartmentReservationMessage['sender_role'
 
 const getStateLabel = (state: string, t: (key: string) => string): string => {
   return t(`ENUMS.ApartmentReservationStates.${state.toUpperCase()}`);
+};
+
+const formatSizeBytes = (bytes: number): string => {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  const units = ['KB', 'MB', 'GB', 'TB'];
+  let value = bytes / 1024;
+  let unitIndex = 0;
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[unitIndex]}`;
+};
+
+const getDraftAttachmentMeta = (attachment: NewAttachmentDraft): string => {
+  return [attachment.mime_type, attachment.size_bytes !== undefined ? formatSizeBytes(attachment.size_bytes) : null]
+    .filter(Boolean)
+    .join(' - ');
 };
 
 interface IProps {
@@ -139,6 +170,18 @@ const CustomerReservationMessages = ({
   const [hasDiscoveryError, setHasDiscoveryError] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [inputError, setInputError] = useState('');
+  const [draftAttachmentIdInput, setDraftAttachmentIdInput] = useState('');
+  const [draftAttachmentIds, setDraftAttachmentIds] = useState<number[]>([]);
+  const [draftNewAttachmentFileIdInput, setDraftNewAttachmentFileIdInput] = useState('');
+  const [draftNewAttachmentDisplayNameInput, setDraftNewAttachmentDisplayNameInput] = useState('');
+  const [draftNewAttachments, setDraftNewAttachments] = useState<NewAttachmentDraft[]>([]);
+  const [attachmentIdsError, setAttachmentIdsError] = useState('');
+  const [newAttachmentsError, setNewAttachmentsError] = useState('');
+  const [uploadError, setUploadError] = useState('');
+  const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Manual file_id input is a secondary dev/admin fallback, hidden by default
+  const isManualAttachmentModeEnabled = process.env.REACT_APP_ENABLE_MANUAL_ATTACHMENT_IDS === 'true';
   const [messagesByThread, setMessagesByThread] = useState<Record<string, ApartmentReservationMessage[]>>({});
   const [discoverApplication] = useLazyGetApartmentReservationMessagesQuery();
 
@@ -334,6 +377,14 @@ const CustomerReservationMessages = ({
     setNewMessage('');
     setInputError('');
     setProjectMismatchError(false);
+    setDraftAttachmentIdInput('');
+    setDraftAttachmentIds([]);
+    setDraftNewAttachmentFileIdInput('');
+    setDraftNewAttachmentDisplayNameInput('');
+    setDraftNewAttachments([]);
+    setAttachmentIdsError('');
+    setNewAttachmentsError('');
+    setUploadError('');
   }, [selectedApplicationKey, selectedProjectUuid]);
 
   useEffect(() => {
@@ -478,6 +529,8 @@ const CustomerReservationMessages = ({
   }, [queryError, selectedProjectUuid, selectedReservationId]);
 
   const [addMessage, { isLoading: isSubmitting }] = useAddApartmentReservationMessageMutation();
+  const [uploadAttachment] = useUploadApartmentReservationMessageAttachmentMutation();
+  const isUploading = uploadingFileName !== null;
 
   useEffect(() => {
     if (!currentThreadKey || !data) {
@@ -505,7 +558,114 @@ const CustomerReservationMessages = ({
   const handleApplicationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setInputError('');
     setNewMessage('');
+    setAttachmentIdsError('');
+    setNewAttachmentsError('');
     setSelectedApplicationKey(event.target.value || null);
+  };
+
+  const addAttachmentIdToDraft = () => {
+    const nextAttachmentId = Number.parseInt(draftAttachmentIdInput, 10);
+
+    if (!Number.isFinite(nextAttachmentId) || nextAttachmentId <= 0) {
+      setAttachmentIdsError(t(`${T_PATH}.attachmentIdInvalidError`));
+      return;
+    }
+
+    setAttachmentIdsError('');
+    setDraftAttachmentIds((prev) => {
+      if (prev.includes(nextAttachmentId)) {
+        return prev;
+      }
+
+      return [...prev, nextAttachmentId];
+    });
+    setDraftAttachmentIdInput('');
+  };
+
+  const addNewAttachmentToDraft = () => {
+    const nextFileId = Number.parseInt(draftNewAttachmentFileIdInput, 10);
+
+    if (!Number.isFinite(nextFileId) || nextFileId <= 0) {
+      setNewAttachmentsError(t(`${T_PATH}.newAttachmentIdInvalidError`));
+      return;
+    }
+
+    setNewAttachmentsError('');
+    setDraftNewAttachments((prev) => {
+      const displayName = draftNewAttachmentDisplayNameInput.trim();
+      return [
+        ...prev,
+        {
+          file_id: nextFileId,
+          ...(displayName ? { display_name: displayName } : {}),
+        },
+      ];
+    });
+    setDraftNewAttachmentFileIdInput('');
+    setDraftNewAttachmentDisplayNameInput('');
+  };
+
+  const getUploadErrorMessage = (error: unknown): string => {
+    if (isFetchBaseQueryError(error)) {
+      if (error.status === 422) {
+        return t(`${T_PATH}.uploadInvalidFileError`);
+      }
+
+      if (error.status === 429) {
+        return t(`${T_PATH}.errorTooManyRequests`);
+      }
+
+      if (error.status === 401 || error.status === 403 || error.status === 404) {
+        return t(`${T_PATH}.uploadUnavailableError`);
+      }
+    }
+
+    return t(`${T_PATH}.errorTemporary`);
+  };
+
+  const handleFilesSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    // allow selecting the same file again after removal
+    event.target.value = '';
+
+    if (!files.length) {
+      return;
+    }
+
+    if (!selectedReservationId || !selectedProjectUuid) {
+      toast.show({ type: 'error', content: t(`${T_PATH}.errorNoProject`) });
+      return;
+    }
+
+    setUploadError('');
+    setNewAttachmentsError('');
+
+    for (const file of files) {
+      setUploadingFileName(file.name);
+
+      try {
+        const uploaded = await uploadAttachment({
+          reservationId: selectedReservationId,
+          projectUuid: selectedProjectUuid,
+          file,
+        }).unwrap();
+
+        setDraftNewAttachments((prev) => [
+          ...prev,
+          {
+            file_id: uploaded.file_id,
+            display_name: uploaded.display_name || file.name,
+            mime_type: uploaded.mime_type || file.type || undefined,
+            size_bytes: uploaded.size_bytes ?? file.size,
+          },
+        ]);
+      } catch (error) {
+        setUploadError(getUploadErrorMessage(error));
+        break;
+      }
+    }
+
+    setUploadingFileName(null);
   };
 
   const onRefresh = async () => {
@@ -536,6 +696,10 @@ const CustomerReservationMessages = ({
       return;
     }
 
+    if (isUploading) {
+      return;
+    }
+
     if (!selectedReservationId || !selectedProjectUuid) {
       toast.show({ type: 'error', content: t(`${T_PATH}.errorNoProject`) });
       return;
@@ -556,12 +720,29 @@ const CustomerReservationMessages = ({
     }
 
     setInputError('');
+    setAttachmentIdsError('');
+    setNewAttachmentsError('');
 
     try {
+      const payload: CreateReservationMessagePayload = {
+        body: trimmedMessage,
+      };
+
+      if (draftAttachmentIds.length) {
+        payload.attachment_ids = draftAttachmentIds;
+      }
+
+      if (draftNewAttachments.length) {
+        payload.new_attachments = draftNewAttachments.map(({ file_id, display_name }) => ({
+          file_id,
+          ...(display_name ? { display_name } : {}),
+        }));
+      }
+
       const createdMessage = await addMessage({
         reservationId: selectedReservationId,
         projectUuid: selectedProjectUuid,
-        body: trimmedMessage,
+        ...payload,
       }).unwrap();
       if (currentThreadKey) {
         setMessagesByThread((prev) => ({
@@ -570,6 +751,15 @@ const CustomerReservationMessages = ({
         }));
       }
       setNewMessage('');
+      setDraftAttachmentIdInput('');
+      setDraftAttachmentIds([]);
+      setDraftNewAttachmentFileIdInput('');
+      setDraftNewAttachmentDisplayNameInput('');
+      setDraftNewAttachments([]);
+      setAttachmentIdsError('');
+      setNewAttachmentsError('');
+      setUploadError('');
+      await refetch();
       if (isDevEnvironment) {
         console.debug('[ReservationMessages][POST][response]', {
           status: 201,
@@ -581,7 +771,15 @@ const CustomerReservationMessages = ({
       }
     } catch (error) {
       if (isFetchBaseQueryError(error) && typeof error.status === 'number') {
-        const data = error.data as { body?: string[] } | { detail?: string } | undefined;
+        const data =
+          (error.data as {
+            body?: string[];
+            detail?: string;
+            attachment_ids?: string[];
+            new_attachments?: string[];
+            invalid_attachments?: string[];
+            invalid_new_attachments?: string[];
+          }) || undefined;
 
         if (isDevEnvironment) {
           console.debug('[ReservationMessages][POST][response]', {
@@ -612,13 +810,36 @@ const CustomerReservationMessages = ({
           }
         }
 
-        if (error.status === 403) {
-          toast.show({ type: 'error', content: t(`${T_PATH}.errorForbidden`) });
+        if (error.status === 422) {
+          const hasAttachmentIdsError = Boolean(
+            (Array.isArray(data?.attachment_ids) && data?.attachment_ids.length) ||
+              (Array.isArray(data?.invalid_attachments) && data?.invalid_attachments.length)
+          );
+          const hasNewAttachmentsError = Boolean(
+            (Array.isArray(data?.new_attachments) && data?.new_attachments.length) ||
+              (Array.isArray(data?.invalid_new_attachments) && data?.invalid_new_attachments.length)
+          );
+
+          if (hasAttachmentIdsError) {
+            setAttachmentIdsError(t(`${T_PATH}.invalidAttachmentsError`));
+          }
+
+          if (hasNewAttachmentsError) {
+            setNewAttachmentsError(t(`${T_PATH}.invalidNewAttachmentsError`));
+          }
+
+          if (hasAttachmentIdsError || hasNewAttachmentsError) {
+            return;
+          }
+        }
+
+        if (error.status === 429) {
+          toast.show({ type: 'error', content: t(`${T_PATH}.errorTooManyRequests`) });
           return;
         }
 
-        if (error.status === 404) {
-          toast.show({ type: 'error', content: t(`${T_PATH}.errorNotFound`) });
+        if (error.status === 401 || error.status === 403 || error.status === 404) {
+          toast.show({ type: 'error', content: t(`${T_PATH}.errorAttachmentUnavailable`) });
           return;
         }
 
@@ -678,6 +899,8 @@ const CustomerReservationMessages = ({
                 setMessagesByThread({});
                 setNewMessage('');
                 setInputError('');
+                setAttachmentIdsError('');
+                setNewAttachmentsError('');
                 setProjectMismatchError(false);
               }}
             >
@@ -762,6 +985,28 @@ const CustomerReservationMessages = ({
                   <span>{formatMessageDateTime(message.created)}</span>
                 </div>
                 <div className={cx('hds-text-input__helper-text', styles.messageBody)}>{message.body}</div>
+                {message.attachments?.length ? (
+                  <ul className={styles.messageAttachmentsList}>
+                    {message.attachments.map((attachment) => (
+                      <li key={attachment.id} className={styles.messageAttachmentItem}>
+                        <div className={styles.messageAttachmentMeta}>
+                          <strong>{attachment.display_name}</strong>
+                          <span>
+                            {attachment.mime_type} - {formatSizeBytes(attachment.size_bytes)}
+                          </span>
+                        </div>
+                        <a
+                          href={attachment.download_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.messageAttachmentLink}
+                        >
+                          {t(`${T_PATH}.openAttachment`)}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -783,7 +1028,144 @@ const CustomerReservationMessages = ({
               errorText={inputError || undefined}
               disabled={isSubmitting}
             />
-            <Button disabled={isSubmitting || !newMessage.trim()} onClick={handleSubmit}>
+
+            <div
+              className={cx(styles.attachmentBlock, {
+                [styles.attachmentBlockError]: Boolean(uploadError || newAttachmentsError),
+              })}
+            >
+              <div className={styles.attachmentBlockTitle}>{t(`${T_PATH}.attachmentsLabel`)}</div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                hidden
+                data-testid="attachment-file-input"
+                onChange={handleFilesSelected}
+                disabled={isSubmitting || isUploading}
+              />
+              <div className={styles.attachmentRow}>
+                <Button
+                  variant={ButtonVariant.Secondary}
+                  disabled={isSubmitting || isUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {t(`${T_PATH}.chooseFile`)}
+                </Button>
+                {isUploading && (
+                  <span role="status" className={styles.uploadStatus}>
+                    {t(`${T_PATH}.uploading`, { name: uploadingFileName })}
+                  </span>
+                )}
+              </div>
+              {isUploading && <div className={styles.uploadProgress} aria-hidden="true" />}
+              {draftNewAttachments.length > 0 && (
+                <ul className={styles.attachmentDraftList}>
+                  {draftNewAttachments.map((attachment, index) => (
+                    <li key={`${attachment.file_id}:${index}`} className={styles.attachmentDraftItem}>
+                      <span>
+                        <strong>{attachment.display_name || `file_id #${attachment.file_id}`}</strong>
+                        {getDraftAttachmentMeta(attachment) ? ` (${getDraftAttachmentMeta(attachment)})` : ''}
+                      </span>
+                      <Button
+                        variant={ButtonVariant.Secondary}
+                        disabled={isSubmitting || isUploading}
+                        onClick={() => {
+                          setDraftNewAttachments((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+                          setNewAttachmentsError('');
+                        }}
+                      >
+                        {t(`${T_PATH}.removeAttachment`)}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {(uploadError || newAttachmentsError) && (
+                <div className={styles.attachmentError}>{uploadError || newAttachmentsError}</div>
+              )}
+            </div>
+
+            {isManualAttachmentModeEnabled && (
+              <details className={styles.manualAttachments}>
+                <summary>{t(`${T_PATH}.manualAttachmentsSummary`)}</summary>
+                <div
+                  className={cx(styles.attachmentBlock, {
+                    [styles.attachmentBlockError]: Boolean(attachmentIdsError),
+                  })}
+                >
+                  <div className={styles.attachmentBlockTitle}>{t(`${T_PATH}.manualAttachmentIdsLabel`)}</div>
+                  <div className={styles.attachmentRow}>
+                    <input
+                      type="number"
+                      min={1}
+                      value={draftAttachmentIdInput}
+                      className={styles.attachmentInput}
+                      onChange={(event) => {
+                        setAttachmentIdsError('');
+                        setDraftAttachmentIdInput(event.target.value);
+                      }}
+                      disabled={isSubmitting}
+                      placeholder={t(`${T_PATH}.attachmentIdPlaceholder`)}
+                    />
+                    <Button variant={ButtonVariant.Secondary} disabled={isSubmitting} onClick={addAttachmentIdToDraft}>
+                      {t(`${T_PATH}.addAttachment`)}
+                    </Button>
+                  </div>
+                  {draftAttachmentIds.length > 0 && (
+                    <ul className={styles.attachmentDraftList}>
+                      {draftAttachmentIds.map((attachmentId) => (
+                        <li key={attachmentId} className={styles.attachmentDraftItem}>
+                          <span>#{attachmentId}</span>
+                          <Button
+                            variant={ButtonVariant.Secondary}
+                            disabled={isSubmitting}
+                            onClick={() => {
+                              setDraftAttachmentIds((prev) => prev.filter((id) => id !== attachmentId));
+                              setAttachmentIdsError('');
+                            }}
+                          >
+                            {t(`${T_PATH}.removeAttachment`)}
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {attachmentIdsError && <div className={styles.attachmentError}>{attachmentIdsError}</div>}
+                </div>
+
+                <div className={styles.attachmentBlock}>
+                  <div className={styles.attachmentBlockTitle}>{t(`${T_PATH}.manualNewAttachmentsLabel`)}</div>
+                  <div className={styles.attachmentRow}>
+                    <input
+                      type="number"
+                      min={1}
+                      value={draftNewAttachmentFileIdInput}
+                      className={styles.attachmentInput}
+                      onChange={(event) => {
+                        setNewAttachmentsError('');
+                        setDraftNewAttachmentFileIdInput(event.target.value);
+                      }}
+                      disabled={isSubmitting}
+                      placeholder={t(`${T_PATH}.newAttachmentIdPlaceholder`)}
+                    />
+                    <input
+                      type="text"
+                      value={draftNewAttachmentDisplayNameInput}
+                      className={styles.attachmentInput}
+                      onChange={(event) => setDraftNewAttachmentDisplayNameInput(event.target.value)}
+                      disabled={isSubmitting}
+                      placeholder={t(`${T_PATH}.newAttachmentNamePlaceholder`)}
+                    />
+                    <Button variant={ButtonVariant.Secondary} disabled={isSubmitting} onClick={addNewAttachmentToDraft}>
+                      {t(`${T_PATH}.addNewAttachment`)}
+                    </Button>
+                  </div>
+                </div>
+              </details>
+            )}
+
+            <Button disabled={isSubmitting || isUploading || !newMessage.trim()} onClick={handleSubmit}>
               {t(`${T_PATH}.send`)}
             </Button>
           </>
