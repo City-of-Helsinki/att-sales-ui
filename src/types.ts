@@ -507,16 +507,45 @@ export type SalesPerson = {
 
 export type ApartmentReservationMessageSenderRole = 'applicant' | 'sales';
 
-export type ApartmentReservationMessage = {
+export type MessageAttachment = {
+  id: number;
+  display_name: string;
+  mime_type: string;
+  size_bytes: number;
+  download_url: string;
+};
+
+export type ReservationMessage = {
   id: number;
   application_id: number;
+  body: string;
+  created: number;
+  created_at: string;
+  attachments?: MessageAttachment[];
+};
+
+export type UploadMessageAttachmentResponse = {
+  file_id: number;
+  display_name?: string;
+  mime_type?: string;
+  size_bytes?: number;
+};
+
+export type CreateReservationMessagePayload = {
+  body: string;
+  attachment_ids?: number[];
+  new_attachments?: Array<{
+    file_id: number;
+    display_name?: string;
+  }>;
+};
+
+export type ApartmentReservationMessage = ReservationMessage & {
   project_id: number;
   sender_role: ApartmentReservationMessageSenderRole;
   sender_uid: number | null;
   salesperson_uid: number | null;
   recipient_mail: string;
-  body: string;
-  created: number;
 };
 
 export type ApartmentReservationMessagesResponse = {

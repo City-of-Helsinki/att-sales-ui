@@ -88,10 +88,131 @@
   color: var(--color-black-90);
 }
 
+.messageAttachmentsList {
+  margin: var(--spacing-s) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2-xs);
+}
+
+.messageAttachmentItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+  border: 1px solid var(--color-black-10);
+  padding: var(--spacing-2-xs) var(--spacing-s);
+}
+
+.messageAttachmentMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4-xs);
+}
+
+.messageAttachmentLink {
+  white-space: nowrap;
+}
+
 .formWrap {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-s);
+}
+
+.attachmentBlock {
+  border: 1px solid var(--color-black-20);
+  padding: var(--spacing-s);
+  background-color: var(--color-white);
+}
+
+.attachmentBlockError {
+  border-color: var(--color-error);
+}
+
+.attachmentBlockTitle {
+  font-weight: 600;
+  margin-bottom: var(--spacing-2-xs);
+}
+
+.attachmentRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  flex-wrap: wrap;
+}
+
+.attachmentInput {
+  min-width: 12rem;
+  border: 1px solid var(--color-black-20);
+  border-radius: 0;
+  padding: var(--spacing-2-xs) var(--spacing-s);
+}
+
+.attachmentDraftList {
+  list-style: none;
+  margin: var(--spacing-s) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2-xs);
+}
+
+.attachmentDraftItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+}
+
+.attachmentError {
+  margin-top: var(--spacing-2-xs);
+  color: var(--color-error);
+}
+
+.uploadStatus {
+  color: var(--color-black-80);
+}
+
+.uploadProgress {
+  position: relative;
+  overflow: hidden;
+  height: 4px;
+  margin-top: var(--spacing-xs);
+  background-color: var(--color-black-10);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 30%;
+    background-color: var(--color-bus);
+    animation: uploadProgressSlide 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes uploadProgressSlide {
+  from {
+    left: -30%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.manualAttachments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+
+  summary {
+    cursor: pointer;
+    color: var(--color-black-60);
+    margin-bottom: var(--spacing-s);
+  }
 }
 
 @media (max-width: 768px) {
@@ -102,5 +223,14 @@
   .messageMeta {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .messageAttachmentItem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .attachmentInput {
+    width: 100%;
   }
 }
