@@ -175,8 +175,8 @@ const ApartmentRow = ({ apartment, ownershipType, isLotteryCompleted, project }:
                 <span className={styles.offer}>
                   <OfferStatusText offer={reservation.offer} />
                 </span>
-                {apartment.state === ApartmentReservationStates.SOLD && (
-                  <StatusLabel className={styles.label}>{t(`ENUMS.ApartmentState.${apartment.state}`)}</StatusLabel>
+                {reservation.state === ApartmentReservationStates.SOLD && (
+                  <StatusLabel className={styles.label}>{t(`ENUMS.ApartmentState.${reservation.state}`)}</StatusLabel>
                 )}
               </div>
             )}
