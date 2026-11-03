@@ -141,6 +141,7 @@ const OfferForm = ({
             validUntil={validUntilDate}
             customerId={customerId}
             projectUuid={projectUuid}
+            isNewOffer={!offer}
           />
         </div>
       </div>

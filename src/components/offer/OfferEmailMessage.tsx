@@ -17,9 +17,16 @@ interface IProps {
   validUntil: Offer['valid_until'];
   customerId: number;
   projectUuid: string;
+  isNewOffer?: boolean;
 }
 
-const OfferEmailMessage = ({ reservationId, validUntil, customerId, projectUuid }: IProps): JSX.Element => {
+const OfferEmailMessage = ({
+  reservationId,
+  validUntil,
+  customerId,
+  projectUuid,
+  isNewOffer = false,
+}: IProps): JSX.Element => {
   const { t } = useTranslation();
   const isCorrectValidUntil = moment(validUntil, 'D.M.YYYY', true).isValid();
   const formattedValidUntil = isCorrectValidUntil ? moment(validUntil, 'D.M.YYYY', true).format('YYYY-MM-DD') : '';
@@ -68,6 +75,7 @@ const OfferEmailMessage = ({ reservationId, validUntil, customerId, projectUuid 
       <div className={styles.textarea}>
         <TextArea id="offerMessage" label={t(`${T_PATH}.offerIntroLabel`)} disabled value={data.body} />
       </div>
+      {isNewOffer && <p className={styles.sentNote}>{t(`${T_PATH}.sentToCustomerAutomatically`)}</p>}
       <div style={{ display: 'flex', gap: 'var(--spacing-s)', alignItems: 'center', flexWrap: 'wrap' }}>
         <a
           href={mailtoLink}
