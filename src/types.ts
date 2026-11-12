@@ -512,7 +512,10 @@ export type MessageAttachment = {
   display_name: string;
   mime_type: string;
   size_bytes: number;
-  download_url: string;
+  open_url?: string;
+  download_url?: string;
+  /** Legacy field: single link used for both opening and downloading */
+  download?: string;
 };
 
 export type ReservationMessage = {
