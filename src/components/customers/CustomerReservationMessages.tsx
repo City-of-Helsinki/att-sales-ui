@@ -13,8 +13,14 @@ import {
   useLazyGetApartmentReservationMessagesQuery,
   useUploadApartmentReservationMessageAttachmentMutation,
 } from '../../redux/services/api';
-import { ApartmentReservationMessage, CreateReservationMessagePayload, CustomerReservation } from '../../types';
+import {
+  ApartmentReservationMessage,
+  CreateReservationMessagePayload,
+  CustomerReservation,
+  MessageAttachment,
+} from '../../types';
 import formatDateTime from '../../utils/formatDateTime';
+import { downloadAttachmentFile, openAttachmentInNewTab } from '../../utils/attachmentFiles';
 
 import styles from './CustomerReservationMessages.module.scss';
 
@@ -86,6 +92,14 @@ const getDraftAttachmentMeta = (attachment: NewAttachmentDraft): string => {
   return [attachment.mime_type, attachment.size_bytes !== undefined ? formatSizeBytes(attachment.size_bytes) : null]
     .filter(Boolean)
     .join(' - ');
+};
+
+// open_url falls back to download_url; legacy payloads with a single link use it for both
+const getAttachmentUrls = (attachment: MessageAttachment): { openUrl: string; downloadUrl: string } => {
+  const downloadUrl = attachment.download_url || attachment.download || attachment.open_url || '';
+  const openUrl = attachment.open_url || downloadUrl;
+
+  return { openUrl, downloadUrl };
 };
 
 interface IProps {
@@ -531,6 +545,27 @@ const CustomerReservationMessages = ({
   const [addMessage, { isLoading: isSubmitting }] = useAddApartmentReservationMessageMutation();
   const [uploadAttachment] = useUploadApartmentReservationMessageAttachmentMutation();
   const isUploading = uploadingFileName !== null;
+  const [busyAttachmentAction, setBusyAttachmentAction] = useState<string | null>(null);
+
+  // open_url/download_url are authenticated API endpoints, so they can't be used as plain href links
+  const handleAttachmentAction = async (attachment: MessageAttachment, action: 'open' | 'download') => {
+    const { openUrl, downloadUrl } = getAttachmentUrls(attachment);
+    const actionKey = `${attachment.id}:${action}`;
+
+    setBusyAttachmentAction(actionKey);
+
+    try {
+      if (action === 'open') {
+        await openAttachmentInNewTab(openUrl);
+      } else {
+        await downloadAttachmentFile(downloadUrl, attachment.display_name);
+      }
+    } catch (error) {
+      toast.show({ type: 'error', content: t(`${T_PATH}.attachmentFileError`) });
+    } finally {
+      setBusyAttachmentAction(null);
+    }
+  };
 
   useEffect(() => {
     if (!currentThreadKey || !data) {
@@ -987,24 +1022,40 @@ const CustomerReservationMessages = ({
                 <div className={cx('hds-text-input__helper-text', styles.messageBody)}>{message.body}</div>
                 {message.attachments?.length ? (
                   <ul className={styles.messageAttachmentsList}>
-                    {message.attachments.map((attachment) => (
-                      <li key={attachment.id} className={styles.messageAttachmentItem}>
-                        <div className={styles.messageAttachmentMeta}>
-                          <strong>{attachment.display_name}</strong>
-                          <span>
-                            {attachment.mime_type} - {formatSizeBytes(attachment.size_bytes)}
-                          </span>
-                        </div>
-                        <a
-                          href={attachment.download_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.messageAttachmentLink}
-                        >
-                          {t(`${T_PATH}.openAttachment`)}
-                        </a>
-                      </li>
-                    ))}
+                    {message.attachments.map((attachment) => {
+                      const { openUrl, downloadUrl } = getAttachmentUrls(attachment);
+
+                      return (
+                        <li key={attachment.id} className={styles.messageAttachmentItem}>
+                          <div className={styles.messageAttachmentMeta}>
+                            <strong>{attachment.display_name}</strong>
+                            <span>
+                              {attachment.mime_type} - {formatSizeBytes(attachment.size_bytes)}
+                            </span>
+                          </div>
+                          <div className={styles.messageAttachmentActions}>
+                            {openUrl && (
+                              <Button
+                                variant={ButtonVariant.Secondary}
+                                disabled={busyAttachmentAction === `${attachment.id}:open`}
+                                onClick={() => handleAttachmentAction(attachment, 'open')}
+                              >
+                                {t(`${T_PATH}.openAttachment`)}
+                              </Button>
+                            )}
+                            {downloadUrl && (
+                              <Button
+                                variant={ButtonVariant.Secondary}
+                                disabled={busyAttachmentAction === `${attachment.id}:download`}
+                                onClick={() => handleAttachmentAction(attachment, 'download')}
+                              >
+                                {t(`${T_PATH}.downloadAttachment`)}
+                              </Button>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : null}
               </li>

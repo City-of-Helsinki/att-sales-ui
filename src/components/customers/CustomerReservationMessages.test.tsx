@@ -266,52 +266,200 @@ describe('CustomerReservationMessages', () => {
     expect((requestPayload as any).attachment_ids).toEqual([10]);
   });
 
-  it('renders attachments from thread response', async () => {
-    server.use(
-      rest.get(
-        `${process.env.REACT_APP_API_BASE_URL}/apartment_reservations/:reservationId/messages/`,
-        (_req, res, ctx) => {
-          return res(
-            ctx.json({
-              application_id: 42,
-              count: 1,
-              items: [
-                {
-                  id: 110,
-                  application_id: 42,
-                  project_id: 7,
-                  sender_role: 'sales',
-                  sender_uid: null,
-                  salesperson_uid: 12,
-                  recipient_mail: '',
-                  body: 'Message with attachment',
-                  created: 1715003600,
-                  created_at: '2026-10-28T09:00:00Z',
-                  attachments: [
-                    {
-                      id: 901,
-                      display_name: 'Terms.pdf',
-                      mime_type: 'application/pdf',
-                      size_bytes: 2048,
-                      download_url: 'https://example.com/download/901',
-                    },
-                  ],
-                },
-              ],
-            })
-          );
-        }
-      )
-    );
+  describe('thread attachments', () => {
+    const mockThreadWithAttachment = (attachment: Record<string, unknown>) => {
+      server.use(
+        rest.get(
+          `${process.env.REACT_APP_API_BASE_URL}/apartment_reservations/:reservationId/messages/`,
+          (_req, res, ctx) => {
+            return res(
+              ctx.json({
+                application_id: 42,
+                count: 1,
+                items: [
+                  {
+                    id: 110,
+                    application_id: 42,
+                    project_id: 7,
+                    sender_role: 'sales',
+                    sender_uid: null,
+                    salesperson_uid: 12,
+                    recipient_mail: '',
+                    body: 'Message with attachment',
+                    created: 1715003600,
+                    created_at: '2026-10-28T09:00:00Z',
+                    attachments: [
+                      {
+                        id: 901,
+                        display_name: 'Terms.pdf',
+                        mime_type: 'application/pdf',
+                        size_bytes: 2048,
+                        ...attachment,
+                      },
+                    ],
+                  },
+                ],
+              })
+            );
+          }
+        )
+      );
+    };
 
-    renderComponent();
+    describe('open and download', () => {
+      const originalCreateObjectURL = URL.createObjectURL;
+      const originalRevokeObjectURL = URL.revokeObjectURL;
+      let openSpy: jest.SpyInstance;
+      let clickSpy: jest.SpyInstance;
+      let fakeTab: { location: { href: string }; close: jest.Mock; opener: unknown };
 
-    await screen.findByText('Terms.pdf');
-    expect(screen.getByText('application/pdf - 2.0 KB')).toBeInTheDocument();
-    const downloadLink = screen.getByRole('link', {
-      name: 'components.customers.CustomerReservationMessages.openAttachment',
+      beforeEach(() => {
+        URL.createObjectURL = jest.fn(() => 'blob:attachment');
+        URL.revokeObjectURL = jest.fn();
+        fakeTab = { location: { href: '' }, close: jest.fn(), opener: {} };
+        openSpy = jest.spyOn(window, 'open').mockReturnValue(fakeTab as unknown as Window);
+        clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+      });
+
+      afterEach(() => {
+        URL.createObjectURL = originalCreateObjectURL;
+        URL.revokeObjectURL = originalRevokeObjectURL;
+        openSpy.mockRestore();
+        clickSpy.mockRestore();
+      });
+
+      const mockFileEndpoint = (path: string, onRequest: (authorization: string | null) => void, status = 200) => {
+        server.use(
+          rest.get(`${API}${path}`, (req, res, ctx) => {
+            onRequest(req.headers.get('authorization'));
+
+            return res(ctx.status(status), ctx.set('Content-Type', 'application/pdf'), ctx.body('pdf-content'));
+          })
+        );
+      };
+
+      it('renders buttons instead of plain links', async () => {
+        mockThreadWithAttachment({
+          open_url: `${API}/files/open/901`,
+          download_url: `${API}/files/download/901`,
+        });
+
+        renderComponent();
+
+        await screen.findByText('Terms.pdf');
+        expect(screen.getByText('application/pdf - 2.0 KB')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: `${T}.openAttachment` })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: `${T}.downloadAttachment` })).toBeInTheDocument();
+        expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      });
+
+      it('opens open_url as an authenticated blob in a new tab', async () => {
+        let authorization: string | null = null;
+        mockThreadWithAttachment({
+          open_url: `${API}/files/open/901`,
+          download_url: `${API}/files/download/901`,
+        });
+        mockFileEndpoint('/files/open/901', (value) => {
+          authorization = value;
+        });
+
+        renderComponent();
+
+        await screen.findByText('Terms.pdf');
+        fireEvent.click(screen.getByRole('button', { name: `${T}.openAttachment` }));
+
+        await waitFor(() => {
+          expect(fakeTab.location.href).toBe('blob:attachment');
+        });
+        expect(authorization).toBe('Bearer test-token');
+        expect(openSpy).toHaveBeenCalledWith('', '_blank');
+        expect(fakeTab.opener).toBeNull();
+      });
+
+      it('downloads download_url as an authenticated blob via a temporary anchor', async () => {
+        let authorization: string | null = null;
+        mockThreadWithAttachment({
+          open_url: `${API}/files/open/901`,
+          download_url: `${API}/files/download/901`,
+        });
+        mockFileEndpoint('/files/download/901', (value) => {
+          authorization = value;
+        });
+
+        renderComponent();
+
+        await screen.findByText('Terms.pdf');
+        fireEvent.click(screen.getByRole('button', { name: `${T}.downloadAttachment` }));
+
+        await waitFor(() => {
+          expect(clickSpy).toHaveBeenCalledTimes(1);
+        });
+        const anchor = clickSpy.mock.instances[0] as HTMLAnchorElement;
+        expect(anchor.download).toBe('Terms.pdf');
+        expect(anchor.href).toBe('blob:attachment');
+        expect(authorization).toBe('Bearer test-token');
+      });
+
+      it('uses download_url for open when open_url is missing', async () => {
+        let requested = false;
+        mockThreadWithAttachment({ download_url: `${API}/files/download/901` });
+        mockFileEndpoint('/files/download/901', () => {
+          requested = true;
+        });
+
+        renderComponent();
+
+        await screen.findByText('Terms.pdf');
+        fireEvent.click(screen.getByRole('button', { name: `${T}.openAttachment` }));
+
+        await waitFor(() => {
+          expect(fakeTab.location.href).toBe('blob:attachment');
+        });
+        expect(requested).toBe(true);
+      });
+
+      it('supports legacy attachments with a single download link', async () => {
+        const requestedAuth: Array<string | null> = [];
+        mockThreadWithAttachment({ download: `${API}/files/legacy/901` });
+        mockFileEndpoint('/files/legacy/901', (value) => {
+          requestedAuth.push(value);
+        });
+
+        renderComponent();
+
+        await screen.findByText('Terms.pdf');
+        expect(screen.getByText('application/pdf - 2.0 KB')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: `${T}.openAttachment` }));
+        await waitFor(() => {
+          expect(fakeTab.location.href).toBe('blob:attachment');
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: `${T}.downloadAttachment` }));
+        await waitFor(() => {
+          expect(clickSpy).toHaveBeenCalledTimes(1);
+        });
+        expect(requestedAuth).toEqual(['Bearer test-token', 'Bearer test-token']);
+      });
+
+      it('shows an error and closes the tab when the request fails', async () => {
+        const toastSpy = jest.spyOn(toast, 'show');
+        mockThreadWithAttachment({ open_url: `${API}/files/open/901`, download_url: `${API}/files/download/901` });
+        mockFileEndpoint('/files/open/901', () => undefined, 403);
+
+        renderComponent();
+
+        await screen.findByText('Terms.pdf');
+        fireEvent.click(screen.getByRole('button', { name: `${T}.openAttachment` }));
+
+        await waitFor(() => {
+          expect(toastSpy).toHaveBeenCalledWith({ type: 'error', content: `${T}.attachmentFileError` });
+        });
+        expect(fakeTab.close).toHaveBeenCalled();
+
+        toastSpy.mockRestore();
+      });
     });
-    expect(downloadLink).toHaveAttribute('href', 'https://example.com/download/901');
   });
 
   it('shows 422 attachment_ids validation error near attachments block', async () => {
