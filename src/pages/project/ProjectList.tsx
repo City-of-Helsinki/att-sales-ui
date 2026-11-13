@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import {
   Button,
@@ -31,13 +31,14 @@ import { usePageTitle } from '../../utils/usePageTitle';
 import styles from './ProjectList.module.scss';
 
 const T_PATH = 'pages.project.ProjectList';
+const BACKGROUND_LOAD_DELAY_MS = 300;
 
 const ProjectList = (): JSX.Element => {
   const { t } = useTranslation();
   const [showMyProjects, setShowMyProjects] = useLocalStorage({ defaultValue: true, key: `showMyProjects` });
   const [activeTab, setActiveTab] = useState(0);
   const [includeArchivedProjects, setIncludeArchivedProjects] = useState(false);
-  const { projects, isLoadingInitial, isLoadingMore, isError } = useAllProjects({
+  const { projects, isLoadingInitial, isLoadingMore, isError, hasMore, loadMore } = useAllProjects({
     includeArchived: includeArchivedProjects,
   });
   const { getUser } = useOidcClient();
@@ -49,6 +50,17 @@ const ProjectList = (): JSX.Element => {
   });
 
   usePageTitle(t('PAGES.homepage'));
+
+  // Background loading: once page 1 is shown, fetch the remaining pages one at a time, with a short
+  // pause between requests. Each completed page re-runs this effect, so there is never more than one
+  // request in flight.
+  useEffect(() => {
+    if (!hasMore || isLoadingInitial || isLoadingMore || isError) return;
+
+    const timer = window.setTimeout(() => loadMore(), BACKGROUND_LOAD_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [hasMore, isLoadingInitial, isLoadingMore, isError, loadMore]);
 
   const renderToolbar = () => {
     const hasDrupalLink = !!process.env[`REACT_APP_DRUPAL_BASE_URL`];
