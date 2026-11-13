@@ -24,7 +24,7 @@ const SalesReport = (): JSX.Element => {
   const [endDate, setEndDate] = useState<string>('');
   const [params, setParams] = useState<URLSearchParams>();
 
-  const { projects } = useAllProjects();
+  const { projects } = useAllProjects({ loadAll: true });
   const { data: userSelectedProjects } = useGetSelectedProjectsQuery();
 
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
