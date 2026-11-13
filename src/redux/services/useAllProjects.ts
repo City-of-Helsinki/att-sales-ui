@@ -97,21 +97,6 @@ export const useAllProjects = ({ includeArchived = false, loadAll = false }: Use
     };
 
     const cached = readListCache(includeArchived);
-    if (cached && (!loadAll || isListComplete(cached))) {
-      // Restore the previously loaded list; no request. Remaining pages (if any) are loaded via loadMore.
-      loadedPagesRef.current = cached.pages.length;
-      totalPagesRef.current = Math.max(1, Math.ceil(cached.totalCount / PROJECTS_PAGE_SIZE));
-      pagesRef.current = cached.pages;
-      busyRef.current = false;
-      setIsError(false);
-      setTotalCount(cached.totalCount);
-      setPages(cached.pages);
-      setIsLoadingInitial(false);
-      setIsLoadingMore(false);
-      return cleanup;
-    }
-
-    busyRef.current = true;
 
     const run = async () => {
       setIsError(false);
@@ -150,7 +135,21 @@ export const useAllProjects = ({ includeArchived = false, loadAll = false }: Use
       }
     };
 
-    run();
+    if (cached && (!loadAll || isListComplete(cached))) {
+      // Restore the previously loaded list; no request. Remaining pages (if any) are loaded via loadMore.
+      loadedPagesRef.current = cached.pages.length;
+      totalPagesRef.current = Math.max(1, Math.ceil(cached.totalCount / PROJECTS_PAGE_SIZE));
+      pagesRef.current = cached.pages;
+      busyRef.current = false;
+      setIsError(false);
+      setTotalCount(cached.totalCount);
+      setPages(cached.pages);
+      setIsLoadingInitial(false);
+      setIsLoadingMore(false);
+    } else {
+      busyRef.current = true;
+      void run();
+    }
 
     return cleanup;
   }, [requestPage, loadAll, includeArchived, commitPages]);

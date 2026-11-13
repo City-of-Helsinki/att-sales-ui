@@ -57,7 +57,7 @@ const ProjectList = (): JSX.Element => {
   useEffect(() => {
     if (!hasMore || isLoadingInitial || isLoadingMore || isError) return;
 
-    const timer = window.setTimeout(() => loadMore(), BACKGROUND_LOAD_DELAY_MS);
+    const timer = window.setTimeout(() => void loadMore(), BACKGROUND_LOAD_DELAY_MS);
 
     return () => window.clearTimeout(timer);
   }, [hasMore, isLoadingInitial, isLoadingMore, isError, loadMore]);
