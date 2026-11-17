@@ -14,6 +14,7 @@ import {
   ApartmentRevaluation,
   Applicant,
   CostIndex,
+  CreateReservationMessagePayload,
   Customer,
   CustomerComment,
   CustomerListItem,
@@ -33,19 +34,25 @@ import {
   Paginated,
   SalesPerson,
   UnreadMessageCountsResponse,
+  UploadMessageAttachmentResponse,
 } from '../../types';
 import getApiBaseUrl from '../../utils/getApiBaseUrl';
 import { waitForApiToken } from './common';
 
 const InstallmentTypeKeys = Object.keys(InstallmentTypes);
 
+// Multipart endpoints must not get a forced JSON Content-Type (browser sets the boundary itself)
+const MULTIPART_ENDPOINTS = ['uploadApartmentReservationMessageAttachment'];
+
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: getApiBaseUrl(),
-    prepareHeaders: async (headers, { getState }) => {
-      headers.set('Content-Type', 'application/json');
+    prepareHeaders: async (headers, { endpoint }) => {
+      if (!MULTIPART_ENDPOINTS.includes(endpoint)) {
+        headers.set('Content-Type', 'application/json');
+      }
       const apiToken = await waitForApiToken();
       headers.append('authorization', `Bearer ${apiToken}`);
       return headers;
@@ -487,16 +494,42 @@ export const api = createApi({
     // POST: Add message to reservation thread
     addApartmentReservationMessage: builder.mutation<
       ApartmentReservationMessage,
-      { reservationId: number; projectUuid: string; body: string }
+      { reservationId: number; projectUuid: string } & CreateReservationMessagePayload
     >({
-      query: ({ reservationId, projectUuid, body }) => ({
+      query: ({ reservationId, projectUuid, body, attachment_ids, new_attachments }) => ({
         url: `apartment_reservations/${reservationId}/messages/?project_uuid=${encodeURIComponent(projectUuid)}`,
         method: 'POST',
-        body: { body },
+        body: {
+          body,
+          ...(attachment_ids && attachment_ids.length ? { attachment_ids } : {}),
+          ...(new_attachments && new_attachments.length ? { new_attachments } : {}),
+        },
       }),
       invalidatesTags: (result, error, { reservationId, projectUuid }) => [
         { type: 'ReservationMessages', id: `${projectUuid}:${reservationId}` },
       ],
+    }),
+
+    // POST: Upload a file for a reservation message (multipart); returns file_id for new_attachments
+    uploadApartmentReservationMessageAttachment: builder.mutation<
+      UploadMessageAttachmentResponse,
+      { reservationId: number; projectUuid: string; file: File; displayName?: string }
+    >({
+      query: ({ reservationId, projectUuid, file, displayName }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (displayName) {
+          formData.append('display_name', displayName);
+        }
+
+        return {
+          url: `apartment_reservations/${reservationId}/messages/attachments/upload?project_uuid=${encodeURIComponent(
+            projectUuid
+          )}`,
+          method: 'POST',
+          body: formData,
+        };
+      },
     }),
 
     // GET: Fetch unread message counters grouped by application id
@@ -552,6 +585,7 @@ export const {
   useGetApartmentReservationMessagesQuery,
   useLazyGetApartmentReservationMessagesQuery,
   useAddApartmentReservationMessageMutation,
+  useUploadApartmentReservationMessageAttachmentMutation,
   useGetUnreadMessageCountsQuery,
   useGetMessagesInboxSummaryQuery,
   useGetCostIndexesQuery,
